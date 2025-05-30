@@ -129,8 +129,8 @@ const Index = () => {
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(0, 0, 0, 0.8);
-          backdrop-filter: blur(10px);
+          background: rgba(0, 0, 0, 0.85);
+          backdrop-filter: blur(16px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -140,18 +140,19 @@ const Index = () => {
         .modal-content {
           background: var(--bg-card);
           border: 1px solid var(--border-primary);
-          border-radius: 16px;
-          max-width: 400px;
+          border-radius: 20px;
+          max-width: 450px;
           width: 100%;
-          backdrop-filter: blur(20px);
+          backdrop-filter: blur(24px);
           animation: slideIn 0.3s ease;
+          box-shadow: var(--shadow-secondary);
         }
         
         .modal-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 1.5rem;
+          padding: 1.75rem;
           border-bottom: 1px solid var(--border-secondary);
         }
         
@@ -159,6 +160,8 @@ const Index = () => {
           margin: 0;
           color: var(--text-primary);
           font-family: var(--font-primary);
+          font-size: 1.25rem;
+          font-weight: 700;
         }
         
         .modal-close {
@@ -168,8 +171,8 @@ const Index = () => {
           color: var(--text-secondary);
           cursor: pointer;
           padding: 0;
-          width: 30px;
-          height: 30px;
+          width: 36px;
+          height: 36px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -183,13 +186,14 @@ const Index = () => {
         }
         
         .modal-body {
-          padding: 1.5rem;
+          padding: 1.75rem;
         }
         
         .modal-body p {
           color: var(--text-secondary);
-          margin-bottom: 1.5rem;
-          line-height: 1.6;
+          margin-bottom: 1.75rem;
+          line-height: 1.7;
+          font-size: 1rem;
         }
         
         .modal-actions {
@@ -205,7 +209,7 @@ const Index = () => {
         @keyframes slideIn {
           from { 
             opacity: 0;
-            transform: translateY(-20px) scale(0.95);
+            transform: translateY(-30px) scale(0.9);
           }
           to { 
             opacity: 1;
@@ -390,7 +394,7 @@ const Index = () => {
           <div className="container">
             <div className="section-header">
               <h2 className="section-title">Recursos de <span className="highlight">Alta Performance</span></h2>
-              <p className="section-subtitle">Ferramentas e conteúdos exclusivos para maximizar seus resultados</p>
+              <p className="section-subtitle">Ferramentas e conteúdos exclusivos para maximizar seus resultados como afiliado de elite</p>
             </div>
             
             <div className="resources-grid">
@@ -402,7 +406,7 @@ const Index = () => {
                 <h3 className="card-title">Conteúdo Educacional</h3>
                 <p className="card-description">
                   Treinamentos avançados, webinars exclusivos e materiais didáticos 
-                  criados por especialistas da indústria.
+                  criados por especialistas da indústria para acelerar seu crescimento.
                 </p>
                 <button className="card-action">
                   Explorar Conteúdo <i className="fas fa-arrow-right"></i>
@@ -416,7 +420,7 @@ const Index = () => {
                 <h3 className="card-title">Suporte 24/7</h3>
                 <p className="card-description">
                   Atendimento especializado disponível 24 horas por dia 
-                  para resolver suas dúvidas e otimizar suas campanhas.
+                  para resolver suas dúvidas e otimizar suas campanhas em tempo real.
                 </p>
                 <button className="card-action">
                   Falar com Suporte <i className="fas fa-arrow-right"></i>
@@ -430,7 +434,7 @@ const Index = () => {
                 <h3 className="card-title">Comunidade Elite</h3>
                 <p className="card-description">
                   Conecte-se com outros afiliados de alto nível, 
-                  compartilhe estratégias e forme parcerias vencedoras.
+                  compartilhe estratégias vencedoras e forme parcerias lucrativas.
                 </p>
                 <button className="card-action">
                   Entrar na Comunidade <i className="fas fa-arrow-right"></i>
@@ -444,10 +448,40 @@ const Index = () => {
                 <h3 className="card-title">Analytics Avançado</h3>
                 <p className="card-description">
                   Dashboard completo com métricas em tempo real, 
-                  relatórios detalhados e insights acionáveis.
+                  relatórios detalhados e insights acionáveis para maximizar conversões.
                 </p>
                 <button className="card-action">
                   Ver Dashboard <i className="fas fa-arrow-right"></i>
+                </button>
+              </div>
+
+              <div className="resource-card featured">
+                <div className="card-header">
+                  <i className="fas fa-palette"></i>
+                  <span className="card-badge">EXCLUSIVO</span>
+                </div>
+                <h3 className="card-title">Material de Apoio</h3>
+                <p className="card-description">
+                  Banco completo de criativos validados, templates de alta conversão 
+                  e materiais de apoio testados por afiliados top performers.
+                </p>
+                <button className="card-action">
+                  Acessar Materiais <i className="fas fa-arrow-right"></i>
+                </button>
+              </div>
+
+              <div className="resource-card featured">
+                <div className="card-header">
+                  <i className="fas fa-tools"></i>
+                  <span className="card-badge">PRO</span>
+                </div>
+                <h3 className="card-title">Ferramentas Exclusivas</h3>
+                <p className="card-description">
+                  Suite completa de ferramentas proprietárias: link rotators, 
+                  spy tools, calculadoras de ROI e automações para afiliados profissionais.
+                </p>
+                <button className="card-action">
+                  Explorar Ferramentas <i className="fas fa-arrow-right"></i>
                 </button>
               </div>
             </div>
@@ -459,7 +493,7 @@ const Index = () => {
           <div className="container">
             <div className="cta-content">
               <h2 className="cta-title">Pronto para se tornar um <span className="highlight">Afiliado de Elite</span>?</h2>
-              <p className="cta-subtitle">Junte-se a milhares de afiliados que já transformaram seus resultados</p>
+              <p className="cta-subtitle">Junte-se a milhares de afiliados que já transformaram seus resultados com nossa plataforma</p>
               
               <div className="cta-actions">
                 <button className="btn btn-primary btn-large">
@@ -474,7 +508,7 @@ const Index = () => {
               
               <p className="cta-note">
                 <i className="fas fa-shield-check"></i>
-                100% seguro e gratuito • Sem compromisso
+                100% seguro e gratuito • Sem compromisso • Acesso imediato
               </p>
             </div>
           </div>
