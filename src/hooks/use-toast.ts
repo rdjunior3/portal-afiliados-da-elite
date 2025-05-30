@@ -13,6 +13,7 @@ type ToasterToast = ToastProps & {
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+  emoji?: string
 }
 
 const actionTypes = {
@@ -139,8 +140,24 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
+// Helper function to auto-detect emoji based on variant and content
+function getAutoEmoji(variant?: string, title?: string): string {
+  if (variant === 'success' || title?.includes('sucesso') || title?.includes('realizado')) return '🎉'
+  if (variant === 'destructive' || title?.includes('erro') || title?.includes('Erro')) return '❌'
+  if (variant === 'warning' || title?.includes('atenção') || title?.includes('Atenção')) return '⚠️'
+  if (variant === 'info') return 'ℹ️'
+  if (title?.includes('Login') || title?.includes('bem-vindo') || title?.includes('Bem-vindo')) return '👋'
+  if (title?.includes('cadastro') || title?.includes('Cadastro')) return '🚀'
+  if (title?.includes('logout') || title?.includes('sair')) return '👋'
+  if (title?.includes('atualizado') || title?.includes('salvas')) return '✅'
+  return ''
+}
+
+function toast({ emoji, variant, title, ...props }: Toast) {
   const id = genId()
+  
+  // Auto-detect emoji if not provided
+  const finalEmoji = emoji || getAutoEmoji(variant, title?.toString())
 
   const update = (props: ToasterToast) =>
     dispatch({
@@ -154,6 +171,9 @@ function toast({ ...props }: Toast) {
     toast: {
       ...props,
       id,
+      variant,
+      title,
+      emoji: finalEmoji,
       open: true,
       onOpenChange: (open) => {
         if (!open) dismiss()
@@ -166,6 +186,39 @@ function toast({ ...props }: Toast) {
     dismiss,
     update,
   }
+}
+
+// Enhanced toast functions with predefined styles
+function success(title: string, description?: string) {
+  return toast({
+    variant: 'success',
+    title,
+    description,
+  })
+}
+
+function error(title: string, description?: string) {
+  return toast({
+    variant: 'destructive',
+    title,
+    description,
+  })
+}
+
+function warning(title: string, description?: string) {
+  return toast({
+    variant: 'warning',
+    title,
+    description,
+  })
+}
+
+function info(title: string, description?: string) {
+  return toast({
+    variant: 'info',
+    title,
+    description,
+  })
 }
 
 function useToast() {
@@ -184,6 +237,10 @@ function useToast() {
   return {
     ...state,
     toast,
+    success,
+    error,
+    warning,
+    info,
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
   }
 }

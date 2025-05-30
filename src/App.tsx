@@ -1,33 +1,58 @@
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import { QueryProvider } from './providers/QueryProvider';
+import { Toaster } from './components/ui/toaster';
+import ProtectedRoute from './components/ProtectedRoute';
+import { usePageTracking, usePerformanceMonitoring } from './hooks/useAnalytics';
+import { validateEnv } from './config/env';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import NotFound from "./pages/NotFound";
+// Pages
+import Index from './pages/Index';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Dashboard from './pages/Dashboard';
 
-const queryClient = new QueryClient();
+// Validar variáveis de ambiente no carregamento
+try {
+  validateEnv();
+} catch (error) {
+  console.error('❌ Erro de configuração:', error);
+}
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function AppContent() {
+  usePageTracking();
+  usePerformanceMonitoring();
+
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  );
+}
+
+function App() {
+  return (
+    <QueryProvider>
+      <Router>
+        <AuthProvider>
+          <div className="App">
+            <AppContent />
+            <Toaster />
+          </div>
+        </AuthProvider>
+      </Router>
+    </QueryProvider>
+  );
+}
 
 export default App;

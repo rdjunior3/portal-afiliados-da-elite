@@ -1,7 +1,7 @@
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
 import { cva, type VariantProps } from "class-variance-authority"
-import { X } from "lucide-react"
+import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -30,6 +30,12 @@ const toastVariants = cva(
         default: "border bg-background text-foreground",
         destructive:
           "destructive group border-destructive bg-destructive text-destructive-foreground",
+        success: 
+          "border-emerald-400/50 bg-emerald-950/90 backdrop-blur-xl text-emerald-100",
+        warning:
+          "border-yellow-400/50 bg-yellow-950/90 backdrop-blur-xl text-yellow-100",
+        info:
+          "border-blue-400/50 bg-blue-950/90 backdrop-blur-xl text-blue-100",
       },
     },
     defaultVariants: {
@@ -92,7 +98,7 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Title
     ref={ref}
-    className={cn("text-sm font-semibold", className)}
+    className={cn("text-sm font-semibold flex items-center gap-2", className)}
     {...props}
   />
 ))
@@ -114,6 +120,52 @@ type ToastProps = React.ComponentPropsWithoutRef<typeof Toast>
 
 type ToastActionElement = React.ReactElement<typeof ToastAction>
 
+// Helper function to get icon based on variant
+const getToastIcon = (variant?: string) => {
+  switch (variant) {
+    case 'success':
+      return <CheckCircle className="w-4 h-4" />
+    case 'destructive':
+      return <AlertCircle className="w-4 h-4" />
+    case 'warning':
+      return <AlertTriangle className="w-4 h-4" />
+    case 'info':
+      return <Info className="w-4 h-4" />
+    default:
+      return <Info className="w-4 h-4" />
+  }
+}
+
+// Enhanced toast component with icons
+const EnhancedToast = React.forwardRef<
+  React.ElementRef<typeof Toast>,
+  React.ComponentPropsWithoutRef<typeof Toast> & {
+    title?: string;
+    description?: string;
+    emoji?: string;
+  }
+>(({ className, variant, title, description, emoji, children, ...props }, ref) => {
+  return (
+    <Toast ref={ref} className={className} variant={variant} {...props}>
+      <div className="grid gap-1">
+        {title && (
+          <ToastTitle>
+            {emoji && <span className="text-base">{emoji}</span>}
+            {!emoji && getToastIcon(variant)}
+            {title}
+          </ToastTitle>
+        )}
+        {description && (
+          <ToastDescription>{description}</ToastDescription>
+        )}
+        {children}
+      </div>
+      <ToastClose />
+    </Toast>
+  )
+})
+EnhancedToast.displayName = "EnhancedToast"
+
 export {
   type ToastProps,
   type ToastActionElement,
@@ -124,4 +176,5 @@ export {
   ToastDescription,
   ToastClose,
   ToastAction,
+  EnhancedToast,
 }
