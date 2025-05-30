@@ -1,5 +1,4 @@
 
-// Copy of main.tsx content for public folder structure
 // Main JavaScript file for Afiliados da Elite
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -16,6 +15,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // Theme Toggle Functionality
 function initializeThemeToggle() {
     const themeToggle = document.getElementById('themeToggle');
+    if (!themeToggle) return;
+    
     const body = document.body;
     const themeIcon = themeToggle.querySelector('i');
     
@@ -26,11 +27,11 @@ function initializeThemeToggle() {
     if (savedTheme === 'light') {
         body.classList.remove('dark-theme');
         body.classList.add('light-theme');
-        themeIcon.className = 'fas fa-sun';
+        if (themeIcon) themeIcon.className = 'fas fa-sun';
     } else {
         body.classList.remove('light-theme');
         body.classList.add('dark-theme');
-        themeIcon.className = 'fas fa-moon';
+        if (themeIcon) themeIcon.className = 'fas fa-moon';
     }
     
     // Theme toggle event listener
@@ -41,7 +42,7 @@ function initializeThemeToggle() {
             // Switch to light theme
             body.classList.remove('dark-theme');
             body.classList.add('light-theme');
-            themeIcon.className = 'fas fa-sun';
+            if (themeIcon) themeIcon.className = 'fas fa-sun';
             localStorage.setItem('theme', 'light');
             
             // Add transition effect
@@ -55,7 +56,7 @@ function initializeThemeToggle() {
             // Switch to dark theme
             body.classList.remove('light-theme');
             body.classList.add('dark-theme');
-            themeIcon.className = 'fas fa-moon';
+            if (themeIcon) themeIcon.className = 'fas fa-moon';
             localStorage.setItem('theme', 'dark');
             
             // Add transition effect
@@ -103,6 +104,8 @@ function initializeMobileMenu() {
 // Scroll Effects
 function initializeScrollEffects() {
     const header = document.querySelector('.header');
+    if (!header) return;
+    
     let lastScrollY = window.scrollY;
     
     // Header scroll effect
@@ -133,9 +136,9 @@ function initializeScrollEffects() {
             const targetId = this.getAttribute('href');
             const targetElement = document.querySelector(targetId);
             
-            if (targetElement) {
-                const headerHeight = header.offsetHeight;
-                const targetPosition = targetElement.offsetTop - headerHeight;
+            if (targetElement && header) {
+                const headerHeight = header.getBoundingClientRect().height;
+                const targetPosition = targetElement.getBoundingClientRect().top + window.scrollY - headerHeight;
                 
                 window.scrollTo({
                     top: targetPosition,
@@ -166,33 +169,36 @@ function initializeInteractiveElements() {
     const buttons = document.querySelectorAll('.btn');
     buttons.forEach(button => {
         button.addEventListener('click', function(e) {
-            // Create ripple effect
-            const ripple = document.createElement('span');
-            const rect = this.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            const x = e.clientX - rect.left - size / 2;
-            const y = e.clientY - rect.top - size / 2;
-            
-            ripple.style.cssText = `
-                position: absolute;
-                width: ${size}px;
-                height: ${size}px;
-                left: ${x}px;
-                top: ${y}px;
-                background: rgba(255, 255, 255, 0.3);
-                border-radius: 50%;
-                transform: scale(0);
-                animation: ripple 0.6s ease-out;
-                pointer-events: none;
-            `;
-            
-            this.style.position = 'relative';
-            this.style.overflow = 'hidden';
-            this.appendChild(ripple);
-            
-            setTimeout(() => {
-                ripple.remove();
-            }, 600);
+            // Create ripple effect with proper MouseEvent casting
+            const mouseEvent = e;
+            if (mouseEvent.clientX !== undefined && mouseEvent.clientY !== undefined) {
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = mouseEvent.clientX - rect.left - size / 2;
+                const y = mouseEvent.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    background: rgba(255, 255, 255, 0.3);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s ease-out;
+                    pointer-events: none;
+                `;
+                
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            }
         });
     });
     
@@ -206,6 +212,8 @@ function animateDashboardStats() {
     
     performanceValues.forEach(value => {
         const targetText = value.textContent;
+        if (!targetText) return;
+        
         const isPrice = targetText.includes('R$');
         const targetNumber = parseFloat(targetText.replace(/[R$,\s]/g, ''));
         
