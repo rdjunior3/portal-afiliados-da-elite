@@ -1,8 +1,15 @@
-
 import ThemeToggle from '../components/ThemeToggle';
-import { useEffect } from 'react';
+import { AuthModal } from '../components/auth/AuthModal';
+import { useAuth } from '../contexts/AuthContext';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
+  const { user, loading } = useAuth();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const navigate = useNavigate();
+
   useEffect(() => {
     // Initialize dark theme on component mount
     document.body.classList.add('dark-theme');
@@ -72,215 +79,44 @@ const Index = () => {
       console.log('🚀 Afiliados da Elite - Efeitos interativos carregados!');
     };
 
-    // Add modal functionality for login buttons
-    const showLoginModal = (type: string) => {
-      const modal = document.createElement('div');
-      modal.className = 'login-modal';
-      
-      let title, content;
-      
-      switch(type) {
-        case 'google':
-          title = '🔐 Login com Google';
-          content = 'Em breve! Integração com OAuth2 Google será implementada.';
-          break;
-        case 'email':
-          title = '📧 Cadastro com Email';
-          content = 'Sistema de cadastro em desenvolvimento. Aguarde!';
-          break;
-        default:
-          title = '🚀 Área Exclusiva';
-          content = 'Portal em desenvolvimento! Em breve você terá acesso a conteúdos exclusivos.';
-      }
-      
-      modal.innerHTML = `
-        <div class="modal-overlay">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h3>${title}</h3>
-              <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-              <p>${content}</p>
-              <div class="modal-actions">
-                <button class="btn btn-primary">Entendi</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-      
-      // Add modal styles
-      const style = document.createElement('style');
-      style.textContent = `
-        .login-modal {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          z-index: 10000;
-          animation: fadeIn 0.3s ease;
-        }
-        
-        .modal-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.85);
-          backdrop-filter: blur(16px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 1rem;
-        }
-        
-        .modal-content {
-          background: var(--bg-card);
-          border: 1px solid var(--border-primary);
-          border-radius: 20px;
-          max-width: 450px;
-          width: 100%;
-          backdrop-filter: blur(24px);
-          animation: slideIn 0.3s ease;
-          box-shadow: var(--shadow-secondary);
-        }
-        
-        .modal-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 1.75rem;
-          border-bottom: 1px solid var(--border-secondary);
-        }
-        
-        .modal-header h3 {
-          margin: 0;
-          color: var(--text-primary);
-          font-family: var(--font-primary);
-          font-size: 1.25rem;
-          font-weight: 700;
-        }
-        
-        .modal-close {
-          background: none;
-          border: none;
-          font-size: 1.5rem;
-          color: var(--text-secondary);
-          cursor: pointer;
-          padding: 0;
-          width: 36px;
-          height: 36px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-          transition: all 0.2s ease;
-        }
-        
-        .modal-close:hover {
-          color: var(--accent-primary);
-          background: var(--bg-secondary);
-        }
-        
-        .modal-body {
-          padding: 1.75rem;
-        }
-        
-        .modal-body p {
-          color: var(--text-secondary);
-          margin-bottom: 1.75rem;
-          line-height: 1.7;
-          font-size: 1rem;
-        }
-        
-        .modal-actions {
-          display: flex;
-          justify-content: center;
-        }
-        
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
-        @keyframes slideIn {
-          from { 
-            opacity: 0;
-            transform: translateY(-30px) scale(0.9);
-          }
-          to { 
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-      `;
-      
-      document.head.appendChild(style);
-      document.body.appendChild(modal);
-      
-      // Close modal events
-      const closeBtn = modal.querySelector('.modal-close');
-      const overlay = modal.querySelector('.modal-overlay');
-      const okBtn = modal.querySelector('.btn-primary');
-      
-      function closeModal() {
-        modal.style.animation = 'fadeIn 0.3s ease reverse';
-        setTimeout(() => {
-          modal.remove();
-          style.remove();
-        }, 300);
-      }
-      
-      closeBtn?.addEventListener('click', closeModal);
-      okBtn?.addEventListener('click', closeModal);
-      overlay?.addEventListener('click', function(e) {
-        if (e.target === overlay) {
-          closeModal();
-        }
-      });
-      
-      // Close on Escape key
-      const escapeHandler = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          closeModal();
-          document.removeEventListener('keydown', escapeHandler);
-        }
-      };
-      document.addEventListener('keydown', escapeHandler);
-    };
-
-    // Add click handlers for login buttons
-    const addLoginHandlers = () => {
-      const accessButtons = document.querySelectorAll('.btn-primary:not(.modal-close)');
-      const emailButton = document.querySelector('.btn-secondary');
-      
-      accessButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          const hasGoogleIcon = btn.querySelector('.fa-google');
-          showLoginModal(hasGoogleIcon ? 'google' : 'access');
-        });
-      });
-
-      emailButton?.addEventListener('click', (e) => {
-        e.preventDefault();
-        showLoginModal('email');
-      });
-    };
-
     // Initialize everything
     setTimeout(() => {
       initializeEffects();
-      addLoginHandlers();
     }, 100);
 
     return () => {
       // Cleanup event listeners if needed
     };
   }, []);
+
+  const handleAuthAction = (mode: 'login' | 'signup') => {
+    if (user) {
+      navigate('/auth');
+    } else {
+      setAuthMode(mode);
+      setAuthModalOpen(true);
+    }
+  };
+
+  const handleGoogleAuth = () => {
+    if (user) {
+      navigate('/auth');
+    } else {
+      setAuthMode('login');
+      setAuthModalOpen(true);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <i className="fas fa-spinner fa-spin text-4xl mb-4"></i>
+          <p>Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -301,7 +137,12 @@ const Index = () => {
           
           <div className="nav-actions">
             <ThemeToggle />
-            <button className="btn btn-primary">Acessar Área</button>
+            <button 
+              className="btn btn-primary"
+              onClick={() => handleAuthAction('login')}
+            >
+              {user ? 'Minha Conta' : 'Acessar Área'}
+            </button>
           </div>
           
           <div className="hamburger" id="hamburger">
@@ -341,13 +182,19 @@ const Index = () => {
               </div>
               
               <div className="hero-actions">
-                <button className="btn btn-primary btn-large">
+                <button 
+                  className="btn btn-primary btn-large"
+                  onClick={() => handleAuthAction('login')}
+                >
                   <i className="fas fa-rocket"></i>
-                  Entrar na Área Exclusiva
+                  {user ? 'Acessar Dashboard' : 'Entrar na Área Exclusiva'}
                 </button>
-                <button className="btn btn-secondary btn-large">
+                <button 
+                  className="btn btn-secondary btn-large"
+                  onClick={() => handleAuthAction('signup')}
+                >
                   <i className="fas fa-play"></i>
-                  Saiba Mais
+                  {user ? 'Meu Perfil' : 'Saiba Mais'}
                 </button>
               </div>
             </div>
@@ -389,7 +236,6 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Resources Section */}
         <section className="resources" id="recursos">
           <div className="container">
             <div className="section-header">
@@ -496,13 +342,19 @@ const Index = () => {
               <p className="cta-subtitle">Junte-se a milhares de afiliados que já transformaram seus resultados com nossa plataforma</p>
               
               <div className="cta-actions">
-                <button className="btn btn-primary btn-large">
+                <button 
+                  className="btn btn-primary btn-large"
+                  onClick={handleGoogleAuth}
+                >
                   <i className="fab fa-google"></i>
-                  Entrar com Google
+                  {user ? 'Acessar Conta' : 'Entrar com Google'}
                 </button>
-                <button className="btn btn-secondary btn-large">
+                <button 
+                  className="btn btn-secondary btn-large"
+                  onClick={() => handleAuthAction('signup')}
+                >
                   <i className="fas fa-envelope"></i>
-                  Cadastrar com Email
+                  {user ? 'Meu Perfil' : 'Cadastrar com Email'}
                 </button>
               </div>
               
@@ -529,6 +381,12 @@ const Index = () => {
           </div>
         </div>
       </footer>
+
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        defaultMode={authMode}
+      />
     </div>
   );
 };
