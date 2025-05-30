@@ -1,4 +1,5 @@
 
+// Copy of main.tsx content for public folder structure
 // Main JavaScript file for Afiliados da Elite
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -197,9 +198,6 @@ function initializeInteractiveElements() {
     
     // Animate dashboard stats
     animateDashboardStats();
-    
-    // Typing effect for hero title
-    // addTypingEffect();
 }
 
 // Dashboard Stats Animation
