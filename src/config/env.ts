@@ -1,3 +1,27 @@
+// Função para detectar a URL base automaticamente
+const getBaseUrl = () => {
+  // Em produção no Vercel
+  if (typeof window !== 'undefined') {
+    const currentUrl = window.location.origin;
+    
+    // Se está rodando no Vercel
+    if (currentUrl.includes('vercel.app') || currentUrl.includes('portal-afiliados-da-elite')) {
+      return currentUrl;
+    }
+    
+    // Se está rodando localmente
+    if (currentUrl.includes('localhost') || currentUrl.includes('127.0.0.1')) {
+      return currentUrl;
+    }
+    
+    // Fallback para usar a origem atual
+    return currentUrl;
+  }
+  
+  // Fallback para SSR ou casos sem window
+  return import.meta.env.VITE_BASE_URL || "http://localhost:8080";
+};
+
 export const env = {
   // Supabase
   SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL || "https://rbqzddsserknaedojuex.supabase.co",
@@ -6,12 +30,15 @@ export const env = {
   // App
   APP_TITLE: import.meta.env.VITE_APP_TITLE || "Portal Afiliados da Elite",
   APP_DESCRIPTION: import.meta.env.VITE_APP_DESCRIPTION || "Plataforma de afiliados premium",
-  BASE_URL: import.meta.env.VITE_BASE_URL || "http://localhost:8080",
+  BASE_URL: getBaseUrl(),
   
   // Environment
   NODE_ENV: import.meta.env.NODE_ENV || "development",
   DEV: import.meta.env.DEV,
   PROD: import.meta.env.PROD,
+  
+  // URLs de redirecionamento baseadas no ambiente
+  REDIRECT_URL: typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : '/dashboard',
   
   // Analytics
   GOOGLE_ANALYTICS_ID: import.meta.env.VITE_GOOGLE_ANALYTICS_ID,

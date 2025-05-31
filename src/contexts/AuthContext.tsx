@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { env } from '@/config/env';
 
 interface AuthContextType {
   user: User | null;
@@ -261,9 +262,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
+        console.error('Erro detalhado do Google OAuth:', error);
         toast({
           title: "Erro no login com Google",
-          description: "Não foi possível conectar com o Google. Tente novamente.",
+          description: `Não foi possível conectar com o Google: ${error.message}`,
           variant: "destructive",
         });
       }
