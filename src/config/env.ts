@@ -51,10 +51,14 @@ export function validateEnv() {
   const missing = requiredEnvVars.filter(key => !env[key]);
   
   if (missing.length > 0) {
-    throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}`
-    );
+    console.warn(`⚠️ Missing environment variables: ${missing.join(', ')}`);
+    console.warn('Using fallback values. App functionality may be limited.');
+    // Don't throw error, just warn
+    return false;
   }
+  
+  console.log('✅ Environment variables validated successfully');
+  return true;
 }
 
 export default env; 

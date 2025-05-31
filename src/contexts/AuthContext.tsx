@@ -96,9 +96,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    // Set timeout to prevent infinite loading
+    const loadingTimeout = setTimeout(() => {
+      console.warn('Auth initialization timeout - setting loading to false');
+      setLoading(false);
+    }, 5000); // 5 seconds timeout
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.email);
+        
+        clearTimeout(loadingTimeout);
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -123,20 +132,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        const userProfile = await fetchProfile(session.user.id);
-        setProfile(userProfile);
-      }
-      
-      setLoading(false);
-    });
+    // Get initial session with timeout handling
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise<{ data: { session: Session | null }, error: any }>((_, reject) => 
+            setTimeout(() => reject(new Error('Session check timeout')), 3000)
+          )
+        ]);
 
-    return () => subscription.unsubscribe();
+        if (error) {
+          console.error('Session check error:', error);
+          setLoading(false);
+          return;
+        }
+
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          const userProfile = await fetchProfile(session.user.id);
+          setProfile(userProfile);
+        }
+        
+        clearTimeout(loadingTimeout);
+        setLoading(false);
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        clearTimeout(loadingTimeout);
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    return () => {
+      clearTimeout(loadingTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {

@@ -26,11 +26,14 @@ import Profile from './pages/dashboard/Profile';
 import Notifications from './pages/dashboard/Notifications';
 import Settings from './pages/dashboard/Settings';
 
-// Validar variáveis de ambiente no carregamento
+// Validar variáveis de ambiente no carregamento (não crítico)
 try {
-  validateEnv();
+  const isValid = validateEnv();
+  if (!isValid) {
+    console.warn('⚠️ App inicializado com configuração limitada');
+  }
 } catch (error) {
-  console.error('❌ Erro de configuração:', error);
+  console.error('❌ Erro de configuração (não crítico):', error);
 }
 
 function AppContent() {
