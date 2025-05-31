@@ -14,7 +14,6 @@
     "setup-complete": "npm run apply-migrations && npm run seed-db"
   },
   "dependencies": {
-    "@clerk/clerk-react": "^5.31.8",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",

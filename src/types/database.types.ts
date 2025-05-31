@@ -8,6 +8,10 @@ export interface Database {
           full_name: string | null;
           avatar_url: string | null;
           role: 'affiliate' | 'admin';
+          affiliate_status: 'pending' | 'approved' | 'rejected' | 'suspended';
+          affiliate_id: string | null;
+          commission_rate: number;
+          total_earnings: number;
           created_at: string;
           updated_at: string;
         };
@@ -17,6 +21,10 @@ export interface Database {
           full_name?: string | null;
           avatar_url?: string | null;
           role?: 'affiliate' | 'admin';
+          affiliate_status?: 'pending' | 'approved' | 'rejected' | 'suspended';
+          affiliate_id?: string | null;
+          commission_rate?: number;
+          total_earnings?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -26,6 +34,10 @@ export interface Database {
           full_name?: string | null;
           avatar_url?: string | null;
           role?: 'affiliate' | 'admin';
+          affiliate_status?: 'pending' | 'approved' | 'rejected' | 'suspended';
+          affiliate_id?: string | null;
+          commission_rate?: number;
+          total_earnings?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -65,6 +77,9 @@ export interface Database {
           commission_rate: number;
           category_id: string | null;
           image_url: string | null;
+          sales_page_url: string;
+          is_active: boolean;
+          total_sales: number;
           status: 'active' | 'inactive' | 'pending';
           created_at: string;
           updated_at: string;
@@ -77,6 +92,9 @@ export interface Database {
           commission_rate: number;
           category_id?: string | null;
           image_url?: string | null;
+          sales_page_url: string;
+          is_active?: boolean;
+          total_sales?: number;
           status?: 'active' | 'inactive' | 'pending';
           created_at?: string;
           updated_at?: string;
@@ -89,9 +107,169 @@ export interface Database {
           commission_rate?: number;
           category_id?: string | null;
           image_url?: string | null;
+          sales_page_url?: string;
+          is_active?: boolean;
+          total_sales?: number;
           status?: 'active' | 'inactive' | 'pending';
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      courses: {
+        Row: {
+          id: string;
+          title: string;
+          description: string | null;
+          thumbnail_url: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          description?: string | null;
+          thumbnail_url?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          description?: string | null;
+          thumbnail_url?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      lessons: {
+        Row: {
+          id: string;
+          course_id: string;
+          title: string;
+          description: string | null;
+          video_url: string | null;
+          duration_seconds: number | null;
+          order_index: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          course_id: string;
+          title: string;
+          description?: string | null;
+          video_url?: string | null;
+          duration_seconds?: number | null;
+          order_index?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          course_id?: string;
+          title?: string;
+          description?: string | null;
+          video_url?: string | null;
+          duration_seconds?: number | null;
+          order_index?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      materials: {
+        Row: {
+          id: string;
+          lesson_id: string | null;
+          course_id: string | null;
+          title: string;
+          file_url: string;
+          file_type: string | null;
+          file_size: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          lesson_id?: string | null;
+          course_id?: string | null;
+          title: string;
+          file_url: string;
+          file_type?: string | null;
+          file_size?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          lesson_id?: string | null;
+          course_id?: string | null;
+          title?: string;
+          file_url?: string;
+          file_type?: string | null;
+          file_size?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      chat_rooms: {
+        Row: {
+          id: string;
+          name: string;
+          description: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          description?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          description?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      messages: {
+        Row: {
+          id: string;
+          room_id: string;
+          sender_id: string;
+          content: string;
+          edited: boolean;
+          edited_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          room_id: string;
+          sender_id: string;
+          content: string;
+          edited?: boolean;
+          edited_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          room_id?: string;
+          sender_id?: string;
+          content?: string;
+          edited?: boolean;
+          edited_at?: string | null;
+          created_at?: string;
         };
       };
       affiliate_links: {
@@ -198,7 +376,18 @@ export interface Database {
       };
     };
     Views: {
-      [_ in never]: never;
+      admin_dashboard_stats: {
+        Row: {
+          pending_affiliates: number;
+          approved_affiliates: number;
+          pending_commissions: number;
+          pending_commissions_value: number | null;
+          pending_payments: number;
+          pending_payments_value: number | null;
+          active_products: number;
+          active_courses: number;
+        };
+      };
     };
     Functions: {
       get_affiliate_stats: {
@@ -220,9 +409,14 @@ export interface Database {
           total_commissions: number;
         }[];
       };
+      is_admin: {
+        Args: { user_id: string };
+        Returns: boolean;
+      };
     };
     Enums: {
       user_role: 'affiliate' | 'admin';
+      affiliate_status: 'pending' | 'approved' | 'rejected' | 'suspended';
       product_status: 'active' | 'inactive' | 'pending';
       commission_status: 'pending' | 'approved' | 'paid' | 'cancelled';
       payment_status: 'pending' | 'processing' | 'completed' | 'failed';

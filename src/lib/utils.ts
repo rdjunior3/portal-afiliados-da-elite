@@ -38,3 +38,16 @@ export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.slice(0, maxLength) + '...';
 }
+
+export function formatDuration(seconds: number): string {
+  if (!seconds || seconds === 0) return '0min';
+  
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  
+  if (hours > 0) {
+    return `${hours}h ${minutes > 0 ? `${minutes}min` : ''}`.trim();
+  }
+  
+  return `${minutes}min`;
+}

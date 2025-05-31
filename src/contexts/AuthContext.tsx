@@ -9,6 +9,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   profile: any | null;
+  isAdmin: () => boolean;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
@@ -32,6 +33,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  // Helper function to check if user is admin
+  const isAdmin = () => {
+    return profile?.role === 'admin';
+  };
 
   // Fetch or create user profile
   const fetchProfile = async (userId: string) => {
@@ -63,6 +69,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         first_name: fullName ? fullName.split(' ')[0] : '',
         last_name: fullName ? fullName.split(' ').slice(1).join(' ') : '',
         avatar_url: user.user_metadata?.avatar_url || null,
+        role: 'affiliate' as const, // Default role
+        affiliate_status: 'pending' as const,
+        commission_rate: 10.00,
+        total_earnings: 0.00,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -319,8 +329,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = {
     user,
     session,
-    profile,
     loading,
+    profile,
+    isAdmin,
     signUp,
     signIn,
     signOut,

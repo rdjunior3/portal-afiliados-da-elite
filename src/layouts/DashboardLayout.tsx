@@ -23,9 +23,12 @@ import {
   Users,
   Wallet,
   ChevronDown,
-  Shield
+  Shield,
+  BookOpen,
+  MessageSquare
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/components/ui/use-toast';
 
 interface MenuItem {
   icon: React.ComponentType<{ className?: string }>;
@@ -111,72 +114,46 @@ const EliteLogo: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 const DashboardLayout: React.FC = () => {
-  const { signOut, profile, user } = useAuth();
+  const { signOut, profile, user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
-
-  const menuItems: MenuItem[] = [
-    { 
-      icon: LayoutDashboard, 
-      label: 'Dashboard', 
-      href: '/dashboard'
-    },
-    { 
-      icon: Package, 
-      label: 'Produtos', 
-      href: '/dashboard/products',
-      badge: '12'
-    },
-    { 
-      icon: LinkIcon, 
-      label: 'Meus Links', 
-      href: '/dashboard/links',
-      badge: profile?.links_count?.toString()
-    },
-    { 
-      icon: BarChart3, 
-      label: 'Analytics', 
-      href: '/dashboard/analytics',
-      isNew: true
-    },
-    { 
-      icon: DollarSign, 
-      label: 'Comissões', 
-      href: '/dashboard/commissions'
-    },
-    { 
-      icon: CreditCard, 
-      label: 'Pagamentos', 
-      href: '/dashboard/payments'
-    },
-    { 
-      icon: FileText, 
-      label: 'Relatórios', 
-      href: '/dashboard/reports'
-    },
-    { 
-      icon: User, 
-      label: 'Perfil', 
-      href: '/dashboard/profile'
-    },
-    { 
-      icon: Bell, 
-      label: 'Notificações', 
-      href: '/dashboard/notifications',
-      badge: '3'
-    },
-    { 
-      icon: Settings, 
-      label: 'Configurações', 
-      href: '/dashboard/settings'
-    }
+  const navigation = [
+    { name: 'Dashboard', href: '/dashboard', icon: Home },
+    { name: 'Produtos', href: '/dashboard/products', icon: Package },
+    { name: 'Aulas', href: '/dashboard/content', icon: BookOpen },
+    { name: 'Chat', href: '/dashboard/chat', icon: MessageSquare },
+    { name: 'Links', href: '/dashboard/links', icon: LinkIcon },
+    { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+    { name: 'Comissões', href: '/dashboard/commissions', icon: DollarSign },
+    { name: 'Pagamentos', href: '/dashboard/payments', icon: CreditCard },
+    { name: 'Notificações', href: '/dashboard/notifications', icon: Bell },
+    { name: 'Configurações', href: '/dashboard/settings', icon: Settings },
   ];
+
+  // Admin navigation items
+  const adminNavigation = [
+    { name: 'Gerenciar Afiliados', href: '/dashboard/admin/affiliates', icon: Users },
+    { name: 'Gerenciar Produtos', href: '/dashboard/admin/products', icon: Package },
+    { name: 'Gerenciar Conteúdo', href: '/dashboard/admin/content', icon: BookOpen },
+    { name: 'Gerenciar Comissões', href: '/dashboard/admin/commissions', icon: DollarSign },
+    { name: 'Gerenciar Pagamentos', href: '/dashboard/admin/payments', icon: CreditCard },
+  ];
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: "Erro ao sair",
+        description: "Não foi possível fazer logout. Tente novamente.",
+        variant: "destructive",
+      });
+    } else {
+      navigate('/login');
+    }
+  };
 
   const getDisplayName = () => {
     if (profile?.first_name && profile?.last_name) {
@@ -281,11 +258,12 @@ const DashboardLayout: React.FC = () => {
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
-            {menuItems.map((item) => {
+            {navigation.map((item) => {
               const isActive = isActivePath(item.href);
+              
               return (
                 <button
-                  key={item.href}
+                  key={item.name}
                   onClick={() => {
                     navigate(item.href);
                     setSidebarOpen(false);
@@ -301,27 +279,44 @@ const DashboardLayout: React.FC = () => {
                     "h-5 w-5 flex-shrink-0",
                     isActive ? "text-orange-400" : "text-slate-400"
                   )} />
-                  <span className="flex-1 text-left">{item.label}</span>
-                  
-                  {/* Badges */}
-                  <div className="flex items-center gap-1">
-                    {item.isNew && (
-                      <Badge className="bg-orange-500/20 text-orange-400 text-xs px-1.5 py-0 h-4">
-                        New
-                      </Badge>
-                    )}
-                    {item.badge && (
-                      <Badge 
-                        variant="secondary" 
-                        className="bg-slate-700/50 text-slate-300 text-xs px-1.5 py-0 h-4"
-                      >
-                        {item.badge}
-                      </Badge>
-                    )}
-                  </div>
+                  <span className="flex-1 text-left">{item.name}</span>
                 </button>
               );
             })}
+
+            {/* Admin Section */}
+            {isAdmin() && (
+              <div className="mt-6">
+                <h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                  Administração
+                </h3>
+                {adminNavigation.map((item) => {
+                  const isActive = isActivePath(item.href);
+                  
+                  return (
+                    <button
+                      key={item.name}
+                      onClick={() => {
+                        navigate(item.href);
+                        setSidebarOpen(false);
+                      }}
+                      className={cn(
+                        "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                        isActive
+                          ? "bg-orange-500/20 text-orange-400 shadow-lg shadow-orange-500/10"
+                          : "text-slate-300 hover:bg-slate-800/50 hover:text-white"
+                      )}
+                    >
+                      <item.icon className={cn(
+                        "h-5 w-5 flex-shrink-0",
+                        isActive ? "text-orange-400" : "text-slate-400"
+                      )} />
+                      <span className="flex-1 text-left">{item.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </nav>
 
           {/* Footer Actions */}

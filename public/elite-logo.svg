@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <!-- Gradiente Laranja -->
+    <linearGradient id="eliteGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FB923C;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#F97316;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EA580C;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Gradiente para brilho -->
+    <radialGradient id="glowGradient">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#F97316;stop-opacity:0" />
+    </radialGradient>
+    
+    <!-- Filtro de brilho -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Sombra -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Círculo de fundo -->
+  <circle cx="256" cy="256" r="240" fill="#0F172A" />
+  
+  <!-- Anel externo -->
+  <circle cx="256" cy="256" r="230" fill="none" stroke="url(#eliteGradient)" stroke-width="4" opacity="0.3" />
+  <circle cx="256" cy="256" r="220" fill="none" stroke="url(#eliteGradient)" stroke-width="2" opacity="0.6" />
+  
+  <!-- Hexágono principal -->
+  <path d="M256 80 L384 156 L384 356 L256 432 L128 356 L128 156 Z" 
+        fill="url(#eliteGradient)" 
+        filter="url(#glow)" />
+  
+  <!-- Símbolo interno - Diamante estilizado com coroa -->
+  <g transform="translate(256, 256)">
+    <!-- Diamante central -->
+    <path d="M0 -80 L60 -20 L40 40 L0 80 L-40 40 L-60 -20 Z" 
+          fill="#FFFFFF" 
+          opacity="0.95" />
+    
+    <!-- Detalhes do diamante -->
+    <path d="M0 -80 L60 -20 L0 -40 Z" fill="#FED7AA" opacity="0.7" />
+    <path d="M0 -80 L-60 -20 L0 -40 Z" fill="#FFEDD5" opacity="0.5" />
+    <path d="M60 -20 L40 40 L20 -10 Z" fill="#FED7AA" opacity="0.6" />
+    <path d="M-60 -20 L-40 40 L-20 -10 Z" fill="#FFEDD5" opacity="0.4" />
+    
+    <!-- Coroa acima do diamante -->
+    <path d="M-30 -90 L-20 -100 L-10 -85 L0 -95 L10 -85 L20 -100 L30 -90 L25 -75 L-25 -75 Z" 
+          fill="#F97316" 
+          stroke="#FFFFFF" 
+          stroke-width="2" />
+    
+    <!-- Estrelas decorativas -->
+    <circle cx="-45" cy="-60" r="3" fill="#FCD34D" opacity="0.8" />
+    <circle cx="45" cy="-60" r="3" fill="#FCD34D" opacity="0.8" />
+    <circle cx="-50" cy="30" r="2" fill="#FCD34D" opacity="0.6" />
+    <circle cx="50" cy="30" r="2" fill="#FCD34D" opacity="0.6" />
+  </g>
+  
+  <!-- Texto ELITE (opcional - pode ser removido para ícone menor) -->
+  <text x="256" y="380" font-family="Arial, sans-serif" font-size="48" font-weight="bold" 
+        text-anchor="middle" fill="#FFFFFF" letter-spacing="8">
+    ELITE
+  </text>
+  
+  <!-- Partículas decorativas -->
+  <circle cx="100" cy="120" r="3" fill="#F97316" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="412" cy="140" r="2" fill="#FCD34D" opacity="0.5">
+    <animate attributeName="opacity" values="0.5;0.9;0.5" dur="2.5s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="380" cy="380" r="2.5" fill="#F97316" opacity="0.7">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="1.8s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="132" cy="360" r="2" fill="#FCD34D" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;0.9;0.6" dur="2.2s" repeatCount="indefinite" />
+  </circle>
+</svg> 
