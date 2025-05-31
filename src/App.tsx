@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { QueryProvider } from './providers/QueryProvider';
 import { Toaster } from './components/ui/toaster';
@@ -36,6 +36,8 @@ function AppContent() {
           </ProtectedRoute>
         }
       />
+      {/* Catch-all route - redireciona qualquer rota não encontrada para home */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
