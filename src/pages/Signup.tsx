@@ -86,15 +86,15 @@ const Signup = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 flex items-center justify-center p-6">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(74,222,128,0.03)_0%,transparent_50%)] pointer-events-none"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(74,222,128,0.02)_0%,transparent_50%)] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(249,115,22,0.03)_0%,transparent_50%)] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(249,115,22,0.02)_0%,transparent_50%)] pointer-events-none"></div>
       
       <div className="w-full max-w-4xl grid lg:grid-cols-2 gap-8 items-center">
         {/* Left Side - Benefits */}
         <div className="hidden lg:block space-y-8">
           <div>
             <h2 className="text-3xl font-bold text-white mb-4">
-              Junte-se à <span className="text-green-400">Elite</span> dos Afiliados
+              Junte-se à <span className="text-orange-400">Elite</span> dos Afiliados
             </h2>
             <p className="text-slate-300 text-lg">
               Acesse uma plataforma completa para maximizar seus resultados como afiliado.
@@ -104,7 +104,7 @@ const Signup = () => {
           <div className="space-y-4">
             {benefits.map((benefit, index) => (
               <div key={index} className="flex items-center gap-3">
-                <div className="w-6 h-6 bg-green-400 rounded-full flex items-center justify-center">
+                <div className="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center">
                   <Check className="w-3 h-3 text-slate-900" />
                 </div>
                 <span className="text-slate-300">{benefit}</span>
@@ -115,15 +115,15 @@ const Signup = () => {
           <div className="bg-slate-800/30 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-2xl font-bold text-green-400">457+</div>
+                <div className="text-2xl font-bold text-orange-400">457+</div>
                 <div className="text-xs text-slate-400">Afiliados Ativos</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-green-400">89%</div>
+                <div className="text-2xl font-bold text-orange-400">89%</div>
                 <div className="text-xs text-slate-400">Taxa de Sucesso</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-green-400">24/7</div>
+                <div className="text-2xl font-bold text-orange-400">24/7</div>
                 <div className="text-xs text-slate-400">Suporte</div>
               </div>
             </div>
@@ -148,10 +148,10 @@ const Signup = () => {
             {/* Header */}
             <div className="text-center mb-8">
               <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center shadow-md">
+                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-md">
                   <span className="text-xl">🏆</span>
                 </div>
-                <span className="text-xl font-bold text-green-400 tracking-tight">
+                <span className="text-xl font-bold text-orange-400 tracking-tight">
                   AFILIADOS DA ELITE
                 </span>
               </div>
@@ -173,7 +173,7 @@ const Signup = () => {
                     value={formData.fullName}
                     onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
                     placeholder="Seu nome completo"
-                    className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-400 focus:ring-emerald-400/20"
+                    className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-orange-400 focus:ring-orange-400/20"
                     required
                   />
                 </div>
@@ -191,7 +191,7 @@ const Signup = () => {
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                     placeholder="seu@email.com"
-                    className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-400 focus:ring-emerald-400/20"
+                    className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-orange-400 focus:ring-orange-400/20"
                     required
                   />
                 </div>
@@ -209,7 +209,7 @@ const Signup = () => {
                     value={formData.password}
                     onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                     placeholder="Mínimo 6 caracteres"
-                    className="pl-10 pr-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-400 focus:ring-emerald-400/20"
+                    className="pl-10 pr-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-orange-400 focus:ring-orange-400/20"
                     required
                   />
                   <button
@@ -233,7 +233,7 @@ const Signup = () => {
                               ? passwordStrength() <= 1 ? 'bg-red-400' 
                                 : passwordStrength() <= 2 ? 'bg-yellow-400'
                                 : passwordStrength() <= 3 ? 'bg-blue-400'
-                                : 'bg-emerald-400'
+                                : 'bg-orange-400'
                               : 'bg-slate-700'
                           }`}
                         />
@@ -253,7 +253,7 @@ const Signup = () => {
               <Button 
                 type="submit" 
                 disabled={loading}
-                className="w-full py-3 bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-300 hover:to-green-400 text-slate-900 font-semibold transition-all duration-300 transform hover:scale-[1.02]"
+                className="w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-slate-900 font-semibold transition-all duration-300 transform hover:scale-[1.02]"
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
@@ -282,7 +282,7 @@ const Signup = () => {
               className="w-full bg-slate-800/50 border-slate-600 text-white hover:bg-slate-700/50 hover:border-slate-500"
             >
               <div className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center">
                   <span className="text-slate-900 text-xs font-bold">G</span>
                 </div>
                 <span>Continuar com Google</span>
@@ -296,7 +296,7 @@ const Signup = () => {
               </span>{' '}
               <Link
                 to="/login"
-                className="text-emerald-400 hover:text-emerald-300 font-medium underline transition-colors"
+                className="text-orange-400 hover:text-orange-300 font-medium underline transition-colors"
               >
                 Fazer login
               </Link>
@@ -306,15 +306,15 @@ const Signup = () => {
           {/* Trust indicators */}
           <div className="flex justify-center gap-6 mt-6 text-xs text-slate-500">
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-green-400 rounded-full" />
+              <div className="w-2 h-2 bg-orange-400 rounded-full" />
               <span>100% Gratuito</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-green-400 rounded-full" />
+              <div className="w-2 h-2 bg-orange-400 rounded-full" />
               <span>Sem Compromisso</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-green-400 rounded-full" />
+              <div className="w-2 h-2 bg-orange-400 rounded-full" />
               <span>Acesso Imediato</span>
             </div>
           </div>

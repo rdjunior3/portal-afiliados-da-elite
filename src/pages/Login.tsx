@@ -62,8 +62,8 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 flex items-center justify-center p-6">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(74,222,128,0.03)_0%,transparent_50%)] pointer-events-none"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(74,222,128,0.02)_0%,transparent_50%)] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(249,115,22,0.03)_0%,transparent_50%)] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(249,115,22,0.02)_0%,transparent_50%)] pointer-events-none"></div>
       
       <div className="w-full max-w-md">
         {/* Back to Home */}
@@ -82,12 +82,22 @@ const Login = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center shadow-md">
-                <span className="text-xl">🏆</span>
+              <div className="flex items-center gap-3 slide-in-left">
+                <div className="relative group cursor-pointer">
+                  <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-md transition-all duration-300 hover:shadow-lg">
+                    <span className="text-xl">🏆</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col">
+                  <span className="text-xl font-bold text-orange-400 tracking-tight">
+                    AFILIADOS DA ELITE
+                  </span>
+                  <span className="text-xs text-slate-400 font-medium">
+                    Portal Premium de Marketing Digital
+                  </span>
+                </div>
               </div>
-              <span className="text-xl font-bold text-green-400 tracking-tight">
-                AFILIADOS DA ELITE
-              </span>
             </div>
             <h1 className="text-2xl font-bold text-white mb-2">Acesse sua área</h1>
             <p className="text-slate-400">Entre em sua conta para gerenciar suas comissões</p>
@@ -107,7 +117,7 @@ const Login = () => {
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   placeholder="seu@email.com"
-                  className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-400 focus:ring-emerald-400/20"
+                  className="pl-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-orange-400 focus:ring-orange-400/20"
                   required
                 />
               </div>
@@ -125,7 +135,7 @@ const Login = () => {
                   value={formData.password}
                   onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                   placeholder="Sua senha"
-                  className="pl-10 pr-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-400 focus:ring-emerald-400/20"
+                  className="pl-10 pr-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-orange-400 focus:ring-orange-400/20"
                   required
                 />
                 <button
@@ -141,7 +151,7 @@ const Login = () => {
             <Button 
               type="submit" 
               disabled={loading}
-              className="w-full py-3 bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-300 hover:to-green-400 text-slate-900 font-semibold transition-all duration-300 transform hover:scale-[1.02]"
+              className="w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-slate-900 font-semibold transition-all duration-300 transform hover:scale-[1.02]"
             >
               {loading ? (
                 <div className="flex items-center gap-2">
@@ -170,7 +180,7 @@ const Login = () => {
             className="w-full bg-slate-800/50 border-slate-600 text-white hover:bg-slate-700/50 hover:border-slate-500"
           >
             <div className="flex items-center gap-3">
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center">
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center">
                 <span className="text-slate-900 text-xs font-bold">G</span>
               </div>
               <span>Continuar com Google</span>
@@ -184,7 +194,7 @@ const Login = () => {
             </span>{' '}
             <Link
               to="/signup"
-              className="text-emerald-400 hover:text-emerald-300 font-medium underline transition-colors"
+              className="text-orange-400 hover:text-orange-300 font-medium underline transition-colors"
             >
               Cadastre-se
             </Link>
@@ -194,15 +204,15 @@ const Login = () => {
         {/* Trust indicators */}
         <div className="flex justify-center gap-6 mt-6 text-xs text-slate-500">
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-green-400 rounded-full" />
+            <div className="w-2 h-2 bg-orange-400 rounded-full" />
             <span>100% Seguro</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-green-400 rounded-full" />
+            <div className="w-2 h-2 bg-orange-400 rounded-full" />
             <span>SSL Criptografado</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 bg-green-400 rounded-full" />
+            <div className="w-2 h-2 bg-orange-400 rounded-full" />
             <span>Dados Protegidos</span>
           </div>
         </div>

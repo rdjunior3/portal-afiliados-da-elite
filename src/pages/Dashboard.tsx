@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { 
   DollarSign, 
   MousePointer, 
@@ -20,7 +21,12 @@ import {
   Eye,
   Copy,
   Sparkles,
-  Home
+  Home,
+  ArrowUpRight,
+  ArrowDownRight,
+  Target,
+  Award,
+  Zap
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import CreateLinkModal from '@/components/CreateLinkModal';
@@ -123,444 +129,366 @@ const Dashboard = () => {
     return user.email?.split('@')[0] || 'Afiliado';
   };
 
+  // Mock data para demonstração
+  const monthlyStats = {
+    currentMonth: {
+      revenue: 1250.00,
+      clicks: 1580,
+      conversions: 45,
+      links: 12
+    },
+    lastMonth: {
+      revenue: 980.00,
+      clicks: 1320,
+      conversions: 38,
+      links: 10
+    }
+  };
+
+  const calculateGrowth = (current: number, previous: number) => {
+    if (previous === 0) return 100;
+    return ((current - previous) / previous * 100);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white">
-      {/* Navigation Header */}
-      <nav className="border-b border-slate-700/50 bg-slate-900/50 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              {/* Logo */}
-              <button 
-                onClick={() => navigate('/')}
-                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-              >
-                <div className="relative group">
-                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 via-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/25 group-hover:shadow-emerald-400/40 transition-all duration-300 transform group-hover:scale-105">
-                    <div className="relative">
-                      <svg className="w-6 h-6 text-slate-900" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2L3.09 8.26L4 21H20L20.91 8.26L12 2ZM12 4.44L18.18 9H5.82L12 4.44ZM6.09 11H17.91L17.25 19H6.75L6.09 11Z"/>
-                        <circle cx="12" cy="14" r="2" fill="#0f172a"/>
-                      </svg>
-                      <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>
-                    </div>
-                  </div>
-                </div>
-                <div className="hidden sm:block">
-                  <div className="text-lg font-bold bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">
-                    AFILIADOS DA ELITE
-                  </div>
-                  <div className="text-xs text-slate-400 -mt-1">Portal Premium</div>
-                </div>
-              </button>
-
-              {/* Navigation */}
-              <div className="hidden md:flex items-center gap-1">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => navigate('/')}
-                  className="text-slate-300 hover:text-white hover:bg-slate-800/50"
-                >
-                  <Home className="w-4 h-4 mr-2" />
-                  Início
-                </Button>
-              </div>
-            </div>
-            
-            {/* User Profile */}
-            <UserProfile />
-          </div>
-        </div>
-      </nav>
-
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="mb-8 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
+    <div className="space-y-8">
+      {/* Welcome Section */}
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
                   Olá, {getDisplayName()}! 
                   <span className="text-2xl">👋</span>
                 </h1>
                 <p className="text-slate-400">
-                  Bem-vindo ao seu dashboard de afiliado elite
+          Acompanhe seu desempenho e ganhe mais comissões como afiliado elite
                 </p>
               </div>
 
-              {/* Status badge */}
-              {profile?.affiliate_status && (
-                <div className="hidden sm:block">
-                  <Badge 
-                    className={
-                      profile.affiliate_status === 'approved' 
-                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-400/30' 
-                        : profile.affiliate_status === 'pending'
-                        ? 'bg-yellow-500/20 text-yellow-400 border-yellow-400/30'
-                        : 'bg-red-500/20 text-red-400 border-red-400/30'
-                    }
-                  >
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    {profile.affiliate_status === 'approved' ? 'Afiliado Aprovado' : 
-                     profile.affiliate_status === 'pending' ? 'Aguardando Aprovação' : 
-                     'Status: ' + profile.affiliate_status}
-                  </Badge>
+      {/* Quick Actions */}
+      <div className="flex flex-wrap gap-4">
+        <Button 
+          onClick={() => navigate('/dashboard/products')}
+          className="bg-orange-600 hover:bg-orange-700 text-white"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Criar Novo Link
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={() => navigate('/dashboard/analytics')}
+          className="border-slate-600 text-slate-200 hover:bg-slate-800"
+        >
+          <Eye className="mr-2 h-4 w-4" />
+          Ver Analytics
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={() => navigate('/dashboard/payments')}
+          className="border-slate-600 text-slate-200 hover:bg-slate-800"
+        >
+          <DollarSign className="mr-2 h-4 w-4" />
+          Solicitar Pagamento
+        </Button>
                 </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Revenue Card */}
+        <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-200">
+              Receita Total
+            </CardTitle>
+            <div className="p-2 bg-orange-500/20 rounded-lg">
+              <DollarSign className="h-4 w-4 text-orange-400" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-white">
+              R$ {monthlyStats.currentMonth.revenue.toLocaleString('pt-BR', { 
+                minimumFractionDigits: 2 
+              })}
+              </div>
+            <div className="flex items-center gap-1 text-xs">
+              {calculateGrowth(monthlyStats.currentMonth.revenue, monthlyStats.lastMonth.revenue) > 0 ? (
+                <ArrowUpRight className="h-3 w-3 text-orange-400" />
+              ) : (
+                <ArrowDownRight className="h-3 w-3 text-red-400" />
               )}
+              <span className={`font-medium ${
+                calculateGrowth(monthlyStats.currentMonth.revenue, monthlyStats.lastMonth.revenue) > 0 
+                  ? 'text-orange-400' 
+                  : 'text-red-400'
+              }`}>
+                {Math.abs(calculateGrowth(monthlyStats.currentMonth.revenue, monthlyStats.lastMonth.revenue)).toFixed(1)}%
+              </span>
+              <span className="text-slate-400">vs mês anterior</span>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* Quick stats bar */}
-            <div className="flex flex-wrap gap-6 text-sm text-slate-400">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                <span>Dashboard ativo</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-emerald-400" />
-                <span>{linkStats?.totalLinks || 0} links criados</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-emerald-400" />
-                <span>R$ {(linkStats?.totalRevenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em comissões</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card 
-              className="bg-slate-800/50 border-slate-700 cursor-pointer hover:bg-slate-700/50 transition-colors"
-              onClick={() => {
-                track('stats_card_clicked', { metric: 'clicks' });
-                trackFlow('clicks_analysis', 'dashboard_stats');
-              }}
-            >
+        {/* Clicks Card */}
+        <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-slate-200">
                   Total de Cliques
                 </CardTitle>
-                <MousePointer className="h-4 w-4 text-green-400" />
+            <div className="p-2 bg-blue-500/20 rounded-lg">
+              <MousePointer className="h-4 w-4 text-blue-400" />
+            </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
-                  {linkStats?.totalClicks || 0}
+              {monthlyStats.currentMonth.clicks.toLocaleString('pt-BR')}
+            </div>
+            <div className="flex items-center gap-1 text-xs">
+              <ArrowUpRight className="h-3 w-3 text-orange-400" />
+              <span className="text-orange-400 font-medium">
+                {calculateGrowth(monthlyStats.currentMonth.clicks, monthlyStats.lastMonth.clicks).toFixed(1)}%
+              </span>
+              <span className="text-slate-400">vs mês anterior</span>
                 </div>
-                <p className="text-xs text-slate-400">
-                  {linkStats?.totalUniqueClicks || 0} únicos
-                </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-slate-800/50 border-slate-700">
+        {/* Conversions Card */}
+        <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-slate-200">
                   Conversões
                 </CardTitle>
-                <TrendingUp className="h-4 w-4 text-green-400" />
+            <div className="p-2 bg-purple-500/20 rounded-lg">
+              <TrendingUp className="h-4 w-4 text-purple-400" />
+            </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
-                  {linkStats?.totalConversions || 0}
+              {monthlyStats.currentMonth.conversions}
                 </div>
-                <p className="text-xs text-slate-400">
-                  {linkStats?.conversionRate || 0}% taxa de conversão
-                </p>
+            <div className="flex items-center gap-1 text-xs">
+              <span className="text-slate-400">Taxa de conversão:</span>
+              <span className="text-purple-400 font-medium">
+                {((monthlyStats.currentMonth.conversions / monthlyStats.currentMonth.clicks) * 100).toFixed(1)}%
+              </span>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-slate-200">
-                  Receita Total
-                </CardTitle>
-                <DollarSign className="h-4 w-4 text-green-400" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-white">
-                  R$ {(linkStats?.totalRevenue || 0).toLocaleString('pt-BR', { 
-                    minimumFractionDigits: 2 
-                  })}
-                </div>
-                <p className="text-xs text-slate-400">
-                  Este mês
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-800/50 border-slate-700">
+        {/* Links Card */}
+        <Card className="bg-slate-800/50 border-slate-700 hover:bg-slate-800/70 transition-colors">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-slate-200">
                   Links Ativos
                 </CardTitle>
-                <Link className="h-4 w-4 text-green-400" />
+            <div className="p-2 bg-orange-500/20 rounded-lg">
+              <Link className="h-4 w-4 text-orange-400" />
+            </div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-white">
-                  {linkStats?.totalLinks || 0}
+              {monthlyStats.currentMonth.links}
+            </div>
+            <div className="flex items-center gap-1 text-xs">
+              <Plus className="h-3 w-3 text-orange-400" />
+              <span className="text-orange-400 font-medium">
+                +{monthlyStats.currentMonth.links - monthlyStats.lastMonth.links}
+              </span>
+              <span className="text-slate-400">este mês</span>
                 </div>
-                <p className="text-xs text-slate-400">
-                  Links criados
-                </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Main Content */}
-          <Tabs value={activeTab} onValueChange={handleTabChange}>
-            <TabsList className="grid w-full grid-cols-3 bg-slate-800/50">
-              <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-              <TabsTrigger value="links">Meus Links</TabsTrigger>
-              <TabsTrigger value="products">Produtos</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="overview" className="space-y-6">
-              {/* Quick Actions */}
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Performance Overview */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Monthly Progress */}
               <Card className="bg-slate-800/50 border-slate-700">
                 <CardHeader>
-                  <CardTitle className="text-white">Ações Rápidas</CardTitle>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-white">Meta Mensal</CardTitle>
                   <CardDescription>
-                    Comece a promover produtos e ganhar comissões
+                    Progresso para atingir sua meta de R$ 2.000,00
                   </CardDescription>
+                </div>
+                <Badge className="bg-orange-500/20 text-orange-400">
+                  62% completa
+                </Badge>
+              </div>
                 </CardHeader>
-                <CardContent className="flex flex-wrap gap-4">
-                  <Button 
-                    onClick={() => {
-                      track('quick_action_clicked', { action: 'create_link' });
-                      setActiveTab('products');
-                    }}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Criar Novo Link
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="border-slate-600 text-slate-200"
-                    onClick={() => {
-                      track('quick_action_clicked', { action: 'view_reports' });
-                    }}
-                  >
-                    <Eye className="mr-2 h-4 w-4" />
-                    Ver Relatórios
-                  </Button>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-400">R$ {monthlyStats.currentMonth.revenue.toFixed(2)}</span>
+                <span className="text-slate-400">R$ 2.000,00</span>
+              </div>
+              <Progress 
+                value={(monthlyStats.currentMonth.revenue / 2000) * 100} 
+                className="h-3"
+              />
+              <div className="flex items-center gap-2 text-sm text-slate-400">
+                <Target className="h-4 w-4" />
+                <span>Faltam R$ {(2000 - monthlyStats.currentMonth.revenue).toFixed(2)} para atingir a meta</span>
+              </div>
                 </CardContent>
               </Card>
 
-              {/* Featured Products */}
+          {/* Top Products */}
               <Card className="bg-slate-800/50 border-slate-700">
                 <CardHeader>
+              <div className="flex items-center justify-between">
                   <CardTitle className="text-white">Produtos em Destaque</CardTitle>
-                  <CardDescription>
-                    Os produtos com melhor performance para afiliados
-                  </CardDescription>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => navigate('/dashboard/products')}
+                  className="text-orange-400 hover:text-orange-300"
+                >
+                  Ver todos
+                </Button>
+              </div>
                 </CardHeader>
                 <CardContent>
                   {isLoadingProducts ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {[...Array(3)].map((_, i) => (
-                        <div key={i} className="h-40 bg-slate-700 animate-pulse rounded-lg" />
-                      ))}
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="bg-slate-700/50 h-16 rounded-lg"></div>
+                    </div>
+                  ))}
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {featuredProducts.slice(0, 6).map((product) => (
+                <div className="space-y-4">
+                  {featuredProducts.slice(0, 3).map((product) => (
                         <div 
                           key={product.id}
-                          className="bg-slate-700/50 p-4 rounded-lg border border-slate-600 hover:border-green-500/50 transition-colors"
-                        >
-                          {product.thumbnail_url && (
-                            <img 
-                              src={product.thumbnail_url} 
-                              alt={product.name}
-                              className="w-full h-24 object-cover rounded mb-3"
-                            />
-                          )}
-                          <h3 className="font-semibold text-white mb-2 line-clamp-2">
-                            {product.name}
-                          </h3>
-                          <div className="flex items-center justify-between">
-                            <Badge className="bg-green-600">
+                      className="flex items-center justify-between p-4 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-white mb-1">{product.name}</h3>
+                        <div className="flex items-center gap-3 text-sm">
+                          <Badge variant="outline" className="border-orange-500/50 text-orange-400">
                               {product.commission_rate}% comissão
                             </Badge>
+                          <span className="text-slate-400">
+                            R$ {product.price?.toFixed(2) || '0.00'}
+                          </span>
+                        </div>
+                      </div>
                             <Button 
                               size="sm" 
-                              variant="outline"
-                              className="border-slate-600 text-slate-200"
-                              onClick={() => openCreateLinkModal(product as Product)}
+                        onClick={() => openCreateLinkModal(product)}
+                        className="bg-orange-600 hover:bg-orange-700"
                             >
-                              Promover
+                        <Plus className="h-4 w-4 mr-1" />
+                        Link
                             </Button>
-                          </div>
                         </div>
                       ))}
                     </div>
                   )}
                 </CardContent>
               </Card>
-            </TabsContent>
+        </div>
 
-            <TabsContent value="links" className="space-y-6">
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Quick Stats */}
               <Card className="bg-slate-800/50 border-slate-700">
                 <CardHeader>
-                  <CardTitle className="text-white">Meus Links de Afiliado</CardTitle>
-                  <CardDescription>
-                    Gerencie todos os seus links personalizados
-                  </CardDescription>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Zap className="h-5 w-5 text-yellow-400" />
+                Estatísticas Rápidas
+              </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  {isLoadingLinks ? (
-                    <div className="space-y-4">
-                      {[...Array(3)].map((_, i) => (
-                        <div key={i} className="h-16 bg-slate-700 animate-pulse rounded-lg" />
-                      ))}
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Hoje</span>
+                <span className="text-white font-medium">R$ 45,00</span>
                     </div>
-                  ) : userLinks.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Link className="mx-auto h-12 w-12 text-slate-400 mb-4" />
-                      <p className="text-slate-400 mb-4">
-                        Você ainda não tem links criados
-                      </p>
-                      <Button 
-                        onClick={() => setActiveTab('products')}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        Criar Primeiro Link
-                      </Button>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Esta semana</span>
+                <span className="text-white font-medium">R$ 312,50</span>
                     </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {userLinks.map((link) => (
-                        <div 
-                          key={link.id}
-                          className="bg-slate-700/50 p-4 rounded-lg border border-slate-600"
-                        >
                           <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-white mb-1">
-                                {link.products?.name}
-                              </h3>
-                              <p className="text-sm text-slate-400 mb-2">
-                                {link.full_url}
-                              </p>
-                              <div className="flex items-center gap-4 text-sm text-slate-300">
-                                <span>{link.clicks_count} cliques</span>
-                                <span>{link.conversions_count} conversões</span>
-                                <span>R$ {link.revenue_generated.toFixed(2)}</span>
+                <span className="text-slate-400">Ranking</span>
+                <div className="flex items-center gap-1">
+                  <Award className="h-4 w-4 text-yellow-400" />
+                  <span className="text-white font-medium">#12</span>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-slate-600"
-                                onClick={() => copyToClipboard(link.full_url)}
-                              >
-                                <Copy className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-slate-600"
-                                onClick={() => window.open(link.full_url, '_blank')}
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Recent Activity */}
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white">Atividade Recente</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-3 text-sm">
+                <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                <span className="text-slate-300">Nova conversão - R$ 25,00</span>
                             </div>
+              <div className="flex items-center gap-3 text-sm">
+                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <span className="text-slate-300">15 novos cliques</span>
                           </div>
+              <div className="flex items-center gap-3 text-sm">
+                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                <span className="text-slate-300">Link criado: Produto X</span>
                         </div>
-                      ))}
+              <div className="flex items-center gap-3 text-sm">
+                <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                <span className="text-slate-300">Pagamento processado</span>
                     </div>
-                  )}
                 </CardContent>
               </Card>
-            </TabsContent>
 
-            <TabsContent value="products" className="space-y-6">
-              <Card className="bg-slate-800/50 border-slate-700">
+          {/* Next Steps */}
+          <Card className="bg-gradient-to-br from-orange-500/10 to-orange-600/10 border-orange-500/20">
                 <CardHeader>
-                  <CardTitle className="text-white">Biblioteca de Produtos</CardTitle>
-                  <CardDescription>
-                    Encontre produtos para promover e criar seus links
-                  </CardDescription>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-orange-400" />
+                Próximos Passos
+              </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  {/* Categories */}
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {categories.map((category) => (
-                      <Badge 
-                        key={category.id} 
-                        variant="outline"
-                        className="border-slate-600 text-slate-200"
-                        style={{ borderColor: category.color }}
-                      >
-                        {category.name}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  {/* Products Grid */}
-                  {isLoadingProducts ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {[...Array(6)].map((_, i) => (
-                        <div key={i} className="h-64 bg-slate-700 animate-pulse rounded-lg" />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {featuredProducts.map((product) => (
-                        <div 
-                          key={product.id}
-                          className="bg-slate-700/50 rounded-lg border border-slate-600 hover:border-green-500/50 transition-colors overflow-hidden"
-                        >
-                          {product.thumbnail_url && (
-                            <img 
-                              src={product.thumbnail_url} 
-                              alt={product.name}
-                              className="w-full h-32 object-cover"
-                            />
-                          )}
-                          <div className="p-4">
-                            <h3 className="font-semibold text-white mb-2">
-                              {product.name}
-                            </h3>
-                            <p className="text-sm text-slate-400 mb-3 line-clamp-2">
-                              {product.short_description}
-                            </p>
-                            <div className="flex items-center justify-between mb-3">
-                              <Badge className="bg-green-600">
-                                {product.commission_rate}% comissão
-                              </Badge>
-                              {product.price && (
-                                <span className="text-sm text-slate-300">
-                                  R$ {product.price.toFixed(2)}
-                                </span>
-                              )}
-                            </div>
+            <CardContent className="space-y-3">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/dashboard/profile')}
+                className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800/50"
+              >
+                Completar perfil
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/dashboard/products')}
+                className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800/50"
+              >
+                Criar mais links
+              </Button>
                             <Button 
-                              className="w-full bg-green-600 hover:bg-green-700"
-                              onClick={() => openCreateLinkModal(product as Product)}
-                            >
-                              Criar Link de Afiliado
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/dashboard/analytics')}
+                className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800/50"
+              >
+                Analisar performance
                             </Button>
+            </CardContent>
+          </Card>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
 
-          {/* Modal de Criação de Link */}
+      {/* Create Link Modal */}
           <CreateLinkModal
             isOpen={createLinkModal.isOpen}
             onClose={closeCreateLinkModal}
             product={createLinkModal.product}
           />
-        </div>
-      </div>
     </div>
   );
 };

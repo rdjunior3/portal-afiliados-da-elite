@@ -142,7 +142,7 @@ const CreateLinkModal = ({ isOpen, onClose, product }: CreateLinkModalProps) => 
                       {product.categories.name}
                     </Badge>
                   )}
-                  <Badge className="bg-green-600">
+                  <Badge className="bg-orange-600">
                     {product.commission_rate}% comissão
                   </Badge>
                   {product.price && (
@@ -272,7 +272,7 @@ const CreateLinkModal = ({ isOpen, onClose, product }: CreateLinkModalProps) => 
             <Button 
               type="submit" 
               disabled={isCreatingLink || !formData.customSlug.trim()}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-orange-600 hover:bg-orange-700"
             >
               {isCreatingLink ? 'Criando...' : 'Criar Link'}
             </Button>

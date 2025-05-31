@@ -24,14 +24,14 @@ export const Loading: React.FC<LoadingProps> = ({
       <div className="relative">
         {/* Outer spinning ring */}
         <div className={cn(
-          "border-4 border-slate-700 border-t-emerald-400 rounded-full animate-spin",
+          "border-4 border-slate-700 border-t-orange-400 rounded-full animate-spin",
           sizeClasses[size]
         )} />
         
         {/* Inner pulsing icon */}
         <div className="absolute inset-0 flex items-center justify-center">
           <Sparkles className={cn(
-            "text-emerald-400 animate-pulse",
+            "text-orange-400 animate-pulse",
             size === 'sm' ? 'w-3 h-3' : size === 'md' ? 'w-6 h-6' : 'w-8 h-8'
           )} />
         </div>
@@ -60,21 +60,21 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 flex items-center justify-center">
       <div className="relative">
         {/* Background effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-green-500/5 to-blue-500/10 rounded-3xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-400/20 via-transparent to-transparent rounded-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-blue-500/10 rounded-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-400/20 via-transparent to-transparent rounded-3xl" />
         
         <div className="relative bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-12 shadow-2xl">
           <div className="text-center space-y-8">
             {/* Logo */}
             <div className="flex items-center justify-center gap-3">
               <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-green-500 rounded-2xl flex items-center justify-center">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl flex items-center justify-center">
                   <Sparkles className="w-8 h-8 text-slate-900" />
                 </div>
                 <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full animate-pulse" />
               </div>
               <div className="text-left">
-                <div className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">
+                <div className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-orange-400 bg-clip-text text-transparent">
                   AFILIADOS DA ELITE
                 </div>
                 <div className="text-sm text-slate-400">Portal Premium</div>
@@ -89,7 +89,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
               {[...Array(3)].map((_, i) => (
                 <div 
                   key={i}
-                  className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"
+                  className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"
                   style={{ 
                     animationDelay: `${i * 200}ms`,
                     animationDuration: '1s'

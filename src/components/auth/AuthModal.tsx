@@ -155,8 +155,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   // Animation variants
   const benefits = [
-    { icon: TrendingUp, label: 'Dashboard', color: 'text-emerald-400' },
-    { icon: DollarSign, label: 'Comissões', color: 'text-green-400' },
+    { icon: TrendingUp, label: 'Dashboard', color: 'text-orange-400' },
+    { icon: DollarSign, label: 'Comissões', color: 'text-orange-400' },
     { icon: Users, label: 'Comunidade', color: 'text-blue-400' }
   ];
 
@@ -171,8 +171,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       <DialogContent className="max-w-sm bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 text-white shadow-2xl">
         <div className="relative overflow-hidden rounded-lg">
           {/* Animated background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-green-500/5 to-blue-500/10" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-400/20 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-blue-500/10" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-orange-400/20 via-transparent to-transparent" />
           
           <div className="relative p-5 space-y-4">
           {/* Close button */}
@@ -190,12 +190,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div className="text-center space-y-3">
             <div className="flex items-center justify-center gap-3">
                 <div className="relative">
-                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-green-500 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl flex items-center justify-center">
                     <Sparkles className="w-5 h-5 text-slate-900" />
                   </div>
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse" />
                 </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">
+                <span className="text-xl font-bold bg-gradient-to-r from-orange-400 to-orange-400 bg-clip-text text-transparent">
                   AFILIADOS DA ELITE
                 </span>
             </div>
@@ -217,7 +217,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div className="relative p-1 bg-slate-800/50 rounded-lg backdrop-blur-sm">
               <div 
                 className={cn(
-                  "absolute top-1 h-8 bg-gradient-to-r from-emerald-400 to-green-500 rounded-md transition-all duration-300 ease-out",
+                  "absolute top-1 h-8 bg-gradient-to-r from-orange-400 to-orange-500 rounded-md transition-all duration-300 ease-out",
                   mode === 'login' ? 'left-1 w-[calc(50%-4px)]' : 'right-1 w-[calc(50%-4px)]'
                 )}
               />
@@ -252,7 +252,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     className="text-center group cursor-default"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    <div className="w-8 h-8 mx-auto mb-1 rounded-full border-2 border-emerald-400 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
+                    <div className="w-8 h-8 mx-auto mb-1 rounded-full border-2 border-orange-400 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
                       <Icon className={cn("w-3 h-3", color)} />
                 </div>
                     <span className="text-xs text-slate-300">{label}</span>
@@ -277,7 +277,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       onChange={handleInputChange('fullName')}
                     placeholder="Como você gostaria de ser chamado?"
                       className={cn(
-                        "pl-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-400 focus:ring-emerald-400/20 transition-all duration-300",
+                        "pl-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-orange-400 focus:ring-orange-400/20 transition-all duration-300",
                         errors.fullName && "border-red-400 focus:border-red-400 focus:ring-red-400/20"
                       )}
                     />
@@ -301,7 +301,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     onChange={handleInputChange('email')}
                   placeholder="seu@email.com"
                     className={cn(
-                      "pl-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-400 focus:ring-emerald-400/20 transition-all duration-300",
+                      "pl-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-orange-400 focus:ring-orange-400/20 transition-all duration-300",
                       errors.email && "border-red-400 focus:border-red-400 focus:ring-red-400/20"
                     )}
                   />
@@ -324,7 +324,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     onChange={handleInputChange('password')}
                   placeholder={mode === 'signup' ? 'Mínimo 6 caracteres' : 'Sua senha'}
                     className={cn(
-                      "pl-10 pr-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-emerald-400 focus:ring-emerald-400/20 transition-all duration-300",
+                      "pl-10 pr-10 bg-slate-800/50 border-slate-600 text-white placeholder-slate-400 focus:border-orange-400 focus:ring-orange-400/20 transition-all duration-300",
                       errors.password && "border-red-400 focus:border-red-400 focus:ring-red-400/20"
                     )}
                   />
@@ -352,7 +352,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                                 ? passwordStrength <= 1 ? 'bg-red-400' 
                                   : passwordStrength <= 2 ? 'bg-yellow-400'
                                   : passwordStrength <= 3 ? 'bg-blue-400'
-                                  : 'bg-emerald-400'
+                                  : 'bg-orange-400'
                                 : 'bg-slate-700'
                             )}
                           />
@@ -374,7 +374,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               type="submit" 
                 disabled={loading || !isFormValid}
                 className={cn(
-                  "w-full py-3 bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-300 hover:to-green-400 text-slate-900 font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed",
+                  "w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-slate-900 font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed",
                   "transform hover:scale-[1.02] active:scale-[0.98]"
                 )}
             >
@@ -408,7 +408,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               className="w-full bg-slate-800/50 border-slate-600 text-white hover:bg-slate-700/50 hover:border-slate-500 transition-all duration-300"
             >
               <div className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center">
                   <span className="text-slate-900 text-xs font-bold">G</span>
               </div>
               <span>Continuar com Google</span>
@@ -423,7 +423,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <button
               type="button"
               onClick={switchMode}
-                className="text-emerald-400 hover:text-emerald-300 font-medium underline transition-colors"
+                className="text-orange-400 hover:text-orange-300 font-medium underline transition-colors"
             >
               {mode === 'login' ? 'Cadastre-se Agora' : 'Fazer Login'}
             </button>
@@ -437,7 +437,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   className="flex items-center gap-1 text-xs text-slate-400 group cursor-default"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <Icon className="w-3 h-3 text-emerald-400 group-hover:scale-110 transition-transform" />
+                  <Icon className="w-3 h-3 text-orange-400 group-hover:scale-110 transition-transform" />
                   <span className="group-hover:text-slate-300 transition-colors">{label}</span>
               </div>
               ))}
@@ -445,17 +445,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             {/* Success metrics for signup - apenas se necessário */}
           {mode === 'signup' && (
-              <div className="grid grid-cols-3 gap-3 p-3 bg-gradient-to-r from-emerald-500/10 to-green-500/10 rounded-lg border border-emerald-400/20">
+              <div className="grid grid-cols-3 gap-3 p-3 bg-gradient-to-r from-orange-500/10 to-orange-500/10 rounded-lg border border-orange-400/20">
               <div className="text-center">
-                  <div className="text-emerald-400 font-bold text-sm">457+</div>
+                  <div className="text-orange-400 font-bold text-sm">457+</div>
                 <div className="text-xs text-slate-400">Membros</div>
               </div>
               <div className="text-center">
-                  <div className="text-emerald-400 font-bold text-sm">R$ 2.8M</div>
+                  <div className="text-orange-400 font-bold text-sm">R$ 2.8M</div>
                 <div className="text-xs text-slate-400">Comissões</div>
               </div>
               <div className="text-center">
-                  <div className="text-emerald-400 font-bold text-sm">89%</div>
+                  <div className="text-orange-400 font-bold text-sm">89%</div>
                 <div className="text-xs text-slate-400">ROI Médio</div>
               </div>
             </div>

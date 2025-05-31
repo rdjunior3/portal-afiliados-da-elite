@@ -59,7 +59,7 @@ export const UserProfile: React.FC = () => {
     const status = profile?.affiliate_status || 'pending';
     const statusConfig = {
       pending: { label: 'Pendente', color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
-      approved: { label: 'Aprovado', color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
+      approved: { label: 'Aprovado', color: 'text-orange-400', bg: 'bg-orange-400/10' },
       rejected: { label: 'Rejeitado', color: 'text-red-400', bg: 'bg-red-400/10' },
       suspended: { label: 'Suspenso', color: 'text-orange-400', bg: 'bg-orange-400/10' }
     };
@@ -84,22 +84,21 @@ export const UserProfile: React.FC = () => {
         >
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Avatar className="h-8 w-8 border-2 border-emerald-400/30 group-hover:border-emerald-400/50 transition-colors">
+              <Avatar className="h-8 w-8 border-2 border-orange-400/30 group-hover:border-orange-400/50 transition-colors">
                 <AvatarImage 
                   src={profile?.avatar_url || user.user_metadata?.avatar_url} 
                   alt={getDisplayName()} 
                 />
-                <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-green-500 text-slate-900 text-xs font-bold">
+                <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-500 text-slate-900 text-xs font-bold">
                   {getInitials(getDisplayName())}
-          </AvatarFallback>
-        </Avatar>
+                </AvatarFallback>
+              </Avatar>
               
-              {/* Status indicator */}
               <div className={cn(
                 "absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-slate-900",
                 statusInfo.color.replace('text-', 'bg-')
               )} />
-      </div>
+            </div>
 
             <div className="hidden sm:block text-left">
               <div className="text-sm font-medium text-white truncate max-w-32">
@@ -108,7 +107,7 @@ export const UserProfile: React.FC = () => {
               <div className="text-xs text-slate-400">
                 {profile?.affiliate_id ? `#${profile.affiliate_id}` : 'Afiliado'}
               </div>
-        </div>
+            </div>
 
             <ChevronDown className={cn(
               "h-4 w-4 text-slate-400 transition-transform duration-300",
@@ -123,15 +122,14 @@ export const UserProfile: React.FC = () => {
         align="end"
         sideOffset={8}
       >
-        {/* Profile Header */}
         <div className="p-4 space-y-4">
           <div className="flex items-center gap-3">
-            <Avatar className="h-12 w-12 border-2 border-emerald-400/30">
+            <Avatar className="h-12 w-12 border-2 border-orange-400/30">
               <AvatarImage 
                 src={profile?.avatar_url || user.user_metadata?.avatar_url} 
                 alt={getDisplayName()} 
               />
-              <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-green-500 text-slate-900 font-bold">
+              <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-500 text-slate-900 font-bold">
                 {getInitials(getDisplayName())}
               </AvatarFallback>
             </Avatar>
@@ -156,13 +154,12 @@ export const UserProfile: React.FC = () => {
 
         <DropdownMenuSeparator className="bg-slate-700/50" />
 
-        {/* Quick Stats */}
         {profile?.affiliate_status === 'approved' && (
           <>
             <div className="p-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-1 text-emerald-400">
+                  <div className="flex items-center gap-1 text-orange-400">
                     <DollarSign className="w-3 h-3" />
                     <span className="text-xs font-medium">Ganhos</span>
                   </div>
@@ -192,7 +189,7 @@ export const UserProfile: React.FC = () => {
                 </div>
                 
                 <div className="space-y-1">
-                  <div className="flex items-center gap-1 text-green-400">
+                  <div className="flex items-center gap-1 text-orange-400">
                     <Sparkles className="w-3 h-3" />
                     <span className="text-xs font-medium">Conversões</span>
                   </div>
@@ -201,7 +198,7 @@ export const UserProfile: React.FC = () => {
                   </div>
                 </div>
               </div>
-    </div>
+            </div>
             
             <DropdownMenuSeparator className="bg-slate-700/50" />
           </>
@@ -212,13 +209,13 @@ export const UserProfile: React.FC = () => {
         </DropdownMenuLabel>
         
         <DropdownMenuItem className="cursor-pointer hover:bg-slate-800/50 focus:bg-slate-800/50">
-          <User className="mr-2 h-4 w-4 text-slate-400" />
-          <span className="text-white">Perfil</span>
+          <User className="mr-2 h-4 w-4" />
+          <span>Perfil</span>
         </DropdownMenuItem>
         
         <DropdownMenuItem className="cursor-pointer hover:bg-slate-800/50 focus:bg-slate-800/50">
-          <Settings className="mr-2 h-4 w-4 text-slate-400" />
-          <span className="text-white">Configurações</span>
+          <Settings className="mr-2 h-4 w-4" />
+          <span>Configurações</span>
         </DropdownMenuItem>
         
         <DropdownMenuSeparator className="bg-slate-700/50" />
@@ -226,12 +223,11 @@ export const UserProfile: React.FC = () => {
         <DropdownMenuItem 
           className="cursor-pointer hover:bg-red-500/10 focus:bg-red-500/10 text-red-400"
           onClick={handleSignOut}
-          disabled={loading}
         >
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Sair da conta</span>
+          <span>Sair</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
-};
+}; 
