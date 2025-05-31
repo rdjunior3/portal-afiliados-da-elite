@@ -7,6 +7,81 @@ import { Label } from '../components/ui/label';
 import { useToast } from '../hooks/use-toast';
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Check } from 'lucide-react';
 
+// Elite Logo Component
+const EliteLogo: React.FC<{ className?: string }> = ({ className }) => (
+  <svg 
+    viewBox="0 0 120 120" 
+    className={className}
+    fill="none"
+  >
+    <defs>
+      <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#F97316" />
+        <stop offset="50%" stopColor="#FB923C" />
+        <stop offset="100%" stopColor="#EA580C" />
+      </linearGradient>
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+        <feMerge> 
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    
+    {/* Outer Ring */}
+    <circle 
+      cx="60" 
+      cy="60" 
+      r="55" 
+      stroke="url(#logoGradient)" 
+      strokeWidth="3" 
+      fill="none"
+      opacity="0.3"
+    />
+    
+    {/* Main Logo Circle */}
+    <circle 
+      cx="60" 
+      cy="60" 
+      r="45" 
+      fill="url(#logoGradient)"
+      filter="url(#glow)"
+    />
+    
+    {/* Elite Star/Diamond */}
+    <g transform="translate(60,60)">
+      {/* Central Diamond */}
+      <path 
+        d="M-15,-8 L0,-25 L15,-8 L8,0 L15,8 L0,25 L-15,8 L-8,0 Z" 
+        fill="#0F172A"
+        stroke="#FFF"
+        strokeWidth="1"
+      />
+      
+      {/* Inner sparkle */}
+      <circle cx="0" cy="0" r="3" fill="#F97316" />
+      
+      {/* Side sparkles */}
+      <circle cx="-8" cy="-8" r="1.5" fill="#FCD34D" opacity="0.8" />
+      <circle cx="8" cy="-8" r="1.5" fill="#FCD34D" opacity="0.8" />
+      <circle cx="-8" cy="8" r="1.5" fill="#FCD34D" opacity="0.8" />
+      <circle cx="8" cy="8" r="1.5" fill="#FCD34D" opacity="0.8" />
+    </g>
+    
+    {/* Orbital elements */}
+    <circle cx="20" cy="30" r="2" fill="#FCD34D" opacity="0.6">
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="100" cy="90" r="1.5" fill="#F97316" opacity="0.4">
+      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2.5s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="90" cy="25" r="1" fill="#FCD34D" opacity="0.7">
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="1.8s" repeatCount="indefinite" />
+    </circle>
+  </svg>
+);
+
 const Signup = () => {
   const [formData, setFormData] = useState({
     fullName: '',
@@ -149,7 +224,7 @@ const Signup = () => {
             <div className="text-center mb-8">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-md">
-                  <span className="text-xl">🏆</span>
+                  <EliteLogo className="w-8 h-8" />
                 </div>
                 <span className="text-xl font-bold text-orange-400 tracking-tight">
                   AFILIADOS DA ELITE

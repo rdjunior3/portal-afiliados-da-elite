@@ -21,7 +21,9 @@ import {
   Sparkles,
   TrendingUp,
   Users,
-  Wallet
+  Wallet,
+  ChevronDown,
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,6 +34,81 @@ interface MenuItem {
   badge?: string;
   isNew?: boolean;
 }
+
+// Elite Logo Component
+const EliteLogo: React.FC<{ className?: string }> = ({ className }) => (
+  <svg 
+    viewBox="0 0 120 120" 
+    className={className}
+    fill="none"
+  >
+    <defs>
+      <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#F97316" />
+        <stop offset="50%" stopColor="#FB923C" />
+        <stop offset="100%" stopColor="#EA580C" />
+      </linearGradient>
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+        <feMerge> 
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    
+    {/* Outer Ring */}
+    <circle 
+      cx="60" 
+      cy="60" 
+      r="55" 
+      stroke="url(#logoGradient)" 
+      strokeWidth="3" 
+      fill="none"
+      opacity="0.3"
+    />
+    
+    {/* Main Logo Circle */}
+    <circle 
+      cx="60" 
+      cy="60" 
+      r="45" 
+      fill="url(#logoGradient)"
+      filter="url(#glow)"
+    />
+    
+    {/* Elite Star/Diamond */}
+    <g transform="translate(60,60)">
+      {/* Central Diamond */}
+      <path 
+        d="M-15,-8 L0,-25 L15,-8 L8,0 L15,8 L0,25 L-15,8 L-8,0 Z" 
+        fill="#0F172A"
+        stroke="#FFF"
+        strokeWidth="1"
+      />
+      
+      {/* Inner sparkle */}
+      <circle cx="0" cy="0" r="3" fill="#F97316" />
+      
+      {/* Side sparkles */}
+      <circle cx="-8" cy="-8" r="1.5" fill="#FCD34D" opacity="0.8" />
+      <circle cx="8" cy="-8" r="1.5" fill="#FCD34D" opacity="0.8" />
+      <circle cx="-8" cy="8" r="1.5" fill="#FCD34D" opacity="0.8" />
+      <circle cx="8" cy="8" r="1.5" fill="#FCD34D" opacity="0.8" />
+    </g>
+    
+    {/* Orbital elements */}
+    <circle cx="20" cy="30" r="2" fill="#FCD34D" opacity="0.6">
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="100" cy="90" r="1.5" fill="#F97316" opacity="0.4">
+      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2.5s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="90" cy="25" r="1" fill="#FCD34D" opacity="0.7">
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="1.8s" repeatCount="indefinite" />
+    </circle>
+  </svg>
+);
 
 const DashboardLayout: React.FC = () => {
   const { signOut, profile, user } = useAuth();
@@ -141,12 +218,7 @@ const DashboardLayout: React.FC = () => {
           <div className="flex h-16 items-center justify-between border-b border-slate-800/50 px-6">
             <div className="flex items-center gap-3">
               <div className="relative group">
-                <div className="w-8 h-8 bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/25">
-                  <svg className="w-5 h-5 text-slate-900" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2L3.09 8.26L4 21H20L20.91 8.26L12 2ZM12 4.44L18.18 9H5.82L12 4.44ZM6.09 11H17.91L17.25 19H6.75L6.09 11Z"/>
-                    <circle cx="12" cy="14" r="2" fill="#0f172a"/>
-                  </svg>
-                </div>
+                <EliteLogo className="w-8 h-8" />
               </div>
               <div>
                 <h1 className="text-sm font-bold text-white">Afiliados Elite</h1>
