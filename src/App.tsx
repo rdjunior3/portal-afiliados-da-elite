@@ -17,14 +17,17 @@ import Dashboard from './pages/Dashboard';
 
 // Dashboard Pages
 import Products from './pages/dashboard/Products';
-import Links from './pages/dashboard/Links';
-import Analytics from './pages/dashboard/Analytics';
-import Commissions from './pages/dashboard/Commissions';
-import Payments from './pages/dashboard/Payments';
 import Reports from './pages/dashboard/Reports';
 import Profile from './pages/dashboard/Profile';
 import Notifications from './pages/dashboard/Notifications';
 import Settings from './pages/dashboard/Settings';
+
+// Content Pages
+import Courses from './pages/content/Courses';
+import CourseDetail from './pages/content/CourseDetail';
+
+// Chat Pages
+import ChatPage from './pages/chat/ChatPage';
 
 // Validar variáveis de ambiente no carregamento (não crítico)
 try {
@@ -57,10 +60,9 @@ function AppContent() {
       >
         <Route index element={<Dashboard />} />
         <Route path="products" element={<Products />} />
-        <Route path="links" element={<Links />} />
-        <Route path="analytics" element={<Analytics />} />
-        <Route path="commissions" element={<Commissions />} />
-        <Route path="payments" element={<Payments />} />
+        <Route path="content" element={<Courses />} />
+        <Route path="content/:courseId" element={<CourseDetail />} />
+        <Route path="chat" element={<ChatPage />} />
         <Route path="reports" element={<Reports />} />
         <Route path="profile" element={<Profile />} />
         <Route path="notifications" element={<Notifications />} />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -119,17 +119,31 @@ const DashboardLayout: React.FC = () => {
   const location = useLocation();
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const notificationsRef = useRef<HTMLDivElement>(null);
+
+  // Close notifications dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setNotificationsOpen(false);
+      }
+    };
+
+    if (notificationsOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [notificationsOpen]);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Produtos', href: '/dashboard/products', icon: Package },
     { name: 'Aulas', href: '/dashboard/content', icon: BookOpen },
     { name: 'Chat', href: '/dashboard/chat', icon: MessageSquare },
-    { name: 'Links', href: '/dashboard/links', icon: LinkIcon },
-    { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
-    { name: 'Comissões', href: '/dashboard/commissions', icon: DollarSign },
-    { name: 'Pagamentos', href: '/dashboard/payments', icon: CreditCard },
-    { name: 'Notificações', href: '/dashboard/notifications', icon: Bell },
     { name: 'Configurações', href: '/dashboard/settings', icon: Settings },
   ];
 
@@ -151,7 +165,7 @@ const DashboardLayout: React.FC = () => {
         variant: "destructive",
       });
     } else {
-      navigate('/login');
+      navigate('/');
     }
   };
 
@@ -372,20 +386,74 @@ const DashboardLayout: React.FC = () => {
               </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="hidden md:flex items-center gap-6 text-xs">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
-                <span className="text-slate-400">Online</span>
-              </div>
-              <div className="flex items-center gap-2 text-slate-300">
-                <TrendingUp className="w-4 h-4 text-orange-400" />
-                <span>15 cliques hoje</span>
-              </div>
-              <div className="flex items-center gap-2 text-slate-300">
-                <Wallet className="w-4 h-4 text-orange-400" />
-                <span>R$ 240,00 este mês</span>
-              </div>
+            {/* Notifications */}
+            <div className="relative" ref={notificationsRef}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setNotificationsOpen(!notificationsOpen)}
+                className="text-slate-300 hover:text-white relative"
+              >
+                <Bell className="h-5 w-5" />
+                {/* Notification badge */}
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full flex items-center justify-center">
+                  <span className="text-xs text-white font-bold">3</span>
+                </span>
+              </Button>
+              
+              {/* Notifications Dropdown */}
+              {notificationsOpen && (
+                <div className="absolute right-0 top-full mt-2 w-80 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
+                  <div className="p-4 border-b border-slate-700">
+                    <h3 className="text-white font-medium">Notificações</h3>
+                  </div>
+                  <div className="max-h-64 overflow-y-auto">
+                    <div className="p-3 border-b border-slate-700/50 hover:bg-slate-700/30 cursor-pointer">
+                      <div className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+                        <div className="flex-1">
+                          <p className="text-sm text-white">Nova comissão disponível</p>
+                          <p className="text-xs text-slate-400 mt-1">Você ganhou R$ 25,00 em comissões</p>
+                          <p className="text-xs text-slate-500 mt-1">há 2 horas</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-3 border-b border-slate-700/50 hover:bg-slate-700/30 cursor-pointer">
+                      <div className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                        <div className="flex-1">
+                          <p className="text-sm text-white">Novo produto disponível</p>
+                          <p className="text-xs text-slate-400 mt-1">Confira o novo curso lançado</p>
+                          <p className="text-xs text-slate-500 mt-1">há 5 horas</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-3 hover:bg-slate-700/30 cursor-pointer">
+                      <div className="flex items-start gap-3">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                        <div className="flex-1">
+                          <p className="text-sm text-white">Meta mensal atingida</p>
+                          <p className="text-xs text-slate-400 mt-1">Parabéns! Você bateu sua meta</p>
+                          <p className="text-xs text-slate-500 mt-1">ontem</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-3 border-t border-slate-700">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="w-full text-orange-400 hover:text-orange-300"
+                      onClick={() => {
+                        navigate('/dashboard/notifications');
+                        setNotificationsOpen(false);
+                      }}
+                    >
+                      Ver todas as notificações
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </header>

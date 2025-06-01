@@ -22,15 +22,20 @@ import {
   Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 export const UserProfile: React.FC = () => {
   const { user, profile, signOut, loading } = useAuth();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
   if (!user) return null;
 
   const handleSignOut = async () => {
-    await signOut();
+    const { error } = await signOut();
+    if (!error) {
+      navigate('/');
+    }
   };
 
   const getInitials = (name: string) => {
