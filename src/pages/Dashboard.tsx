@@ -95,12 +95,12 @@ const Dashboard = () => {
           <span className="text-2xl animate-pulse">🏆</span>
           <div>
             <h1 className="text-3xl lg:text-4xl font-bold text-white flex items-center gap-3">
-              Olá, {getDisplayName()}!
-              <span className="text-2xl">👋</span>
-            </h1>
+          Olá, {getDisplayName()}! 
+          <span className="text-2xl">👋</span>
+        </h1>
             <p className="text-orange-300 font-semibold">
               Bem-vindo ao seu portal elite de afiliados
-            </p>
+        </p>
           </div>
         </div>
       </div>
@@ -203,14 +203,14 @@ const Dashboard = () => {
                     <div>
                       <p className="text-sm text-yellow-100 font-medium">
                         Complete seu perfil para ter acesso total aos recursos elite
-                      </p>
-                      <Button 
-                        size="sm" 
+                  </p>
+                  <Button 
+                    size="sm" 
                         className="mt-3 bg-yellow-600 hover:bg-yellow-700 text-slate-900 font-bold"
-                        onClick={() => navigate('/dashboard/profile')}
-                      >
+                    onClick={() => navigate('/dashboard/profile')}
+                  >
                         Completar Perfil Elite
-                      </Button>
+                  </Button>
                     </div>
                   </div>
                 </div>
@@ -308,18 +308,18 @@ const Dashboard = () => {
                 <div className="flex items-center justify-between p-3 bg-slate-700/40 rounded-lg">
                   <span className="text-slate-300">ID Afiliado</span>
                   <span className="text-orange-200 font-bold">
-                    {profile?.affiliate_id || 'Pendente'}
-                  </span>
-                </div>
+                  {profile?.affiliate_id || 'Pendente'}
+                </span>
+              </div>
                 <div className="flex items-center justify-between p-3 bg-slate-700/40 rounded-lg">
                   <span className="text-slate-300">Status</span>
-                  <Badge className={
-                    profile?.affiliate_status === 'approved' 
+                <Badge className={
+                  profile?.affiliate_status === 'approved' 
                       ? 'bg-orange-500/30 text-orange-200 border-orange-400/50' 
                       : 'bg-yellow-500/30 text-yellow-200 border-yellow-400/50'
-                  }>
-                    {profile?.affiliate_status === 'approved' ? 'Elite' : 'Pendente'}
-                  </Badge>
+                }>
+                  {profile?.affiliate_status === 'approved' ? 'Elite' : 'Pendente'}
+                </Badge>
                 </div>
               </div>
             </CardContent>

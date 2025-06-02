@@ -62,6 +62,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
   onEscape
 }) => {
   const [showEscapeHint, setShowEscapeHint] = React.useState(false);
+  const [dots, setDots] = React.useState('');
 
   React.useEffect(() => {
     if (showTimeout) {
@@ -73,92 +74,102 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
     }
   }, [showTimeout]);
 
+  // Animação dos dots de loading
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setDots(prev => prev.length >= 3 ? '' : prev + '.');
+    }, 500);
+    
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 flex items-center justify-center p-4">
-      {/* Mobile-first responsive container */}
-      <div className="relative w-full max-w-sm sm:max-w-md lg:max-w-lg">
-        {/* Background effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-blue-500/10 rounded-2xl sm:rounded-3xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-400/20 via-transparent to-transparent rounded-2xl sm:rounded-3xl" />
-        
-        <div className="relative bg-slate-900/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl">
-          <div className="text-center space-y-6 sm:space-y-8">
-            {/* Logo Section - Enhanced Mobile Design */}
-            <div className="flex flex-col items-center justify-center space-y-3 sm:space-y-4">
-              <div className="relative">
-                {/* Elite Logo with Animation */}
-                <EliteLogo 
-                  size="xl" 
-                  animated={true} 
-                  showText={false}
-                />
-                
-                {/* Enhanced pulse indicator */}
-                <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-yellow-400 rounded-full animate-pulse shadow-lg shadow-yellow-400/50">
-                  <div className="absolute inset-0 rounded-full bg-yellow-400 animate-ping" />
-                </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Effects - Mais sutil */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(249,115,22,0.03)_0%,transparent_50%)] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(249,115,22,0.02)_0%,transparent_50%)] pointer-events-none"></div>
+      
+      {/* Main Content Container - Design Clean */}
+      <div className="relative w-full max-w-sm">
+        <div className="text-center space-y-8">
+          {/* Logo Section - Redesign Clean */}
+          <div className="flex flex-col items-center space-y-4">
+            {/* Logo com efeito mais sutil */}
+            <div className="relative">
+              <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-xl">
+                <span className="text-slate-900 text-2xl font-bold">🏆</span>
               </div>
               
-              {/* Brand Text - Enhanced Responsive Typography */}
-              <div className="text-center space-y-1">
-                <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 bg-clip-text text-transparent">
-                  AFILIADOS DA ELITE
-                </div>
-                <div className="text-xs sm:text-sm lg:text-base text-slate-400 font-medium">
-                  Portal Premium de Marketing Digital
+              {/* Indicador de status online - mais discreto */}
+              <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              </div>
+            </div>
+            
+            {/* Brand Text - Typography Clean */}
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+                AFILIADOS DA ELITE
+              </h1>
+              <p className="text-sm text-slate-400 font-medium">
+                Portal Premium de Marketing Digital
+              </p>
+            </div>
+          </div>
+          
+          {/* Loading Spinner - Design Minimalista */}
+          <div className="flex flex-col items-center space-y-4">
+            <div className="relative">
+              {/* Spinner principal */}
+              <div className="w-12 h-12 border-3 border-slate-700 border-t-orange-400 rounded-full animate-spin"></div>
+              
+              {/* Ícone central */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-6 h-6 bg-orange-400 rounded-full animate-pulse flex items-center justify-center">
+                  <span className="text-slate-900 text-xs font-bold">⚡</span>
                 </div>
               </div>
             </div>
             
-            {/* Loading component */}
-            <Loading message={message} size="lg" />
-            
-            {/* Enhanced Progress indicators */}
-            <div className="space-y-4">
-              {/* Progress dots */}
-              <div className="flex items-center justify-center gap-2">
-                {[...Array(3)].map((_, i) => (
-                  <div 
-                    key={i}
-                    className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"
-                    style={{ 
-                      animationDelay: `${i * 200}ms`,
-                      animationDuration: '1s'
-                    }}
-                  />
-                ))}
-              </div>
+            {/* Progress Message - Clean */}
+            <div className="text-center space-y-3">
+              <p className="text-base text-white font-medium">
+                {message.replace('...', '')}{dots}
+              </p>
               
-              {/* Status indicator - Enhanced for Mobile */}
-              <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-slate-400">
-                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse" />
-                <span className="text-center">
+              {/* Status indicator minimalista */}
+              <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
+                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+                <span>
                   {showTimeout && showEscapeHint 
-                    ? "Verificação está demorando mais que o normal..." 
-                    : "Carregando recursos do portal..."
+                    ? "Verificação está demorando mais que o normal" 
+                    : "Carregando recursos do portal"
                   }
                 </span>
               </div>
-              
-              {/* Escape hint */}
-              {showTimeout && showEscapeHint && onEscape && (
-                <div className="mt-4">
-                  <button
-                    onClick={onEscape}
-                    className="text-orange-400 hover:text-orange-300 text-sm underline transition-colors duration-200"
-                  >
-                    🏠 Voltar para a página inicial
-                  </button>
-                </div>
-              )}
             </div>
-            
-            {/* Mobile-friendly version indicator */}
-            <div className="pt-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-800/50 rounded-full border border-slate-700/50">
-                <div className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-pulse" />
-                <span className="text-xs text-slate-400">Versão Mobile Otimizada</span>
-              </div>
+          </div>
+          
+          {/* Escape Button - Quando necessário */}
+          {showTimeout && showEscapeHint && onEscape && (
+            <div className="pt-4">
+              <button
+                onClick={onEscape}
+                className="group px-6 py-3 bg-slate-800/60 hover:bg-slate-700/60 border border-orange-500/30 hover:border-orange-400/50 text-orange-400 hover:text-orange-300 rounded-xl transition-all duration-300 transform hover:scale-105 text-sm font-medium"
+              >
+                <div className="flex items-center gap-2">
+                  <span>🏠</span>
+                  <span>Voltar para página inicial</span>
+                </div>
+              </button>
+            </div>
+          )}
+          
+          {/* Version Indicator - Discreto */}
+          <div className="pt-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-800/30 rounded-full text-xs text-slate-500">
+              <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
+              <span>Versão Mobile Otimizada</span>
             </div>
           </div>
         </div>

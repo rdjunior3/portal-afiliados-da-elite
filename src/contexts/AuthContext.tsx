@@ -265,27 +265,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    setLoading(true);
-    
     try {
-      // Limpar estados imediatamente para evitar travamento
+      // PASSO 1: Limpar estados IMEDIATAMENTE para evitar travamento
+      setLoading(false); // Força loading = false primeiro
       setUser(null);
       setSession(null);
       setProfile(null);
       
+      // PASSO 2: Fazer logout no Supabase
       const { error } = await supabase.auth.signOut();
       
       if (error) {
+        console.error('Erro no logout:', error);
         toast({
           title: "Erro ao sair",
-          description: "Não foi possível sair da conta. Tente novamente.",
+          description: "Não foi possível sair completamente. Você foi desconectado localmente.",
           variant: "destructive",
         });
-        
-        // Em caso de erro, ainda assim força a limpeza local
-        setUser(null);
-        setSession(null);
-        setProfile(null);
       } else {
         toast({
           title: "Logout realizado",
@@ -293,24 +289,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       }
 
-      // Força o loading para false após logout
-      setTimeout(() => {
-        setLoading(false);
-      }, 100); // Pequeno delay para garantir que a UI seja atualizada
+      // PASSO 3: Garantir que estados permaneçam limpos
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setLoading(false);
 
       return { error };
     } catch (error) {
       console.error('Erro durante logout:', error);
       
-      // Mesmo com erro, limpa os estados locais
+      // PASSO 4: Mesmo com erro, força limpeza total
       setUser(null);
       setSession(null);
       setProfile(null);
       setLoading(false);
       
       toast({
-        title: "Logout forçado",
-        description: "Sua sessão foi encerrada.",
+        title: "Logout realizado",
+        description: "Sua sessão foi encerrada com sucesso.",
       });
       
       return { error };

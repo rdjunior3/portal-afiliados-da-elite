@@ -243,9 +243,9 @@ const ChatPage = () => {
 
     const channel = supabase.channel(`messages-${selectedRoom.id}`)
       .on('postgres_changes', 
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
+        {
+          event: 'INSERT',
+          schema: 'public',
           table: 'messages',
           filter: `room_id=eq.${selectedRoom.id}`
         },
@@ -375,14 +375,14 @@ const ChatPage = () => {
                 <div key={i} className="animate-pulse bg-slate-700/50 h-16 rounded-lg"></div>
               ))}
             </div>
-          ) : (
-            rooms?.map((room) => (
-              <button
-                key={room.id}
-                onClick={() => setSelectedRoom(room)}
+            ) : (
+              rooms?.map((room) => (
+                <button
+                  key={room.id}
+                  onClick={() => setSelectedRoom(room)}
                 className={cn(
                   "w-full p-4 text-left rounded-lg transition-all duration-200 group",
-                  selectedRoom?.id === room.id
+                    selectedRoom?.id === room.id
                     ? "bg-gradient-to-r from-orange-500/30 to-orange-600/20 border border-orange-400/30"
                     : "bg-slate-700/30 hover:bg-slate-700/50 border border-transparent"
                 )}
@@ -412,20 +412,20 @@ const ChatPage = () => {
                         <Sparkles className="h-4 w-4 text-orange-400" />
                       )}
                     </div>
-                    {room.description && (
+                      {room.description && (
                       <p className={cn(
                         "text-sm truncate",
                         selectedRoom?.id === room.id ? "text-orange-200" : "text-slate-400"
                       )}>
-                        {room.description}
-                      </p>
-                    )}
+                          {room.description}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))
-          )}
-        </div>
+                </button>
+              ))
+            )}
+          </div>
       </div>
 
       {/* Main Chat Area */}
@@ -467,7 +467,7 @@ const ChatPage = () => {
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {isLoadingMessages ? (
-                <div className="space-y-4">
+              <div className="space-y-4">
                   {[1, 2, 3, 4, 5].map((i) => (
                     <div key={i} className="flex gap-3 animate-pulse">
                       <div className="w-10 h-10 bg-slate-700 rounded-full"></div>
@@ -478,20 +478,20 @@ const ChatPage = () => {
                     </div>
                   ))}
                 </div>
-              ) : messages && messages.length > 0 ? (
+                ) : messages && messages.length > 0 ? (
                 messages.map((message) => (
                   <div key={message.id} className="flex gap-4 group">
                     <Avatar className="w-10 h-10">
                       <AvatarImage src={message.sender?.avatar_url || undefined} />
                       <AvatarFallback className="bg-gradient-to-r from-orange-400 to-orange-500 text-white text-sm font-bold">
                         {getInitials(getDisplayName(message.sender))}
-                      </AvatarFallback>
-                    </Avatar>
+                          </AvatarFallback>
+                        </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-semibold text-white">
                           {getDisplayName(message.sender)}
-                        </span>
+                            </span>
                         {message.sender?.role === 'admin' && (
                           <Badge variant="outline" className="text-xs border-orange-400/60 text-orange-300 bg-orange-500/10">
                             <Crown className="h-3 w-3 mr-1" />
@@ -504,13 +504,13 @@ const ChatPage = () => {
                             addSuffix: true, 
                             locale: ptBR 
                           })}
-                        </span>
-                      </div>
+                            </span>
+                          </div>
                       <div className="bg-slate-700/50 rounded-lg p-3 text-slate-200">
-                        {message.content}
+                              {message.content}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
                 ))
               ) : (
                 <div className="flex-1 flex items-center justify-center">
@@ -519,10 +519,10 @@ const ChatPage = () => {
                     <h3 className="text-lg font-semibold mb-2 text-white">Nenhuma mensagem ainda</h3>
                     <p className="text-slate-400">Seja o primeiro a iniciar a conversa!</p>
                   </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
 
             {/* Message Input */}
             <div className="p-6 border-t border-slate-700 bg-slate-800/30">
@@ -534,15 +534,15 @@ const ChatPage = () => {
                   className="flex-1 bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
                   disabled={sendMessageMutation.isPending}
                 />
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={!newMessage.trim() || sendMessageMutation.isPending}
                   className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white"
                 >
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
-            </div>
+              </div>
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center">
