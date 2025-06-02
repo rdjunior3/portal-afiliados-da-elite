@@ -8,61 +8,69 @@ interface EliteLogoProps {
   animated?: boolean;
 }
 
-// Custom Trophy SVG Icon
-const TrophyIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg 
-    viewBox="0 0 24 24" 
-    className={className}
-    fill="none"
-  >
-    <defs>
-      <linearGradient id="trophyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FCD34D" />
-        <stop offset="50%" stopColor="#F97316" />
-        <stop offset="100%" stopColor="#EA580C" />
-      </linearGradient>
-    </defs>
-    
-    {/* Trophy Cup */}
-    <path 
-      d="M7 8h10l-1 8H8l-1-8z" 
-      fill="url(#trophyGradient)"
-      stroke="#FFFFFF" 
-      strokeWidth="0.5"
-    />
-    
-    {/* Trophy Handles */}
-    <path 
-      d="M6 10a2 2 0 01-2-2V7a1 1 0 011-1h1m12 4a2 2 0 002-2V7a1 1 0 00-1-1h-1" 
-      stroke="#FFFFFF" 
-      strokeWidth="1" 
+// Custom Trophy SVG Icon with unique gradient ID
+const TrophyIcon: React.FC<{ className?: string }> = ({ className }) => {
+  // Generate unique ID to avoid conflicts with multiple instances
+  const gradientId = React.useMemo(() => 
+    `trophyGradient-${Math.random().toString(36).substr(2, 9)}`, 
+    []
+  );
+
+  return (
+    <svg 
+      viewBox="0 0 24 24" 
+      className={className}
       fill="none"
-    />
-    
-    {/* Trophy Base */}
-    <rect 
-      x="9" 
-      y="16" 
-      width="6" 
-      height="2" 
-      fill="url(#trophyGradient)"
-      stroke="#FFFFFF" 
-      strokeWidth="0.5"
-    />
-    <rect 
-      x="8" 
-      y="18" 
-      width="8" 
-      height="1.5" 
-      fill="url(#trophyGradient)"
-      stroke="#FFFFFF" 
-      strokeWidth="0.5"
-    />
-    
-    {/* Decorative star */}
-    <circle cx="12" cy="12" r="1.5" fill="#FCD34D" opacity="0.8" />
-  </svg>
-);
+    >
+      <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FCD34D" />
+          <stop offset="50%" stopColor="#F97316" />
+          <stop offset="100%" stopColor="#EA580C" />
+        </linearGradient>
+      </defs>
+      
+      {/* Trophy Cup */}
+      <path 
+        d="M7 8h10l-1 8H8l-1-8z" 
+        fill={`url(#${gradientId})`}
+        stroke="#FFFFFF" 
+        strokeWidth="0.5"
+      />
+      
+      {/* Trophy Handles */}
+      <path 
+        d="M6 10a2 2 0 01-2-2V7a1 1 0 011-1h1m12 4a2 2 0 002-2V7a1 1 0 00-1-1h-1" 
+        stroke="#FFFFFF" 
+        strokeWidth="1" 
+        fill="none"
+      />
+      
+      {/* Trophy Base */}
+      <rect 
+        x="9" 
+        y="16" 
+        width="6" 
+        height="2" 
+        fill={`url(#${gradientId})`}
+        stroke="#FFFFFF" 
+        strokeWidth="0.5"
+      />
+      <rect 
+        x="8" 
+        y="18" 
+        width="8" 
+        height="1.5" 
+        fill={`url(#${gradientId})`}
+        stroke="#FFFFFF" 
+        strokeWidth="0.5"
+      />
+      
+      {/* Decorative star */}
+      <circle cx="12" cy="12" r="1.5" fill="#FCD34D" opacity="0.8" />
+    </svg>
+  );
+};
 
 const EliteLogo: React.FC<EliteLogoProps> = ({ 
   className, 

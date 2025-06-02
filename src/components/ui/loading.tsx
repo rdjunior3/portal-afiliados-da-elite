@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Sparkles } from 'lucide-react';
-import { EliteLogo } from './EliteLogo';
+import EliteLogo from './EliteLogo';
 
 interface LoadingProps {
   message?: string;
@@ -72,9 +72,9 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
               <div className="relative">
                 {/* Elite Logo with Animation */}
                 <EliteLogo 
-                  size="lg" 
-                  variant="animated" 
-                  className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28" 
+                  size="xl" 
+                  animated={true} 
+                  showText={false}
                 />
                 
                 {/* Enhanced pulse indicator */}
