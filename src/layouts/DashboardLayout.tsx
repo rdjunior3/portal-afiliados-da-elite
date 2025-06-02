@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import EliteLogo from '@/components/ui/EliteLogo';
 import { 
   LayoutDashboard, 
   Link as LinkIcon, 
@@ -38,81 +39,6 @@ interface MenuItem {
   isNew?: boolean;
 }
 
-// Elite Logo Component
-const EliteLogo: React.FC<{ className?: string }> = ({ className }) => (
-  <svg 
-    viewBox="0 0 120 120" 
-    className={className}
-    fill="none"
-  >
-    <defs>
-      <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#F97316" />
-        <stop offset="50%" stopColor="#FB923C" />
-        <stop offset="100%" stopColor="#EA580C" />
-      </linearGradient>
-      <filter id="glow">
-        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-        <feMerge> 
-          <feMergeNode in="coloredBlur"/>
-          <feMergeNode in="SourceGraphic"/>
-        </feMerge>
-      </filter>
-    </defs>
-    
-    {/* Outer Ring */}
-    <circle 
-      cx="60" 
-      cy="60" 
-      r="55" 
-      stroke="url(#logoGradient)" 
-      strokeWidth="3" 
-      fill="none"
-      opacity="0.3"
-    />
-    
-    {/* Main Logo Circle */}
-    <circle 
-      cx="60" 
-      cy="60" 
-      r="45" 
-      fill="url(#logoGradient)"
-      filter="url(#glow)"
-    />
-    
-    {/* Elite Star/Diamond */}
-    <g transform="translate(60,60)">
-      {/* Central Diamond */}
-      <path 
-        d="M-15,-8 L0,-25 L15,-8 L8,0 L15,8 L0,25 L-15,8 L-8,0 Z" 
-        fill="#0F172A"
-        stroke="#FFF"
-        strokeWidth="1"
-      />
-      
-      {/* Inner sparkle */}
-      <circle cx="0" cy="0" r="3" fill="#F97316" />
-      
-      {/* Side sparkles */}
-      <circle cx="-8" cy="-8" r="1.5" fill="#FCD34D" opacity="0.8" />
-      <circle cx="8" cy="-8" r="1.5" fill="#FCD34D" opacity="0.8" />
-      <circle cx="-8" cy="8" r="1.5" fill="#FCD34D" opacity="0.8" />
-      <circle cx="8" cy="8" r="1.5" fill="#FCD34D" opacity="0.8" />
-    </g>
-    
-    {/* Orbital elements */}
-    <circle cx="20" cy="30" r="2" fill="#FCD34D" opacity="0.6">
-      <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
-    </circle>
-    <circle cx="100" cy="90" r="1.5" fill="#F97316" opacity="0.4">
-      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2.5s" repeatCount="indefinite" />
-    </circle>
-    <circle cx="90" cy="25" r="1" fill="#FCD34D" opacity="0.7">
-      <animate attributeName="opacity" values="0.7;1;0.7" dur="1.8s" repeatCount="indefinite" />
-    </circle>
-  </svg>
-);
-
 const DashboardLayout: React.FC = () => {
   const { signOut, profile, user, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -143,7 +69,7 @@ const DashboardLayout: React.FC = () => {
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Produtos', href: '/dashboard/products', icon: Package },
     { name: 'Aulas', href: '/dashboard/content', icon: BookOpen },
-    { name: 'Chat', href: '/dashboard/chat', icon: MessageSquare },
+    { name: 'Chat', href: '/dashboard/chat', icon: MessageSquare, badge: 'Novo' },
     { name: 'Configurações', href: '/dashboard/settings', icon: Settings },
   ];
 
@@ -201,68 +127,60 @@ const DashboardLayout: React.FC = () => {
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed left-0 top-0 z-50 h-screen w-72 transform bg-slate-900/95 backdrop-blur-xl border-r border-slate-800/50 transition-transform duration-300 ease-in-out lg:translate-x-0",
+        "fixed left-0 top-0 z-50 h-screen w-80 transform bg-gradient-to-b from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl border-r border-orange-500/20 transition-transform duration-300 ease-in-out lg:translate-x-0 shadow-2xl shadow-orange-500/10",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex h-full flex-col">
-          {/* Header */}
-          <div className="flex h-16 items-center justify-between border-b border-slate-800/50 px-6">
-            <div className="flex items-center gap-3">
-              <div className="relative group">
-                <EliteLogo className="w-8 h-8" />
-              </div>
-              <div>
-                <h1 className="text-sm font-bold text-white">Afiliados Elite</h1>
-                <p className="text-xs text-slate-400">Portal Premium</p>
-              </div>
-            </div>
+          {/* Header com novo logo */}
+          <div className="flex h-20 items-center justify-between border-b border-orange-500/20 bg-gradient-to-r from-orange-500/10 to-orange-600/10 px-6">
+            <EliteLogo size="sm" showText={true} animated={true} />
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden text-slate-400 hover:text-white"
+              className="lg:hidden text-slate-400 hover:text-white hover:bg-orange-500/10"
               onClick={() => setSidebarOpen(false)}
             >
               <X className="h-5 w-5" />
             </Button>
           </div>
 
-          {/* User Info */}
-          <div className="border-b border-slate-800/50 p-4">
-            <div className="flex items-center gap-3">
+          {/* User Info melhorado */}
+          <div className="border-b border-orange-500/20 bg-gradient-to-r from-slate-800/50 to-slate-700/50 p-6">
+            <div className="flex items-center gap-4">
               <div className="relative">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center">
-                  <User className="h-5 w-5 text-slate-900" />
+                <div className="h-12 w-12 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20 border-2 border-orange-300/30">
+                  <span className="text-sm font-bold text-white">🏆</span>
                 </div>
                 <div className="absolute -bottom-1 -right-1">
                   {profile?.affiliate_status === 'approved' && (
-                    <div className="w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
+                    <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border-2 border-slate-900">
                       <Sparkles className="w-2.5 h-2.5 text-white" />
                     </div>
                   )}
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">
+                <p className="text-sm font-bold text-white truncate">
                   {getDisplayName()}
                 </p>
-                <div className="flex items-center gap-2">
-                  <p className="text-xs text-slate-400 truncate">
-                    ID: {profile?.affiliate_id || 'Pending'}
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-xs text-orange-300 truncate font-medium">
+                    ID: {profile?.affiliate_id || 'Pendente'}
                   </p>
                   {profile?.affiliate_status && (
                     <Badge 
                       variant="outline"
                       className={cn(
-                        "text-xs px-1.5 py-0 h-4",
+                        "text-xs px-2 py-0.5 h-5 font-bold border-2",
                         profile.affiliate_status === 'approved' 
-                          ? 'border-orange-500/50 text-orange-400' 
+                          ? 'border-orange-400 text-orange-300 bg-orange-500/10' 
                           : profile.affiliate_status === 'pending'
-                          ? 'border-yellow-500/50 text-yellow-400'
-                          : 'border-red-500/50 text-red-400'
+                          ? 'border-yellow-400 text-yellow-300 bg-yellow-500/10'
+                          : 'border-red-400 text-red-300 bg-red-500/10'
                       )}
                     >
-                      {profile.affiliate_status === 'approved' ? 'Pro' : 
-                       profile.affiliate_status === 'pending' ? 'Pending' : 'Inactive'}
+                      {profile.affiliate_status === 'approved' ? 'ELITE' : 
+                       profile.affiliate_status === 'pending' ? 'PENDENTE' : 'INATIVO'}
                     </Badge>
                   )}
                 </div>
@@ -270,8 +188,8 @@ const DashboardLayout: React.FC = () => {
             </div>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
+          {/* Navigation melhorada */}
+          <nav className="flex-1 space-y-2 p-6 overflow-y-auto">
             {navigation.map((item) => {
               const isActive = isActivePath(item.href);
               
@@ -283,27 +201,40 @@ const DashboardLayout: React.FC = () => {
                     setSidebarOpen(false);
                   }}
                   className={cn(
-                    "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                    "w-full flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 group relative overflow-hidden",
                     isActive
-                      ? "bg-orange-500/20 text-orange-400 shadow-lg shadow-orange-500/10"
-                      : "text-slate-300 hover:bg-slate-800/50 hover:text-white"
+                      ? "bg-gradient-to-r from-orange-500/30 to-orange-600/20 text-orange-300 shadow-lg shadow-orange-500/20 border border-orange-400/30"
+                      : "text-slate-300 hover:bg-gradient-to-r hover:from-orange-500/10 hover:to-orange-600/5 hover:text-white hover:border hover:border-orange-500/20"
                   )}
                 >
+                  {/* Glow effect on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-400/0 via-orange-400/5 to-orange-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  
                   <item.icon className={cn(
-                    "h-5 w-5 flex-shrink-0",
-                    isActive ? "text-orange-400" : "text-slate-400"
+                    "h-5 w-5 flex-shrink-0 transition-colors duration-200",
+                    isActive ? "text-orange-400" : "text-slate-400 group-hover:text-orange-400"
                   )} />
-                  <span className="flex-1 text-left">{item.name}</span>
+                  <span className="flex-1 text-left relative z-10">{item.name}</span>
+                  {item.badge && (
+                    <Badge className="bg-orange-500 text-white text-xs px-2 py-0.5 relative z-10">
+                      {item.badge}
+                    </Badge>
+                  )}
                 </button>
               );
             })}
 
-            {/* Admin Section */}
+            {/* Admin Section melhorada */}
             {isAdmin() && (
-              <div className="mt-6">
-                <h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                  Administração
-                </h3>
+              <div className="mt-8">
+                <div className="flex items-center gap-2 px-4 mb-4">
+                  <div className="h-px bg-gradient-to-r from-transparent via-orange-500/50 to-transparent flex-1" />
+                  <h3 className="text-xs font-bold text-orange-400 uppercase tracking-wider flex items-center gap-1">
+                    <Shield className="h-3 w-3" />
+                    Admin
+                  </h3>
+                  <div className="h-px bg-gradient-to-r from-transparent via-orange-500/50 to-transparent flex-1" />
+                </div>
                 {adminNavigation.map((item) => {
                   const isActive = isActivePath(item.href);
                   
@@ -315,17 +246,19 @@ const DashboardLayout: React.FC = () => {
                         setSidebarOpen(false);
                       }}
                       className={cn(
-                        "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                        "w-full flex items-center gap-4 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 group relative overflow-hidden",
                         isActive
-                          ? "bg-orange-500/20 text-orange-400 shadow-lg shadow-orange-500/10"
-                          : "text-slate-300 hover:bg-slate-800/50 hover:text-white"
+                          ? "bg-gradient-to-r from-purple-500/30 to-purple-600/20 text-purple-300 shadow-lg shadow-purple-500/20 border border-purple-400/30"
+                          : "text-slate-300 hover:bg-gradient-to-r hover:from-purple-500/10 hover:to-purple-600/5 hover:text-white hover:border hover:border-purple-500/20"
                       )}
                     >
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-400/0 via-purple-400/5 to-purple-400/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      
                       <item.icon className={cn(
-                        "h-5 w-5 flex-shrink-0",
-                        isActive ? "text-orange-400" : "text-slate-400"
+                        "h-5 w-5 flex-shrink-0 transition-colors duration-200",
+                        isActive ? "text-purple-400" : "text-slate-400 group-hover:text-purple-400"
                       )} />
-                      <span className="flex-1 text-left">{item.name}</span>
+                      <span className="flex-1 text-left relative z-10">{item.name}</span>
                     </button>
                   );
                 })}
@@ -333,13 +266,13 @@ const DashboardLayout: React.FC = () => {
             )}
           </nav>
 
-          {/* Footer Actions */}
-          <div className="border-t border-slate-800/50 p-4 space-y-2">
+          {/* Footer Actions melhorado */}
+          <div className="border-t border-orange-500/20 bg-gradient-to-r from-slate-800/50 to-slate-700/50 p-6 space-y-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/')}
-              className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800/50"
+              className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800/50 hover:border hover:border-orange-500/20 transition-all duration-200"
             >
               <Home className="h-4 w-4 mr-3" />
               Voltar ao Site
@@ -348,37 +281,39 @@ const DashboardLayout: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={handleSignOut}
-              className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10"
+              className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10 hover:border hover:border-red-500/20 transition-all duration-200"
             >
               <LogOut className="h-4 w-4 mr-3" />
-              Sair
+              Sair da Conta
             </Button>
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <div className="lg:pl-72">
-        {/* Top Bar */}
-        <header className="sticky top-0 z-30 border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-xl">
-          <div className="flex h-16 items-center justify-between px-6">
+      <div className="lg:pl-80">
+        {/* Top Bar melhorada */}
+        <header className="sticky top-0 z-30 border-b border-orange-500/20 bg-slate-900/90 backdrop-blur-xl shadow-lg shadow-orange-500/5">
+          <div className="flex h-18 items-center justify-between px-6 py-3">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
                 size="sm"
-                className="lg:hidden text-slate-300 hover:text-white"
+                className="lg:hidden text-slate-300 hover:text-white hover:bg-orange-500/10 transition-all duration-200"
                 onClick={() => setSidebarOpen(true)}
               >
                 <Menu className="h-5 w-5" />
               </Button>
               
-              {/* Breadcrumb */}
-              <div className="hidden sm:flex items-center text-sm text-slate-400">
-                <span>Dashboard</span>
+              {/* Breadcrumb melhorado */}
+              <div className="hidden sm:flex items-center text-sm">
+                <span className="text-orange-400 font-semibold flex items-center gap-1">
+                  <span className="text-xs">🏆</span> Dashboard
+                </span>
                 {location.pathname !== '/dashboard' && (
                   <>
-                    <span className="mx-2">/</span>
-                    <span className="text-white capitalize">
+                    <span className="mx-3 text-orange-500">/</span>
+                    <span className="text-white capitalize font-medium">
                       {location.pathname.split('/').pop()?.replace('-', ' ')}
                     </span>
                   </>
@@ -386,64 +321,67 @@ const DashboardLayout: React.FC = () => {
               </div>
             </div>
 
-            {/* Notifications */}
+            {/* Notifications melhoradas */}
             <div className="relative" ref={notificationsRef}>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="text-slate-300 hover:text-white relative"
+                className="text-slate-300 hover:text-white relative hover:bg-orange-500/10 transition-all duration-200"
               >
                 <Bell className="h-5 w-5" />
                 {/* Notification badge */}
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-lg">
                   <span className="text-xs text-white font-bold">3</span>
                 </span>
               </Button>
               
-              {/* Notifications Dropdown */}
+              {/* Notifications Dropdown melhorado */}
               {notificationsOpen && (
-                <div className="absolute right-0 top-full mt-2 w-80 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
-                  <div className="p-4 border-b border-slate-700">
-                    <h3 className="text-white font-medium">Notificações</h3>
+                <div className="absolute right-0 top-full mt-3 w-96 bg-slate-800/95 backdrop-blur-xl border border-orange-500/20 rounded-xl shadow-2xl shadow-orange-500/10 z-50">
+                  <div className="p-4 border-b border-orange-500/20 bg-gradient-to-r from-orange-500/10 to-orange-600/10">
+                    <h3 className="text-white font-bold flex items-center gap-2">
+                      <span className="text-sm">🏆</span>
+                      Notificações Elite
+                    </h3>
                   </div>
-                  <div className="max-h-64 overflow-y-auto">
-                    <div className="p-3 border-b border-slate-700/50 hover:bg-slate-700/30 cursor-pointer">
+                  <div className="max-h-80 overflow-y-auto">
+                    <div className="p-4 border-b border-slate-700/50 hover:bg-slate-700/30 cursor-pointer transition-colors duration-200">
                       <div className="flex items-start gap-3">
-                        <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+                        <div className="w-3 h-3 bg-orange-500 rounded-full mt-2 animate-pulse"></div>
                         <div className="flex-1">
-                          <p className="text-sm text-white">Nova comissão disponível</p>
-                          <p className="text-xs text-slate-400 mt-1">Você ganhou R$ 25,00 em comissões</p>
+                          <p className="text-sm text-white font-medium">Nova comissão disponível</p>
+                          <p className="text-xs text-orange-300 mt-1">Você ganhou R$ 25,00 em comissões</p>
                           <p className="text-xs text-slate-500 mt-1">há 2 horas</p>
                         </div>
                       </div>
                     </div>
-                    <div className="p-3 border-b border-slate-700/50 hover:bg-slate-700/30 cursor-pointer">
+                    <div className="p-4 border-b border-slate-700/50 hover:bg-slate-700/30 cursor-pointer transition-colors duration-200">
                       <div className="flex items-start gap-3">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                        <div className="w-3 h-3 bg-blue-500 rounded-full mt-2"></div>
                         <div className="flex-1">
-                          <p className="text-sm text-white">Novo produto disponível</p>
+                          <p className="text-sm text-white font-medium">📚 Novo produto disponível</p>
                           <p className="text-xs text-slate-400 mt-1">Confira o novo curso lançado</p>
                           <p className="text-xs text-slate-500 mt-1">há 5 horas</p>
                         </div>
                       </div>
                     </div>
-                    <div className="p-3 hover:bg-slate-700/30 cursor-pointer">
+                    <div className="p-4 hover:bg-slate-700/30 cursor-pointer transition-colors duration-200">
                       <div className="flex items-start gap-3">
-                        <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                        <div className="w-3 h-3 bg-green-500 rounded-full mt-2"></div>
                         <div className="flex-1">
-                          <p className="text-sm text-white">Meta mensal atingida</p>
+                          <p className="text-sm text-white font-medium">🎯 Meta mensal atingida</p>
                           <p className="text-xs text-slate-400 mt-1">Parabéns! Você bateu sua meta</p>
                           <p className="text-xs text-slate-500 mt-1">ontem</p>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div className="p-3 border-t border-slate-700">
+                  <div className="p-4 border-t border-orange-500/20">
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="w-full text-orange-400 hover:text-orange-300"
+                      className="w-full text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 transition-all duration-200"
                       onClick={() => {
                         navigate('/dashboard/notifications');
                         setNotificationsOpen(false);
@@ -459,7 +397,7 @@ const DashboardLayout: React.FC = () => {
         </header>
 
         {/* Page Content */}
-        <main className="p-6">
+        <main className="p-6 lg:p-8">
           <Outlet />
         </main>
       </div>

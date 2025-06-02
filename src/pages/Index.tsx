@@ -130,12 +130,12 @@ const Index = () => {
             <div className="space-y-8 slide-in-left text-center lg:text-left">
               <div className="space-y-6">
                 <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
-                  <span className="text-4xl animate-pulse">🏆</span>
+                  <span className="text-2xl animate-pulse">🏆</span>
                   <span className="text-orange-400 font-bold text-lg">Portal Premium Elite</span>
                 </div>
                 <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
                   Área de Membros <span className="text-orange-400 text-glow">Exclusiva e Premium</span><br />
-                  para <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Afiliados Elite</span> 🏆
+                  para <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Afiliados Elite</span> <span className="text-lg">🏆</span>
                 </h1>
               </div>
               
@@ -153,7 +153,7 @@ const Index = () => {
                     </svg>
                   </div>
                   <div>
-                    <div className="text-white font-bold text-sm">🏆 Conteúdo Exclusivo</div>
+                    <div className="text-white font-bold text-sm">Conteúdo Exclusivo</div>
                     <div className="text-orange-300 text-xs">Videoaulas & Materiais Elite</div>
                   </div>
                 </div>
@@ -165,7 +165,7 @@ const Index = () => {
                     </svg>
                   </div>
                   <div>
-                    <div className="text-white font-bold text-sm">🏆 Comunidade Elite</div>
+                    <div className="text-white font-bold text-sm">Comunidade Elite</div>
                     <div className="text-blue-300 text-xs">Chat & Networking Premium</div>
                   </div>
                 </div>
@@ -177,7 +177,7 @@ const Index = () => {
                     </svg>
                   </div>
                   <div>
-                    <div className="text-white font-bold text-sm">🏆 Dashboard Avançado</div>
+                    <div className="text-white font-bold text-sm">Dashboard Avançado</div>
                     <div className="text-green-300 text-xs">Comissões & Performance Elite</div>
                   </div>
                 </div>
@@ -194,7 +194,7 @@ const Index = () => {
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <div className="relative flex items-center justify-center gap-3">
-                        <span className="text-2xl">🏆</span>
+                        <span className="text-lg">🏆</span>
                         <span className="text-xl">Acessar Área Elite</span>
                         <div className="bg-yellow-400 text-slate-900 text-xs font-bold px-3 py-1.5 rounded-full animate-pulse border border-yellow-300">
                           ⚡ PREMIUM
@@ -222,7 +222,7 @@ const Index = () => {
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="relative flex items-center justify-center gap-3">
-                      <span className="text-2xl">🏆</span>
+                      <span className="text-lg">🏆</span>
                       <span className="text-xl">Acessar Meu Dashboard Elite</span>
                     </div>
                   </button>
@@ -235,7 +235,7 @@ const Index = () => {
                   <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  <span className="text-green-300 font-medium">🏆 Acesso Premium</span>
+                  <span className="text-green-300 font-medium">Acesso Premium</span>
                 </div>
                 <div className="flex items-center gap-2 scale-hover bg-slate-800/20 px-3 py-2 rounded-lg border border-blue-500/20">
                   <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -268,7 +268,7 @@ const Index = () => {
                           <div className="w-3 h-3 rounded-full bg-orange-400"></div>
                         </div>
                         <div className="flex-1 bg-slate-700/50 rounded px-3 py-1 mx-4">
-                          <span className="text-xs text-slate-400">🏆 app.afiliadoselite.com/dashboard</span>
+                          <span className="text-xs text-slate-400">app.afiliadoselite.com/dashboard</span>
                         </div>
                       </div>
                       
@@ -278,12 +278,13 @@ const Index = () => {
                         <div className="flex items-center justify-between">
                           <div>
                             <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                              🏆 Olá, Afiliado Elite!
+                              <span className="text-sm">🏆</span>
+                              Olá, Afiliado Elite!
                             </h3>
                             <p className="text-orange-400 text-sm">Bem-vindo ao seu dashboard premium</p>
                           </div>
                           <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                            <span className="text-slate-900 text-lg font-bold">🏆</span>
+                            <span className="text-slate-900 text-base font-bold">🏆</span>
                           </div>
                         </div>
                         
@@ -291,7 +292,7 @@ const Index = () => {
                         <div className="grid grid-cols-3 gap-3">
                           <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-lg p-3 border border-orange-500/30">
                             <div className="text-orange-300 text-xl font-bold">R$ 2.847</div>
-                            <div className="text-orange-400 text-xs font-medium">🏆 Comissões</div>
+                            <div className="text-orange-400 text-xs font-medium">Comissões</div>
                           </div>
                           <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg p-3 border border-blue-500/30">
                             <div className="text-blue-300 text-xl font-bold">1.234</div>
@@ -308,7 +309,7 @@ const Index = () => {
                           <div className="bg-gradient-to-r from-orange-500/10 to-orange-600/5 rounded-lg p-3 border border-orange-500/20">
                             <div className="flex items-center gap-3 mb-2">
                               <div className="w-8 h-8 bg-orange-400 rounded flex items-center justify-center">
-                                <span className="text-slate-900 font-bold">🏆</span>
+                                <span className="text-slate-900 font-bold text-xs">🏆</span>
                               </div>
                               <div>
                                 <div className="text-white text-sm font-medium">Videoaulas Elite</div>
@@ -320,7 +321,7 @@ const Index = () => {
                           <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/5 rounded-lg p-3 border border-blue-500/20">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-blue-400 rounded flex items-center justify-center">
-                                <span className="text-slate-900 font-bold">💬</span>
+                                <span className="text-slate-900 font-bold text-xs">💬</span>
                               </div>
                               <div>
                                 <div className="text-white text-sm font-medium">Chat Elite</div>
@@ -333,7 +334,8 @@ const Index = () => {
                         {/* Performance Chart Preview melhorado */}
                         <div className="bg-gradient-to-r from-purple-500/10 to-purple-600/5 rounded-lg p-3 border border-purple-500/20">
                           <div className="text-white text-sm font-medium mb-2 flex items-center gap-2">
-                            🏆 Performance Elite (7 dias)
+                            <span className="text-xs">🏆</span>
+                            Performance Elite (7 dias)
                           </div>
                           <div className="h-16 relative">
                             <svg className="w-full h-full" viewBox="0 0 200 40">
@@ -370,7 +372,7 @@ const Index = () => {
                 
                 {/* Floating Elements melhorados */}
                 <div className="absolute -top-3 -right-3 bg-gradient-to-r from-orange-400 to-orange-500 text-slate-900 px-4 py-2 rounded-full text-xs font-bold animate-pulse shadow-xl border-2 border-orange-300/40">
-                  🏆 ELITE ONLINE
+                  <span className="text-xs">🏆</span> ELITE ONLINE
                 </div>
                 <div className="absolute -bottom-3 -left-3 bg-gradient-to-r from-blue-400 to-blue-500 text-slate-900 px-4 py-2 rounded-full text-xs font-bold float-animation shadow-xl border-2 border-blue-300/40">
                   💬 Chat Elite Ativo
