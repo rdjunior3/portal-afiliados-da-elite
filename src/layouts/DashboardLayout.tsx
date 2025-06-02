@@ -90,15 +90,43 @@ const DashboardLayout: React.FC = () => {
   ];
 
   const handleSignOut = async () => {
-    const { error } = await signOut();
-    if (error) {
+    try {
+      const { error } = await signOut();
+      
+      if (error) {
+        toast({
+          title: "Erro ao sair",
+          description: "Não foi possível fazer logout. Tente novamente.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Logout realizado",
+          description: "Até a próxima!",
+        });
+      }
+      
+      // Força redirecionamento independente de erro
+      // Usa setTimeout para garantir que o toast seja exibido
+      setTimeout(() => {
+        navigate('/', { replace: true });
+        // Força reload da página como backup
+        window.location.href = '/';
+      }, 500);
+      
+    } catch (error) {
+      console.error('Erro durante logout:', error);
       toast({
-        title: "Erro ao sair",
-        description: "Não foi possível fazer logout. Tente novamente.",
+        title: "Logout forçado",
+        description: "Sua sessão foi encerrada.",
         variant: "destructive",
       });
-    } else {
-      navigate('/');
+      
+      // Mesmo com erro, força redirecionamento
+      setTimeout(() => {
+        navigate('/', { replace: true });
+        window.location.href = '/';
+      }, 500);
     }
   };
 

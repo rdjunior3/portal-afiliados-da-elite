@@ -268,6 +268,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     
     try {
+      // Limpar estados imediatamente para evitar travamento
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      
       const { error } = await supabase.auth.signOut();
       
       if (error) {
@@ -276,17 +281,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: "Não foi possível sair da conta. Tente novamente.",
           variant: "destructive",
         });
-      } else {
+        
+        // Em caso de erro, ainda assim força a limpeza local
+        setUser(null);
+        setSession(null);
         setProfile(null);
+      } else {
         toast({
           title: "Logout realizado",
           description: "Até a próxima!",
         });
       }
 
+      // Força o loading para false após logout
+      setTimeout(() => {
+        setLoading(false);
+      }, 100); // Pequeno delay para garantir que a UI seja atualizada
+
       return { error };
-    } finally {
+    } catch (error) {
+      console.error('Erro durante logout:', error);
+      
+      // Mesmo com erro, limpa os estados locais
+      setUser(null);
+      setSession(null);
+      setProfile(null);
       setLoading(false);
+      
+      toast({
+        title: "Logout forçado",
+        description: "Sua sessão foi encerrada.",
+      });
+      
+      return { error };
     }
   };
 

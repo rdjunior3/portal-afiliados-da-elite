@@ -32,9 +32,29 @@ export const UserProfile: React.FC = () => {
   if (!user) return null;
 
   const handleSignOut = async () => {
-    const { error } = await signOut();
-    if (!error) {
-      navigate('/');
+    try {
+      const { error } = await signOut();
+      
+      if (error) {
+        console.error('Erro no logout:', error);
+      }
+      
+      // Força redirecionamento independente de erro
+      // Usa setTimeout para garantir que o processo de logout seja concluído
+      setTimeout(() => {
+        navigate('/', { replace: true });
+        // Força reload da página como backup
+        window.location.href = '/';
+      }, 300);
+      
+    } catch (error) {
+      console.error('Erro durante logout:', error);
+      
+      // Mesmo com erro, força redirecionamento
+      setTimeout(() => {
+        navigate('/', { replace: true });
+        window.location.href = '/';
+      }, 300);
     }
   };
 

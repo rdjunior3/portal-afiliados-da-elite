@@ -52,11 +52,27 @@ export const Loading: React.FC<LoadingProps> = ({
 
 interface LoadingScreenProps {
   message?: string;
+  showTimeout?: boolean;
+  onEscape?: () => void;
 }
 
 export const LoadingScreen: React.FC<LoadingScreenProps> = ({ 
-  message = 'Carregando Portal da Elite...' 
+  message = 'Carregando Portal da Elite...',
+  showTimeout = false,
+  onEscape
 }) => {
+  const [showEscapeHint, setShowEscapeHint] = React.useState(false);
+
+  React.useEffect(() => {
+    if (showTimeout) {
+      const timer = setTimeout(() => {
+        setShowEscapeHint(true);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showTimeout]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 flex items-center justify-center p-4">
       {/* Mobile-first responsive container */}
@@ -116,8 +132,25 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
               {/* Status indicator - Enhanced for Mobile */}
               <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-slate-400">
                 <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse" />
-                <span className="text-center">Carregando recursos do portal...</span>
+                <span className="text-center">
+                  {showTimeout && showEscapeHint 
+                    ? "Verificação está demorando mais que o normal..." 
+                    : "Carregando recursos do portal..."
+                  }
+                </span>
               </div>
+              
+              {/* Escape hint */}
+              {showTimeout && showEscapeHint && onEscape && (
+                <div className="mt-4">
+                  <button
+                    onClick={onEscape}
+                    className="text-orange-400 hover:text-orange-300 text-sm underline transition-colors duration-200"
+                  >
+                    🏠 Voltar para a página inicial
+                  </button>
+                </div>
+              )}
             </div>
             
             {/* Mobile-friendly version indicator */}
