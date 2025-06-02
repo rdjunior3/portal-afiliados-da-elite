@@ -21,7 +21,8 @@ import {
   Settings,
   User,
   TrendingUp,
-  DollarSign
+  DollarSign,
+  ArrowRight
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import CreateLinkModal from '@/components/CreateLinkModal';
@@ -88,7 +89,7 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-8">
-      {/* Welcome Section melhorada */}
+      {/* Welcome Section */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <span className="text-2xl animate-pulse">🏆</span>
@@ -97,20 +98,20 @@ const Dashboard = () => {
               Olá, {getDisplayName()}!
               <span className="text-2xl">👋</span>
             </h1>
-            <p className="text-orange-400 font-semibold">
+            <p className="text-orange-300 font-semibold">
               Bem-vindo ao seu portal elite de afiliados
             </p>
           </div>
         </div>
       </div>
 
-      {/* Status Cards Row - Nova seção */}
+      {/* Status Cards Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 border-orange-500/30 hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-orange-300 text-sm font-medium">Status Elite</p>
+                <p className="text-orange-200 text-sm font-medium">Status Elite</p>
                 <p className="text-2xl font-bold text-white">
                   {profile?.affiliate_status === 'approved' ? 'ATIVO' : 'PENDENTE'}
                 </p>
@@ -126,7 +127,7 @@ const Dashboard = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-300 text-sm font-medium">💰 Comissões</p>
+                <p className="text-green-200 text-sm font-medium">💰 Comissões</p>
                 <p className="text-2xl font-bold text-white">R$ 0,00</p>
               </div>
               <div className="h-12 w-12 bg-green-500 rounded-full flex items-center justify-center">
@@ -140,7 +141,7 @@ const Dashboard = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-blue-300 text-sm font-medium">📊 Performance</p>
+                <p className="text-blue-200 text-sm font-medium">📊 Performance</p>
                 <p className="text-2xl font-bold text-white">Elite</p>
               </div>
               <div className="h-12 w-12 bg-blue-500 rounded-full flex items-center justify-center">
@@ -154,7 +155,7 @@ const Dashboard = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-purple-300 text-sm font-medium">🎯 Meta</p>
+                <p className="text-purple-200 text-sm font-medium">🎯 Meta</p>
                 <p className="text-2xl font-bold text-white">0%</p>
               </div>
               <div className="h-12 w-12 bg-purple-500 rounded-full flex items-center justify-center">
@@ -165,58 +166,31 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Quick Actions melhoradas */}
-      <div className="flex flex-wrap gap-4">
-        <Button 
-          onClick={() => navigate('/dashboard/products')}
-          className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white shadow-lg hover:shadow-orange-500/30 transition-all duration-300 transform hover:scale-105"
-        >
-          <Package className="mr-2 h-4 w-4" />
-          Explorar Produtos Elite
-        </Button>
-        <Button 
-          variant="outline" 
-          onClick={() => navigate('/dashboard/content')}
-          className="border-orange-500/50 text-orange-300 hover:bg-orange-500/10 hover:border-orange-400/60 transition-all duration-300"
-        >
-          <BookOpen className="mr-2 h-4 w-4" />
-          📚 Ver Aulas Premium
-        </Button>
-        <Button 
-          variant="outline" 
-          onClick={() => navigate('/dashboard/chat')}
-          className="border-blue-500/50 text-blue-300 hover:bg-blue-500/10 hover:border-blue-400/60 transition-all duration-300"
-        >
-          <MessageSquare className="mr-2 h-4 w-4" />
-          💬 Chat Elite
-        </Button>
-      </div>
-
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Content Area */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Welcome Card melhorada */}
+          {/* Welcome Card */}
           <Card className="bg-gradient-to-br from-orange-500/15 to-orange-600/10 border-orange-500/30 shadow-lg shadow-orange-500/10">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-3">
                 <span className="text-lg">🏆</span>
-                Portal Afiliados Elite
+                Portal Afiliados da Elite
               </CardTitle>
-              <CardDescription className="text-orange-200">
+              <CardDescription className="text-orange-100">
                 Seu centro de comando para maximizar seus ganhos como afiliado elite
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center gap-3 text-sm">
                 <Target className="h-5 w-5 text-orange-400" />
-                <span className="text-slate-300">Status do perfil: </span>
+                <span className="text-slate-200">Status do perfil: </span>
                 <Badge className={
                   profile?.affiliate_status === 'approved' 
-                    ? 'bg-orange-500/30 text-orange-300 border-orange-400/50' 
+                    ? 'bg-orange-500/30 text-orange-200 border-orange-400/50' 
                     : profile?.affiliate_status === 'pending'
-                    ? 'bg-yellow-500/30 text-yellow-300 border-yellow-400/50'
-                    : 'bg-red-500/30 text-red-300 border-red-400/50'
+                    ? 'bg-yellow-500/30 text-yellow-200 border-yellow-400/50'
+                    : 'bg-red-500/30 text-red-200 border-red-400/50'
                 }>
                   {profile?.affiliate_status === 'approved' ? 'Elite Aprovado' : 
                    profile?.affiliate_status === 'pending' ? 'Pendente' : 'Inativo'}
@@ -227,7 +201,7 @@ const Dashboard = () => {
                   <div className="flex items-start gap-3">
                     <span className="text-xl">⚠️</span>
                     <div>
-                      <p className="text-sm text-yellow-200 font-medium">
+                      <p className="text-sm text-yellow-100 font-medium">
                         Complete seu perfil para ter acesso total aos recursos elite
                       </p>
                       <Button 
@@ -244,7 +218,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Products Section melhorada */}
+          {/* Products Section */}
           <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-lg">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -256,12 +230,12 @@ const Dashboard = () => {
                   variant="ghost" 
                   size="sm"
                   onClick={() => navigate('/dashboard/products')}
-                  className="text-orange-400 hover:text-orange-300 hover:bg-orange-500/10"
+                  className="text-orange-300 hover:text-orange-200 hover:bg-orange-500/10 flex items-center gap-2"
                 >
-                  Ver todos os produtos
+                  Ver todos <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
-              <CardDescription>
+              <CardDescription className="text-slate-300">
                 Explore nossos produtos premium com as melhores comissões
               </CardDescription>
             </CardHeader>
@@ -287,10 +261,10 @@ const Dashboard = () => {
                           <h3 className="font-bold text-white">{product.name}</h3>
                         </div>
                         <div className="flex items-center gap-4 text-sm">
-                          <Badge variant="outline" className="border-orange-500/60 text-orange-400 bg-orange-500/10">
+                          <Badge variant="outline" className="border-orange-500/60 text-orange-300 bg-orange-500/10">
                             💰 {product.commission_rate}% comissão
                           </Badge>
-                          <span className="text-green-400 font-semibold">
+                          <span className="text-green-300 font-semibold">
                             R$ {product.price?.toFixed(2) || '0.00'}
                           </span>
                         </div>
@@ -311,9 +285,9 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Sidebar melhorada */}
+        {/* Sidebar */}
         <div className="space-y-8">
-          {/* Profile Status melhorado */}
+          {/* Profile Status */}
           <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-lg">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
@@ -327,22 +301,22 @@ const Dashboard = () => {
                   <span className="text-lg">🏆</span>
                 </div>
                 <h3 className="text-white font-bold text-lg">{getDisplayName()}</h3>
-                <p className="text-orange-400 font-medium">Afiliado Elite</p>
+                <p className="text-orange-300 font-medium">Afiliado Elite</p>
               </div>
               
               <div className="space-y-3 mt-6">
                 <div className="flex items-center justify-between p-3 bg-slate-700/40 rounded-lg">
-                  <span className="text-slate-400">ID Afiliado</span>
-                  <span className="text-orange-300 font-bold">
+                  <span className="text-slate-300">ID Afiliado</span>
+                  <span className="text-orange-200 font-bold">
                     {profile?.affiliate_id || 'Pendente'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-slate-700/40 rounded-lg">
-                  <span className="text-slate-400">Status</span>
+                  <span className="text-slate-300">Status</span>
                   <Badge className={
                     profile?.affiliate_status === 'approved' 
-                      ? 'bg-orange-500/30 text-orange-300 border-orange-400/50' 
-                      : 'bg-yellow-500/30 text-yellow-300 border-yellow-400/50'
+                      ? 'bg-orange-500/30 text-orange-200 border-orange-400/50' 
+                      : 'bg-yellow-500/30 text-yellow-200 border-yellow-400/50'
                   }>
                     {profile?.affiliate_status === 'approved' ? 'Elite' : 'Pendente'}
                   </Badge>
@@ -351,46 +325,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Quick Actions melhoradas */}
-          <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Zap className="h-5 w-5 text-orange-400" />
-                Ações Rápidas
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate('/dashboard/products')}
-                className="w-full justify-start text-slate-300 hover:text-white hover:bg-orange-500/10 hover:border-orange-500/30 border border-transparent transition-all duration-300"
-              >
-                <Package className="h-4 w-4 mr-3" />
-                Explorar Produtos Elite
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate('/dashboard/content')}
-                className="w-full justify-start text-slate-300 hover:text-white hover:bg-blue-500/10 hover:border-blue-500/30 border border-transparent transition-all duration-300"
-              >
-                <BookOpen className="h-4 w-4 mr-3" />
-                📚 Acessar Aulas Premium
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate('/dashboard/profile')}
-                className="w-full justify-start text-slate-300 hover:text-white hover:bg-purple-500/10 hover:border-purple-500/30 border border-transparent transition-all duration-300"
-              >
-                <Settings className="h-4 w-4 mr-3" />
-                ⚙️ Configurar Perfil
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Tips Card melhorada */}
+          {/* Tips Card */}
           <Card className="bg-gradient-to-br from-orange-500/15 to-orange-600/10 border-orange-500/30 shadow-lg shadow-orange-500/10">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
@@ -401,19 +336,19 @@ const Dashboard = () => {
             <CardContent className="space-y-4 text-sm">
               <div className="flex items-start gap-3 p-3 bg-slate-800/30 rounded-lg">
                 <span className="text-base">🏆</span>
-                <span className="text-slate-300 leading-relaxed">
+                <span className="text-slate-200 leading-relaxed">
                   Complete seu perfil para desbloquear recursos premium exclusivos
                 </span>
               </div>
               <div className="flex items-start gap-3 p-3 bg-slate-800/30 rounded-lg">
                 <span className="text-base">💰</span>
-                <span className="text-slate-300 leading-relaxed">
+                <span className="text-slate-200 leading-relaxed">
                   Explore nossos produtos com as maiores comissões do mercado
                 </span>
               </div>
               <div className="flex items-start gap-3 p-3 bg-slate-800/30 rounded-lg">
                 <span className="text-base">📚</span>
-                <span className="text-slate-300 leading-relaxed">
+                <span className="text-slate-200 leading-relaxed">
                   Participe das aulas de capacitação para aumentar suas vendas
                 </span>
               </div>

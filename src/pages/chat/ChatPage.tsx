@@ -28,7 +28,10 @@ import {
   UserPlus,
   Settings,
   Crown,
-  Star
+  Star,
+  Plus,
+  Sparkles,
+  Clock
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -45,8 +48,11 @@ import {
 } from '@/components/ui/tooltip';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { format, isToday, isYesterday } from 'date-fns';
+import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 interface ChatRoom {
   id: string;
@@ -59,6 +65,8 @@ interface ChatRoom {
     allow_reactions?: boolean;
   };
   member_count?: number;
+  created_at: string;
+  updated_at: string;
 }
 
 interface Message {
@@ -88,32 +96,37 @@ interface Message {
   }[];
 }
 
+interface RoomForm {
+  name: string;
+  description: string;
+}
+
 const EMOJI_LIST = ['👍', '👎', '❤️', '😀', '😂', '😮', '😢', '😡', '🎉', '🔥'];
 
 const ChatPage = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
-  const [messageInput, setMessageInput] = useState('');
-  const [isMultiline, setIsMultiline] = useState(false);
-  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
-  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
-  const [editingMessage, setEditingMessage] = useState<string | null>(null);
-  const [editContent, setEditContent] = useState('');
+  const [newMessage, setNewMessage] = useState('');
+  const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
+  const [roomForm, setRoomForm] = useState<RoomForm>({
+    name: '',
+    description: ''
+  });
 
   // Buscar salas de chat
-  const { data: rooms, isLoading: roomsLoading } = useQuery({
+  const { data: rooms, isLoading: isLoadingRooms } = useQuery({
     queryKey: ['chat-rooms'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('chat_rooms')
         .select('*')
         .eq('is_active', true)
-        .order('name');
+        .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data as ChatRoom[];
@@ -121,7 +134,7 @@ const ChatPage = () => {
   });
 
   // Buscar mensagens da sala selecionada
-  const { data: messages, isLoading: messagesLoading } = useQuery({
+  const { data: messages, isLoading: isLoadingMessages } = useQuery({
     queryKey: ['messages', selectedRoom?.id],
     queryFn: async () => {
       if (!selectedRoom) return [];
@@ -130,7 +143,12 @@ const ChatPage = () => {
         .from('messages')
         .select(`
           *,
-          sender:profiles(id, email, first_name, last_name, avatar_url, role)
+          sender:profiles!messages_sender_id_fkey(
+            id,
+            full_name,
+            avatar_url,
+            role
+          )
         `)
         .eq('room_id', selectedRoom.id)
         .order('created_at', { ascending: true })
@@ -142,558 +160,401 @@ const ChatPage = () => {
     enabled: !!selectedRoom
   });
 
-  // Mutation para enviar mensagem
-  const sendMessageMutation = useMutation({
-    mutationFn: async ({ content, replyToId }: { content: string; replyToId?: string }) => {
-      if (!selectedRoom || !user) throw new Error('Sala ou usuário não definido');
+  // Mutation para criar sala
+  const createRoomMutation = useMutation({
+    mutationFn: async (data: RoomForm) => {
+      if (!isAdmin()) {
+        throw new Error('Apenas administradores podem criar salas');
+      }
       
-      const { data, error } = await supabase
-        .from('messages')
-        .insert({
-          room_id: selectedRoom.id,
-          sender_id: user.id,
-          content,
-          reply_to_id: replyToId,
-          message_type: 'text'
-        })
-        .select()
-        .single();
+      const { error } = await supabase
+        .from('chat_rooms')
+        .insert([{
+          ...data,
+          is_active: true
+        }]);
       
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
-      setMessageInput('');
-      setReplyingTo(null);
-      setIsMultiline(false);
-      scrollToBottom();
-    },
-    onError: (error) => {
+      queryClient.invalidateQueries({ queryKey: ['chat-rooms'] });
+      setIsRoomModalOpen(false);
+      setRoomForm({ name: '', description: '' });
       toast({
-        title: "Erro ao enviar mensagem",
-        description: "Não foi possível enviar sua mensagem. Tente novamente.",
+        title: "Sala criada!",
+        description: "A sala foi criada com sucesso.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Não foi possível criar a sala.",
         variant: "destructive",
       });
     }
   });
 
-  // Configurar realtime
+  // Mutation para enviar mensagem
+  const sendMessageMutation = useMutation({
+    mutationFn: async (content: string) => {
+      if (!selectedRoom || !user) {
+        throw new Error('Sala ou usuário não selecionado');
+      }
+      
+      const { error } = await supabase
+        .from('messages')
+        .insert([{
+          room_id: selectedRoom.id,
+          sender_id: user.id,
+          content: content.trim()
+        }]);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      setNewMessage('');
+      queryClient.invalidateQueries({ queryKey: ['messages', selectedRoom?.id] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: "Não foi possível enviar a mensagem.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Automatically select "Comunidade da Elite" room or first room
+  useEffect(() => {
+    if (rooms && rooms.length > 0 && !selectedRoom) {
+      const eliteRoom = rooms.find(room => room.name === 'Comunidade da Elite');
+      setSelectedRoom(eliteRoom || rooms[0]);
+    }
+  }, [rooms, selectedRoom]);
+
+  // Auto scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Subscribe to real-time messages
   useEffect(() => {
     if (!selectedRoom) return;
 
-    const channel = supabase
-      .channel(`room:${selectedRoom.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
+    const channel = supabase.channel(`messages-${selectedRoom.id}`)
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
           table: 'messages',
           filter: `room_id=eq.${selectedRoom.id}`
         },
-        async (payload) => {
-          const { data: newMessage } = await supabase
-            .from('messages')
-            .select(`
-              *,
-              sender:profiles(id, email, first_name, last_name, avatar_url, role)
-            `)
-            .eq('id', payload.new.id)
-            .single();
-
-          if (newMessage) {
-            queryClient.setQueryData(
-              ['messages', selectedRoom.id],
-              (old: Message[] | undefined) => [...(old || []), newMessage]
-            );
-            scrollToBottom();
-          }
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['messages', selectedRoom.id] });
         }
       )
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState();
-        const users = new Set<string>();
-        
-        Object.values(state).forEach((presences: any[]) => {
-          presences.forEach((presence) => {
-            if (presence.user_id) {
-              users.add(presence.user_id);
-            }
-          });
-        });
-        
-        setOnlineUsers(users);
-      })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED' && user) {
-          await channel.track({
-            user_id: user.id,
-            online_at: new Date().toISOString(),
-          });
-        }
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [selectedRoom, user, queryClient]);
-
-  // Auto scroll
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  // Selecionar primeira sala automaticamente
-  useEffect(() => {
-    if (rooms && rooms.length > 0 && !selectedRoom) {
-      setSelectedRoom(rooms[0]);
-    }
-  }, [rooms, selectedRoom]);
+  }, [selectedRoom, queryClient]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newMessage.trim() || sendMessageMutation.isPending) return;
     
-    if (!messageInput.trim()) return;
-    
-    sendMessageMutation.mutate({ 
-      content: messageInput.trim(),
-      replyToId: replyingTo?.id
-    });
+    sendMessageMutation.mutate(newMessage);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey && !isMultiline) {
-      e.preventDefault();
-      handleSendMessage(e);
+  const getDisplayName = (sender: Message['sender']) => {
+    if (sender?.first_name && sender?.last_name) {
+      return `${sender.first_name} ${sender.last_name}`;
     }
+    if (sender?.first_name) {
+      return sender.first_name;
+    }
+    return sender?.email?.split('@')[0] || 'Usuário';
   };
 
-  const formatMessageTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    
-    if (isToday(date)) {
-      return format(date, 'HH:mm', { locale: ptBR });
-    } else if (isYesterday(date)) {
-      return `Ontem ${format(date, 'HH:mm', { locale: ptBR })}`;
-    } else {
-      return format(date, 'dd/MM HH:mm', { locale: ptBR });
-    }
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const getUserInitials = (firstName?: string | null, lastName?: string | null, email?: string) => {
-    if (firstName && lastName) {
-      return `${firstName[0]}${lastName[0]}`.toUpperCase();
-    }
-    if (firstName) {
-      return firstName.substring(0, 2).toUpperCase();
-    }
-    return email?.substring(0, 2).toUpperCase() || '??';
-  };
-
-  const getUserDisplayName = (user: any) => {
-    if (user?.first_name) {
-      return user.last_name ? `${user.first_name} ${user.last_name}` : user.first_name;
-    }
-    return user?.email?.split('@')[0] || 'Usuário';
-  };
-
-  const getRoleBadge = (role?: string) => {
-    const roleConfig = {
-      super_admin: { label: 'Super Admin', color: 'bg-red-500', icon: Crown },
-      admin: { label: 'Admin', color: 'bg-purple-500', icon: Star },
-      moderator: { label: 'Mod', color: 'bg-blue-500', icon: Star },
-      affiliate: { label: 'Afiliado', color: 'bg-green-500', icon: null },
-      user: { label: '', color: '', icon: null }
-    };
-
-    const config = roleConfig[role as keyof typeof roleConfig] || roleConfig.user;
-    
-    if (!config.label) return null;
-    
+  if (!user) {
     return (
-      <Badge className={`text-xs ${config.color} text-white flex items-center gap-1`}>
-        {config.icon && <config.icon className="h-3 w-3" />}
-        {config.label}
-      </Badge>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
+        <Card className="p-8 bg-slate-800 border-slate-700">
+          <CardContent className="text-center">
+            <MessageSquare className="h-16 w-16 mx-auto text-slate-500 mb-4" />
+            <h3 className="text-lg font-semibold mb-2 text-white">Acesso Restrito</h3>
+            <p className="text-slate-400">Você precisa estar logado para acessar o chat.</p>
+          </CardContent>
+        </Card>
+      </div>
     );
-  };
+  }
 
   return (
-    <TooltipProvider>
-      <div className="flex h-[calc(100vh-4rem)] bg-background">
-        {/* Sidebar - Lista de Salas */}
-        <div className="w-80 border-r bg-gradient-to-b from-card/80 to-card/50 backdrop-blur-sm">
-          <div className="p-6 border-b bg-gradient-to-r from-orange-500/10 to-orange-600/10">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold flex items-center gap-2 text-gradient-orange">
-                <MessageSquare className="h-6 w-6 text-orange-500" />
-                Comunidade Elite
-              </h2>
-              <Button variant="ghost" size="sm" className="hover:bg-orange-100 dark:hover:bg-orange-900/30">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="mt-3 flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <Circle className="h-2 w-2 fill-current text-green-500 animate-pulse" />
-                <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                  {onlineUsers.size} online
-                </span>
+    <div className="h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 flex">
+      {/* Sidebar - Chat Rooms */}
+      <div className="w-80 bg-slate-800/50 border-r border-slate-700 flex flex-col">
+        {/* Header */}
+        <div className="p-6 border-b border-slate-700">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full flex items-center justify-center">
+                <MessageSquare className="h-5 w-5 text-white" />
               </div>
-              <div className="h-1 w-1 bg-muted-foreground rounded-full" />
-              <span className="text-sm text-muted-foreground">
-                {rooms?.length || 0} salas
-              </span>
+              <div>
+                <h1 className="text-xl font-bold text-white">Chat Elite</h1>
+                <p className="text-sm text-orange-300">Comunidade Premium</p>
+              </div>
             </div>
-          </div>
-
-          <ScrollArea className="h-[calc(100%-6rem)]">
-            <div className="p-4 space-y-2">
-              {roomsLoading ? (
-                [...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-16 w-full rounded-xl" />
-                ))
-              ) : (
-                rooms?.map((room) => (
-                  <button
-                    key={room.id}
-                    onClick={() => setSelectedRoom(room)}
-                    className={`w-full text-left p-4 rounded-xl transition-all duration-200 hover:bg-orange-50 dark:hover:bg-orange-900/20 hover:scale-[1.02] hover:shadow-lg ${
-                      selectedRoom?.id === room.id
-                        ? 'bg-gradient-to-r from-orange-100 to-orange-50 dark:from-orange-900/30 dark:to-orange-800/20 border-2 border-orange-200 dark:border-orange-700 shadow-md'
-                        : 'bg-card/50 border border-border/50'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className={`p-2 rounded-lg ${
-                        selectedRoom?.id === room.id 
-                          ? 'bg-orange-500 text-white' 
-                          : 'bg-muted text-muted-foreground'
-                      }`}>
-                        <Hash className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className={`font-semibold truncate ${
-                            selectedRoom?.id === room.id 
-                              ? 'text-orange-700 dark:text-orange-300' 
-                              : 'text-foreground'
-                          }`}>
-                            {room.name}
-                          </p>
-                          <Circle className="h-2 w-2 fill-current text-green-500 flex-shrink-0" />
-                        </div>
-                        {room.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                            {room.description}
-                          </p>
-                        )}
-                      </div>
+            
+            {isAdmin() && (
+              <Dialog open={isRoomModalOpen} onOpenChange={setIsRoomModalOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline" className="border-orange-500/50 text-orange-300 hover:bg-orange-500/10">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-slate-800 border-slate-700">
+                  <DialogHeader>
+                    <DialogTitle className="text-white">Criar Nova Sala</DialogTitle>
+                    <DialogDescription className="text-slate-300">
+                      Crie uma nova sala de chat para a comunidade
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="room_name" className="text-right text-slate-200">Nome</Label>
+                      <Input
+                        id="room_name"
+                        value={roomForm.name}
+                        onChange={(e) => setRoomForm({...roomForm, name: e.target.value})}
+                        className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                        placeholder="Nome da sala"
+                      />
                     </div>
-                  </button>
-                ))
-              )}
-            </div>
-          </ScrollArea>
+                    
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="room_description" className="text-right text-slate-200">Descrição</Label>
+                      <Textarea
+                        id="room_description"
+                        value={roomForm.description}
+                        onChange={(e) => setRoomForm({...roomForm, description: e.target.value})}
+                        className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                        placeholder="Descrição da sala (opcional)"
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                  
+                  <DialogFooter>
+                    <Button
+                      onClick={() => createRoomMutation.mutate(roomForm)}
+                      disabled={createRoomMutation.isPending || !roomForm.name.trim()}
+                      className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white"
+                    >
+                      Criar Sala
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
         </div>
 
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-gradient-to-b from-background to-background/95">
-          {selectedRoom ? (
-            <>
-              {/* Header */}
-              <div className="p-6 border-b bg-gradient-to-r from-card/80 to-card/60 backdrop-blur-sm">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-2xl font-bold flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-orange-500 text-white">
-                        <Hash className="h-5 w-5" />
-                      </div>
-                      <span className="text-gradient-orange">{selectedRoom.name}</span>
-                    </h1>
-                    {selectedRoom.description && (
-                      <p className="text-muted-foreground mt-2 ml-11">
-                        {selectedRoom.description}
+        {/* Rooms List */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          {isLoadingRooms ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="animate-pulse bg-slate-700/50 h-16 rounded-lg"></div>
+              ))}
+            </div>
+          ) : (
+            rooms?.map((room) => (
+              <button
+                key={room.id}
+                onClick={() => setSelectedRoom(room)}
+                className={cn(
+                  "w-full p-4 text-left rounded-lg transition-all duration-200 group",
+                  selectedRoom?.id === room.id
+                    ? "bg-gradient-to-r from-orange-500/30 to-orange-600/20 border border-orange-400/30"
+                    : "bg-slate-700/30 hover:bg-slate-700/50 border border-transparent"
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center",
+                    room.name === 'Comunidade da Elite' 
+                      ? "bg-gradient-to-r from-orange-400 to-orange-500" 
+                      : "bg-slate-600"
+                  )}>
+                    {room.name === 'Comunidade da Elite' ? (
+                      <Crown className="h-5 w-5 text-white" />
+                    ) : (
+                      <Hash className="h-5 w-5 text-slate-300" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className={cn(
+                        "font-semibold truncate",
+                        selectedRoom?.id === room.id ? "text-white" : "text-slate-200"
+                      )}>
+                        {room.name}
+                      </h3>
+                      {room.name === 'Comunidade da Elite' && (
+                        <Sparkles className="h-4 w-4 text-orange-400" />
+                      )}
+                    </div>
+                    {room.description && (
+                      <p className={cn(
+                        "text-sm truncate",
+                        selectedRoom?.id === room.id ? "text-orange-200" : "text-slate-400"
+                      )}>
+                        {room.description}
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline" className="text-orange-600 border-orange-600 px-3 py-1">
-                      <Circle className="h-2 w-2 mr-2 fill-current animate-pulse" />
-                      {onlineUsers.size} online
-                    </Badge>
-                    <Button variant="outline" size="sm" className="hover:bg-orange-50 dark:hover:bg-orange-900/30">
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Convidar
-                    </Button>
-                  </div>
                 </div>
-              </div>
-
-              {/* Reply Banner */}
-              {replyingTo && (
-                <div className="px-6 py-3 bg-gradient-to-r from-orange-50 to-orange-100/50 dark:from-orange-900/20 dark:to-orange-800/10 border-b flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-sm">
-                    <Reply className="h-4 w-4 text-orange-500" />
-                    <span className="font-medium">Respondendo a {getUserDisplayName(replyingTo.sender)}</span>
-                    <span className="text-muted-foreground truncate max-w-96 bg-white/50 dark:bg-black/20 px-2 py-1 rounded">
-                      {replyingTo.content}
-                    </span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setReplyingTo(null)}
-                    className="hover:bg-red-100 dark:hover:bg-red-900/30"
-                  >
-                    ✕
-                  </Button>
-                </div>
-              )}
-
-              {/* Messages */}
-              <ScrollArea className="flex-1 p-6">
-                <div className="space-y-6 max-w-4xl mx-auto">
-                  {messagesLoading ? (
-                    [...Array(10)].map((_, i) => (
-                      <div key={i} className="flex gap-4">
-                        <Skeleton className="h-12 w-12 rounded-full" />
-                        <div className="flex-1 space-y-3">
-                          <Skeleton className="h-4 w-40" />
-                          <Skeleton className="h-20 w-full rounded-xl" />
-                        </div>
-                      </div>
-                    ))
-                  ) : messages && messages.length > 0 ? (
-                    messages.map((message, index) => {
-                      const isOwnMessage = message.sender_id === user?.id;
-                      const showAvatar = index === 0 || 
-                        messages[index - 1].sender_id !== message.sender_id ||
-                        new Date(message.created_at).getTime() - new Date(messages[index - 1].created_at).getTime() > 300000;
-                      
-                      return (
-                        <div
-                          key={message.id}
-                          className={`group flex gap-4 hover:bg-secondary/30 px-3 py-2 rounded-xl transition-all duration-200 ${
-                            isOwnMessage ? 'flex-row-reverse' : ''
-                          }`}
-                        >
-                          <div className="flex-shrink-0">
-                            {showAvatar ? (
-                              <Avatar className="h-12 w-12 ring-2 ring-orange-200 dark:ring-orange-800">
-                                <AvatarImage src={message.sender?.avatar_url || ''} />
-                                <AvatarFallback className="bg-gradient-to-br from-orange-100 to-orange-200 text-orange-700 font-semibold">
-                                  {getUserInitials(
-                                    message.sender?.first_name,
-                                    message.sender?.last_name,
-                                    message.sender?.email
-                                  )}
-                                </AvatarFallback>
-                              </Avatar>
-                            ) : (
-                              <div className="w-12" />
-                            )}
-                          </div>
-                          
-                          <div className={`flex-1 max-w-[70%] ${isOwnMessage ? 'flex flex-col items-end' : ''}`}>
-                            {showAvatar && (
-                              <div className="flex items-center gap-3 mb-2">
-                                <span className="text-base font-semibold">
-                                  {getUserDisplayName(message.sender)}
-                                </span>
-                                {getRoleBadge(message.sender?.role)}
-                                <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
-                                  {formatMessageTime(message.created_at)}
-                                </span>
-                                {message.is_edited && (
-                                  <span className="text-xs text-muted-foreground italic">(editado)</span>
-                                )}
-                              </div>
-                            )}
-                            
-                            <div className={`rounded-2xl p-4 relative shadow-sm transition-all duration-200 hover:shadow-md ${
-                              isOwnMessage
-                                ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white'
-                                : 'bg-gradient-to-br from-card to-card/80 border border-border/50'
-                            }`}>
-                              <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                                {message.content}
-                              </p>
-                              
-                              {/* Message Actions */}
-                              <div className={`absolute -top-2 ${isOwnMessage ? '-left-2' : '-right-2'} opacity-0 group-hover:opacity-100 transition-opacity`}>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="secondary" size="sm" className="h-8 w-8 p-0 rounded-full shadow-lg">
-                                      <MoreVertical className="h-3 w-3" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent>
-                                    <DropdownMenuItem onClick={() => setReplyingTo(message)}>
-                                      <Reply className="h-4 w-4 mr-2" />
-                                      Responder
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => {
-                                      navigator.clipboard.writeText(message.content);
-                                      toast({ title: "Mensagem copiada!" });
-                                    }}>
-                                      <Copy className="h-4 w-4 mr-2" />
-                                      Copiar
-                                    </DropdownMenuItem>
-                                    {isOwnMessage && (
-                                      <>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem>
-                                          <Edit3 className="h-4 w-4 mr-2" />
-                                          Editar
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem className="text-destructive">
-                                          <Trash2 className="h-4 w-4 mr-2" />
-                                          Excluir
-                                        </DropdownMenuItem>
-                                      </>
-                                    )}
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            </div>
-                            
-                            {/* Quick Reactions */}
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-2">
-                              <div className="flex gap-1">
-                                {['👍', '❤️', '😂'].map((emoji) => (
-                                  <Button
-                                    key={emoji}
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 px-2 text-sm hover:scale-110 transition-transform"
-                                  >
-                                    {emoji}
-                                  </Button>
-                                ))}
-                                <Button variant="outline" size="sm" className="h-7 w-7 p-0">
-                                  <Smile className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="text-center py-16">
-                      <div className="p-8 rounded-full bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/20 w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-                        <MessageSquare className="h-12 w-12 text-orange-500" />
-                      </div>
-                      <h3 className="text-xl font-semibold mb-2">Seja o primeiro!</h3>
-                      <p className="text-muted-foreground max-w-md mx-auto">
-                        Nenhuma mensagem foi enviada ainda. Comece a conversa e conecte-se com a comunidade.
-                      </p>
-                    </div>
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
-              </ScrollArea>
-
-              {/* Input Area */}
-              <div className="p-6 border-t bg-gradient-to-r from-card/80 to-card/60 backdrop-blur-sm">
-                <form onSubmit={handleSendMessage} className="space-y-4 max-w-4xl mx-auto">
-                  <div className="flex gap-3">
-                    <div className="flex-1 relative">
-                      {isMultiline ? (
-                        <Textarea
-                          value={messageInput}
-                          onChange={(e) => setMessageInput(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          placeholder={`Compartilhe suas ideias em #${selectedRoom.name}...`}
-                          className="min-h-[100px] focus-orange resize-none rounded-2xl border-2 text-base p-4"
-                          disabled={sendMessageMutation.isPending}
-                        />
-                      ) : (
-                        <Input
-                          value={messageInput}
-                          onChange={(e) => setMessageInput(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          placeholder={`Mensagem em #${selectedRoom.name}...`}
-                          className="focus-orange pr-24 h-12 rounded-2xl border-2 text-base"
-                          disabled={sendMessageMutation.isPending}
-                        />
-                      )}
-                      
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-2">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 rounded-full hover:bg-orange-100 dark:hover:bg-orange-900/30"
-                              onClick={() => setIsMultiline(!isMultiline)}
-                            >
-                              <MessageSquare className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {isMultiline ? 'Modo linha única' : 'Modo múltiplas linhas'}
-                          </TooltipContent>
-                        </Tooltip>
-                        
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 rounded-full hover:bg-orange-100 dark:hover:bg-orange-900/30"
-                            >
-                              <Paperclip className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Anexar arquivo</TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </div>
-                    
-                    <Button
-                      type="submit"
-                      disabled={!messageInput.trim() || sendMessageMutation.isPending}
-                      className="gradient-orange hover:opacity-90 h-12 px-6 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
-                    >
-                      <Send className="h-4 w-4 mr-2" />
-                      Enviar
-                    </Button>
-                  </div>
-                  
-                  {isMultiline && (
-                    <p className="text-xs text-muted-foreground text-center bg-muted/30 py-2 px-4 rounded-xl">
-                      💡 Pressione <kbd className="bg-muted px-1 rounded">Shift + Enter</kbd> para quebrar linha, <kbd className="bg-muted px-1 rounded">Enter</kbd> para enviar
-                    </p>
-                  )}
-                </form>
-              </div>
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center max-w-md">
-                <div className="p-12 rounded-full bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/20 w-32 h-32 mx-auto mb-8 flex items-center justify-center">
-                  <MessageSquare className="h-16 w-16 text-orange-500" />
-                </div>
-                <h2 className="text-2xl font-bold mb-4 text-gradient-orange">
-                  Bem-vindo à Comunidade Elite
-                </h2>
-                <p className="text-lg text-muted-foreground leading-relaxed">
-                  Selecione uma sala de chat para começar a conversar com outros afiliados e compartilhar estratégias de sucesso.
-                </p>
-              </div>
-            </div>
+              </button>
+            ))
           )}
         </div>
       </div>
-    </TooltipProvider>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {selectedRoom ? (
+          <>
+            {/* Chat Header */}
+            <div className="p-6 border-b border-slate-700 bg-slate-800/30">
+              <div className="flex items-center gap-3">
+                <div className={cn(
+                  "w-12 h-12 rounded-full flex items-center justify-center",
+                  selectedRoom.name === 'Comunidade da Elite' 
+                    ? "bg-gradient-to-r from-orange-400 to-orange-500" 
+                    : "bg-slate-600"
+                )}>
+                  {selectedRoom.name === 'Comunidade da Elite' ? (
+                    <Crown className="h-6 w-6 text-white" />
+                  ) : (
+                    <Hash className="h-6 w-6 text-slate-300" />
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-white">{selectedRoom.name}</h2>
+                    {selectedRoom.name === 'Comunidade da Elite' && (
+                      <Badge className="bg-orange-500/20 text-orange-300 border-orange-400/50">
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        Premium
+                      </Badge>
+                    )}
+                  </div>
+                  {selectedRoom.description && (
+                    <p className="text-slate-400">{selectedRoom.description}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              {isLoadingMessages ? (
+                <div className="space-y-4">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex gap-3 animate-pulse">
+                      <div className="w-10 h-10 bg-slate-700 rounded-full"></div>
+                      <div className="flex-1">
+                        <div className="bg-slate-700 h-4 w-24 rounded mb-2"></div>
+                        <div className="bg-slate-700 h-16 rounded"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : messages && messages.length > 0 ? (
+                messages.map((message) => (
+                  <div key={message.id} className="flex gap-4 group">
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={message.sender?.avatar_url || undefined} />
+                      <AvatarFallback className="bg-gradient-to-r from-orange-400 to-orange-500 text-white text-sm font-bold">
+                        {getInitials(getDisplayName(message.sender))}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-white">
+                          {getDisplayName(message.sender)}
+                        </span>
+                        {message.sender?.role === 'admin' && (
+                          <Badge variant="outline" className="text-xs border-orange-400/60 text-orange-300 bg-orange-500/10">
+                            <Crown className="h-3 w-3 mr-1" />
+                            Admin
+                          </Badge>
+                        )}
+                        <span className="text-xs text-slate-400 flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {formatDistanceToNow(new Date(message.created_at), { 
+                            addSuffix: true, 
+                            locale: ptBR 
+                          })}
+                        </span>
+                      </div>
+                      <div className="bg-slate-700/50 rounded-lg p-3 text-slate-200">
+                        {message.content}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center">
+                    <MessageSquare className="h-16 w-16 mx-auto text-slate-500 mb-4" />
+                    <h3 className="text-lg font-semibold mb-2 text-white">Nenhuma mensagem ainda</h3>
+                    <p className="text-slate-400">Seja o primeiro a iniciar a conversa!</p>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Message Input */}
+            <div className="p-6 border-t border-slate-700 bg-slate-800/30">
+              <form onSubmit={handleSendMessage} className="flex gap-3">
+                <Input
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Digite sua mensagem..."
+                  className="flex-1 bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                  disabled={sendMessageMutation.isPending}
+                />
+                <Button 
+                  type="submit" 
+                  disabled={!newMessage.trim() || sendMessageMutation.isPending}
+                  className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <MessageSquare className="h-16 w-16 mx-auto text-slate-500 mb-4" />
+              <h3 className="text-lg font-semibold mb-2 text-white">Selecione uma sala</h3>
+              <p className="text-slate-400">Escolha uma sala para começar a conversar</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

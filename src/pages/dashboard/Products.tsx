@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,36 +7,58 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, ExternalLink, Link, DollarSign, Package, Filter } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Search, ExternalLink, Link, DollarSign, Package, Filter, Plus, Edit, Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import CreateLinkModal from '@/components/CreateLinkModal';
 import { formatCurrency } from '@/lib/utils';
+import { Tables } from '@/integrations/supabase/types';
 
-interface Product {
-  id: string;
+type Product = Tables<'products'> & {
+  categories?: {
+    id: string;
+    name: string;
+    color: string;
+  } | null;
+};
+
+interface ProductForm {
   name: string;
-  description: string | null;
+  slug: string;
+  short_description: string;
+  description: string;
   price: number;
   commission_rate: number;
-  category_id: string | null;
-  image_url: string | null;
-  sales_page_url: string;
-  is_active: boolean;
-  total_sales: number;
-  category?: {
-    name: string;
-    slug: string;
-  };
+  category_id: string;
+  affiliate_link: string;
+  thumbnail_url: string;
 }
 
 const Products = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [productForm, setProductForm] = useState<ProductForm>({
+    name: '',
+    slug: '',
+    short_description: '',
+    description: '',
+    price: 0,
+    commission_rate: 0,
+    category_id: '',
+    affiliate_link: '',
+    thumbnail_url: ''
+  });
 
   // Buscar categorias
   const { data: categories } = useQuery({
@@ -60,9 +82,9 @@ const Products = () => {
         .from('products')
         .select(`
           *,
-          category:categories(name, slug)
+          categories(id, name, color)
         `)
-        .eq('is_active', true)
+        .eq('status', 'active')
         .order('name');
 
       if (selectedCategory !== 'all') {
@@ -87,8 +109,8 @@ const Products = () => {
       
       const { data, error } = await supabase
         .from('affiliate_links')
-        .select('product_id, short_code')
-        .eq('affiliate_id', user.id)
+        .select('product_id, custom_slug')
+        .eq('user_id', user.id)
         .eq('status', 'active');
       
       if (error) throw error;
@@ -97,14 +119,139 @@ const Products = () => {
     enabled: !!user
   });
 
+  // Mutation para criar/editar produto
+  const saveProductMutation = useMutation({
+    mutationFn: async (data: ProductForm) => {
+      const productData = {
+        ...data,
+        status: 'active' as const,
+        currency: 'BRL',
+        commission_amount: 0,
+        gravity_score: 0,
+        earnings_per_click: 0,
+        conversion_rate_avg: 0,
+        refund_rate: 0,
+        is_featured: false,
+        is_exclusive: false,
+        requires_approval: false,
+        min_payout: 50
+      };
+
+      if (editingProduct) {
+        const { error } = await supabase
+          .from('products')
+          .update(productData)
+          .eq('id', editingProduct.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('products')
+          .insert([productData]);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      setIsProductModalOpen(false);
+      setEditingProduct(null);
+      setProductForm({
+        name: '',
+        slug: '',
+        short_description: '',
+        description: '',
+        price: 0,
+        commission_rate: 0,
+        category_id: '',
+        affiliate_link: '',
+        thumbnail_url: ''
+      });
+      toast({
+        title: editingProduct ? "Produto atualizado!" : "Produto criado!",
+        description: editingProduct ? "O produto foi atualizado com sucesso." : "O produto foi criado com sucesso.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar o produto. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Mutation para deletar produto
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: string) => {
+      const { error } = await supabase
+        .from('products')
+        .update({ status: 'archived' })
+        .eq('id', productId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast({
+        title: "Produto removido!",
+        description: "O produto foi removido com sucesso.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover o produto. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleCreateLink = (product: Product) => {
     setSelectedProduct(product);
     setIsCreateLinkModalOpen(true);
   };
 
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setProductForm({
+      name: product.name,
+      slug: product.slug,
+      short_description: product.short_description || '',
+      description: product.description || '',
+      price: product.price || 0,
+      commission_rate: product.commission_rate,
+      category_id: product.category_id || '',
+      affiliate_link: product.affiliate_link,
+      thumbnail_url: product.thumbnail_url || ''
+    });
+    setIsProductModalOpen(true);
+  };
+
+  const handleCreateProduct = () => {
+    setEditingProduct(null);
+    setProductForm({
+      name: '',
+      slug: '',
+      short_description: '',
+      description: '',
+      price: 0,
+      commission_rate: 0,
+      category_id: '',
+      affiliate_link: '',
+      thumbnail_url: ''
+    });
+    setIsProductModalOpen(true);
+  };
+
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .substring(0, 50);
+  };
+
   const getAffiliateLink = (productId: string) => {
     const link = affiliateLinks?.find(l => l.product_id === productId);
-    return link ? `${window.location.origin}/r/${link.short_code}` : null;
+    return link ? `${window.location.origin}/r/${link.custom_slug}` : null;
   };
 
   const copyToClipboard = async (text: string) => {
@@ -127,36 +274,190 @@ const Products = () => {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col space-y-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gradient-orange">
-            Produtos para Afiliação
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Escolha produtos para promover e ganhar comissões
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+              <span className="text-2xl">🏆</span>
+              Produtos para Afiliação
+            </h1>
+            <p className="text-slate-300 mt-2">
+              {isAdmin() ? 'Gerencie produtos e ganhe comissões' : 'Escolha produtos para promover e ganhar comissões'}
+            </p>
+          </div>
+          
+          {isAdmin() && (
+            <Dialog open={isProductModalOpen} onOpenChange={setIsProductModalOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  onClick={handleCreateProduct}
+                  className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white shadow-lg hover:shadow-orange-500/30 transition-all duration-300"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Cadastrar Produto
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl bg-slate-800 border-slate-700">
+                <DialogHeader>
+                  <DialogTitle className="text-white">
+                    {editingProduct ? 'Editar Produto' : 'Cadastrar Novo Produto'}
+                  </DialogTitle>
+                  <DialogDescription className="text-slate-300">
+                    {editingProduct ? 'Atualize as informações do produto' : 'Preencha as informações para criar um novo produto'}
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right text-slate-200">Nome</Label>
+                    <Input
+                      id="name"
+                      value={productForm.name}
+                      onChange={(e) => {
+                        const name = e.target.value;
+                        setProductForm({
+                          ...productForm, 
+                          name,
+                          slug: generateSlug(name)
+                        });
+                      }}
+                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                      placeholder="Nome do produto"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="slug" className="text-right text-slate-200">Slug</Label>
+                    <Input
+                      id="slug"
+                      value={productForm.slug}
+                      onChange={(e) => setProductForm({...productForm, slug: e.target.value})}
+                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                      placeholder="slug-do-produto"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="short_description" className="text-right text-slate-200">Descrição Curta</Label>
+                    <Textarea
+                      id="short_description"
+                      value={productForm.short_description}
+                      onChange={(e) => setProductForm({...productForm, short_description: e.target.value})}
+                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                      placeholder="Descrição curta do produto"
+                      rows={2}
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="description" className="text-right text-slate-200">Descrição</Label>
+                    <Textarea
+                      id="description"
+                      value={productForm.description}
+                      onChange={(e) => setProductForm({...productForm, description: e.target.value})}
+                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                      placeholder="Descrição completa do produto"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="price" className="text-right text-slate-200">Preço</Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      value={productForm.price}
+                      onChange={(e) => setProductForm({...productForm, price: Number(e.target.value)})}
+                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="commission" className="text-right text-slate-200">Comissão (%)</Label>
+                    <Input
+                      id="commission"
+                      type="number"
+                      value={productForm.commission_rate}
+                      onChange={(e) => setProductForm({...productForm, commission_rate: Number(e.target.value)})}
+                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                      placeholder="0"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="category" className="text-right text-slate-200">Categoria</Label>
+                    <Select value={productForm.category_id} onValueChange={(value) => setProductForm({...productForm, category_id: value})}>
+                      <SelectTrigger className="col-span-3 bg-slate-700 border-slate-600 text-white">
+                        <SelectValue placeholder="Selecione uma categoria" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800 border-slate-700">
+                        {categories?.map((category) => (
+                          <SelectItem key={category.id} value={category.id} className="text-white">
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="affiliate_link" className="text-right text-slate-200">Link de Afiliado</Label>
+                    <Input
+                      id="affiliate_link"
+                      value={productForm.affiliate_link}
+                      onChange={(e) => setProductForm({...productForm, affiliate_link: e.target.value})}
+                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                      placeholder="https://..."
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="thumbnail_url" className="text-right text-slate-200">URL da Imagem</Label>
+                    <Input
+                      id="thumbnail_url"
+                      value={productForm.thumbnail_url}
+                      onChange={(e) => setProductForm({...productForm, thumbnail_url: e.target.value})}
+                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                      placeholder="https://..."
+                    />
+                  </div>
+                </div>
+                
+                <DialogFooter>
+                  <Button
+                    type="submit"
+                    onClick={() => saveProductMutation.mutate(productForm)}
+                    disabled={saveProductMutation.isPending}
+                    className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white"
+                  >
+                    {editingProduct ? 'Atualizar' : 'Cadastrar'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
         {/* Filtros */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
             <Input
               placeholder="Buscar produtos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 focus-orange"
+              className="pl-10 bg-slate-700 border-slate-600 text-white"
             />
           </div>
           
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full sm:w-[200px] focus-orange">
+            <SelectTrigger className="w-full sm:w-[200px] bg-slate-700 border-slate-600 text-white">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Categoria" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as categorias</SelectItem>
+            <SelectContent className="bg-slate-800 border-slate-700">
+              <SelectItem value="all" className="text-white">Todas as categorias</SelectItem>
               {categories?.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
+                <SelectItem key={category.id} value={category.id} className="text-white">
                   {category.name}
                 </SelectItem>
               ))}
@@ -169,17 +470,17 @@ const Products = () => {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
-            <Card key={i} className="overflow-hidden">
-              <Skeleton className="h-48 w-full" />
+            <Card key={i} className="overflow-hidden bg-slate-800 border-slate-700">
+              <Skeleton className="h-48 w-full bg-slate-700" />
               <CardHeader>
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-4 w-full mt-2" />
+                <Skeleton className="h-6 w-3/4 bg-slate-700" />
+                <Skeleton className="h-4 w-full mt-2 bg-slate-700" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full bg-slate-700" />
               </CardContent>
               <CardFooter>
-                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full bg-slate-700" />
               </CardFooter>
             </Card>
           ))}
@@ -192,13 +493,13 @@ const Products = () => {
             return (
               <Card 
                 key={product.id} 
-                className="overflow-hidden hover-lift card-hover border-gradient group"
+                className="overflow-hidden hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300 bg-slate-800 border-slate-700 group"
               >
                 {/* Imagem do Produto */}
-                <div className="relative h-48 bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/20 dark:to-orange-800/20">
-                  {product.image_url ? (
+                <div className="relative h-48 bg-gradient-to-br from-orange-900/20 to-orange-800/20">
+                  {product.thumbnail_url ? (
                     <img
-                      src={product.image_url}
+                      src={product.thumbnail_url}
                       alt={product.name}
                       className="w-full h-full object-cover"
                     />
@@ -212,17 +513,43 @@ const Products = () => {
                   <Badge className="absolute top-3 right-3 bg-orange-500 text-white">
                     {product.commission_rate}% de comissão
                   </Badge>
+
+                  {/* Admin Actions */}
+                  {isAdmin() && (
+                    <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleEditProduct(product)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => deleteProductMutation.mutate(product.id)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-xl line-clamp-2 group-hover:text-orange-600 transition-colors">
+                      <CardTitle className="text-xl line-clamp-2 text-white group-hover:text-orange-300 transition-colors">
                         {product.name}
                       </CardTitle>
-                      {product.category && (
-                        <Badge variant="secondary" className="mt-2">
-                          {product.category.name}
+                      {product.categories && (
+                        <Badge 
+                          variant="secondary" 
+                          className="mt-2 bg-slate-700 text-slate-300"
+                          style={{ backgroundColor: product.categories.color + '20', color: product.categories.color }}
+                        >
+                          {product.categories.name}
                         </Badge>
                       )}
                     </div>
@@ -230,24 +557,24 @@ const Products = () => {
                 </CardHeader>
 
                 <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground line-clamp-3">
-                    {product.description || 'Sem descrição disponível'}
+                  <p className="text-sm text-slate-300 line-clamp-3">
+                    {product.short_description || product.description || 'Sem descrição disponível'}
                   </p>
                   
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <p className="text-2xl font-bold text-gradient-orange">
-                        {formatCurrency(product.price)}
+                      <p className="text-2xl font-bold text-orange-300">
+                        {formatCurrency(product.price || 0)}
                       </p>
-                      <p className="text-sm text-muted-foreground flex items-center">
+                      <p className="text-sm text-slate-400 flex items-center">
                         <DollarSign className="h-3 w-3 mr-1" />
-                        Ganhe {formatCurrency(product.price * product.commission_rate / 100)}
+                        Ganhe {formatCurrency((product.price || 0) * product.commission_rate / 100)}
                       </p>
                     </div>
                     
-                    {product.total_sales > 0 && (
-                      <Badge variant="outline" className="text-orange-600 border-orange-600">
-                        {product.total_sales} vendas
+                    {product.gravity_score > 0 && (
+                      <Badge variant="outline" className="text-orange-400 border-orange-400">
+                        Score: {product.gravity_score}
                       </Badge>
                     )}
                   </div>
@@ -258,7 +585,7 @@ const Products = () => {
                     <>
                       <Button
                         variant="outline"
-                        className="w-full group-hover:border-orange-500 group-hover:text-orange-600"
+                        className="w-full border-slate-600 text-slate-300 hover:border-orange-500 hover:text-orange-300"
                         onClick={() => copyToClipboard(affiliateLink)}
                       >
                         <Link className="h-4 w-4 mr-2" />
@@ -266,8 +593,8 @@ const Products = () => {
                       </Button>
                       <Button
                         variant="default"
-                        className="w-full gradient-orange hover:opacity-90"
-                        onClick={() => window.open(product.sales_page_url, '_blank')}
+                        className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white"
+                        onClick={() => window.open(product.affiliate_link, '_blank')}
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
                         Ver Página de Vendas
@@ -277,7 +604,7 @@ const Products = () => {
                     <>
                       <Button
                         variant="default"
-                        className="w-full gradient-orange hover:opacity-90 glow-orange-hover"
+                        className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white"
                         onClick={() => handleCreateLink(product)}
                       >
                         <Link className="h-4 w-4 mr-2" />
@@ -285,8 +612,8 @@ const Products = () => {
                       </Button>
                       <Button
                         variant="outline"
-                        className="w-full"
-                        onClick={() => window.open(product.sales_page_url, '_blank')}
+                        className="w-full border-slate-600 text-slate-300 hover:border-orange-500 hover:text-orange-300"
+                        onClick={() => window.open(product.affiliate_link, '_blank')}
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
                         Ver Página de Vendas
@@ -302,10 +629,10 @@ const Products = () => {
 
       {/* Empty State */}
       {!isLoading && products?.length === 0 && (
-        <Card className="p-12 text-center">
-          <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Nenhum produto encontrado</h3>
-          <p className="text-muted-foreground">
+        <Card className="p-12 text-center bg-slate-800 border-slate-700">
+          <Package className="h-16 w-16 mx-auto text-slate-500 mb-4" />
+          <h3 className="text-lg font-semibold mb-2 text-white">Nenhum produto encontrado</h3>
+          <p className="text-slate-400">
             Tente ajustar seus filtros ou volte mais tarde para ver novos produtos.
           </p>
         </Card>
@@ -319,8 +646,7 @@ const Products = () => {
             setIsCreateLinkModalOpen(false);
             setSelectedProduct(null);
           }}
-          productId={selectedProduct.id}
-          productName={selectedProduct.name}
+          product={selectedProduct}
         />
       )}
     </div>

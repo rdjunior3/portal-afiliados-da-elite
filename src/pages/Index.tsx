@@ -70,9 +70,6 @@ const Index = () => {
             <div className="flex items-center gap-3 slide-in-right">
               {user ? (
                 <div className="flex items-center gap-3">
-                  <div className="hidden sm:block">
-                    <ThemeToggle />
-                  </div>
                   <button 
                     className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold shadow-xl hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-orange-300/40"
                     onClick={() => navigate('/dashboard')}
@@ -84,9 +81,7 @@ const Index = () => {
                       <span className="sm:hidden">Dashboard</span>
                     </div>
                   </button>
-                  <div className="sm:hidden">
-                    <ThemeToggle />
-                  </div>
+                  <ThemeToggle />
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
@@ -112,9 +107,7 @@ const Index = () => {
                       <span className="sm:hidden">Cadastrar</span>
                     </div>
                   </button>
-                  <div className="hidden sm:block">
-                    <ThemeToggle />
-                  </div>
+                  <ThemeToggle />
                 </div>
               )}
             </div>
@@ -129,13 +122,9 @@ const Index = () => {
             {/* Left Content melhorado */}
             <div className="space-y-8 slide-in-left text-center lg:text-left">
               <div className="space-y-6">
-                <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
-                  <span className="text-2xl animate-pulse">🏆</span>
-                  <span className="text-orange-400 font-bold text-lg">Portal Premium Elite</span>
-                </div>
-                <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
+                <h1 className="text-3xl lg:text-5xl font-bold leading-tight">
                   Área de Membros <span className="text-orange-400 text-glow">Exclusiva e Premium</span><br />
-                  para <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Afiliados Elite</span> <span className="text-lg">🏆</span>
+                  para <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Afiliados Elite</span>
                 </h1>
               </div>
               
@@ -145,7 +134,7 @@ const Index = () => {
               </p>
               
               {/* Benefits Cards melhorados */}
-              <div className="flex flex-wrap justify-center lg:justify-start gap-6 max-w-5xl mx-auto lg:mx-0 mt-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto lg:mx-0 mt-8">
                 <div className="flex items-center gap-3 group cursor-default bg-slate-800/30 backdrop-blur-sm px-4 py-3 rounded-xl border border-orange-500/20 hover:border-orange-500/40 transition-all duration-300">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -116,7 +116,7 @@ const EliteLogo: React.FC<EliteLogoProps> = ({
             "font-bold text-orange-400 tracking-tight leading-none",
             size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-xl' : size === 'xl' ? 'text-2xl' : 'text-base'
           )}>
-            AFILIADOS ELITE
+            AFILIADOS DA ELITE
           </span>
           {size !== 'sm' && (
             <span className={cn(

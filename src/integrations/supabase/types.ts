@@ -44,6 +44,7 @@ export type Database = {
           user_id: string
           product_id: string
           custom_slug: string
+          full_url: string
           original_url: string
           utm_source?: string | null
           utm_medium?: string | null
@@ -72,6 +73,7 @@ export type Database = {
           user_id?: string
           product_id?: string
           custom_slug?: string
+          full_url?: string
           original_url?: string
           utm_source?: string | null
           utm_medium?: string | null
@@ -95,6 +97,22 @@ export type Database = {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_links_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_links_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       categories: {
         Row: {
@@ -133,6 +151,34 @@ export type Database = {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
+      }
+      chat_rooms: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       commissions: {
         Row: {
@@ -216,6 +262,444 @@ export type Database = {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "commissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commissions_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_links"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      courses: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          thumbnail_url: string | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          thumbnail_url?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          thumbnail_url?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      creatives: {
+        Row: {
+          id: string
+          product_id: string
+          created_by: string | null
+          title: string
+          description: string | null
+          creative_type: 'banner' | 'video' | 'text' | 'email' | 'social' | 'landing_page'
+          file_url: string | null
+          thumbnail_url: string | null
+          dimensions: string | null
+          file_size_bytes: number | null
+          file_format: string | null
+          duration_seconds: number | null
+          color_scheme: string[] | null
+          copy_text: string | null
+          call_to_action: string | null
+          target_audience: string | null
+          performance_notes: string | null
+          download_count: number
+          conversion_rate: number
+          is_featured: boolean
+          is_exclusive: boolean
+          is_active: boolean
+          tags: string[] | null
+          metadata: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          created_by?: string | null
+          title: string
+          description?: string | null
+          creative_type: 'banner' | 'video' | 'text' | 'email' | 'social' | 'landing_page'
+          file_url?: string | null
+          thumbnail_url?: string | null
+          dimensions?: string | null
+          file_size_bytes?: number | null
+          file_format?: string | null
+          duration_seconds?: number | null
+          color_scheme?: string[] | null
+          copy_text?: string | null
+          call_to_action?: string | null
+          target_audience?: string | null
+          performance_notes?: string | null
+          download_count?: number
+          conversion_rate?: number
+          is_featured?: boolean
+          is_exclusive?: boolean
+          is_active?: boolean
+          tags?: string[] | null
+          metadata?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          created_by?: string | null
+          title?: string
+          description?: string | null
+          creative_type?: 'banner' | 'video' | 'text' | 'email' | 'social' | 'landing_page'
+          file_url?: string | null
+          thumbnail_url?: string | null
+          dimensions?: string | null
+          file_size_bytes?: number | null
+          file_format?: string | null
+          duration_seconds?: number | null
+          color_scheme?: string[] | null
+          copy_text?: string | null
+          call_to_action?: string | null
+          target_audience?: string | null
+          performance_notes?: string | null
+          download_count?: number
+          conversion_rate?: number
+          is_featured?: boolean
+          is_exclusive?: boolean
+          is_active?: boolean
+          tags?: string[] | null
+          metadata?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creatives_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creatives_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      lessons: {
+        Row: {
+          id: string
+          course_id: string
+          title: string
+          description: string | null
+          video_url: string | null
+          duration_seconds: number | null
+          order_index: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          course_id: string
+          title: string
+          description?: string | null
+          video_url?: string | null
+          duration_seconds?: number | null
+          order_index?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          course_id?: string
+          title?: string
+          description?: string | null
+          video_url?: string | null
+          duration_seconds?: number | null
+          order_index?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      link_analytics: {
+        Row: {
+          id: string
+          link_id: string
+          user_id: string
+          event_type: 'click' | 'view' | 'conversion' | 'signup' | 'purchase'
+          ip_address: string | null
+          user_agent: string | null
+          referer_url: string | null
+          country_code: string | null
+          region: string | null
+          city: string | null
+          device_type: string | null
+          browser: string | null
+          operating_system: string | null
+          session_id: string | null
+          conversion_value: number | null
+          commission_earned: number | null
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          link_id: string
+          user_id: string
+          event_type: 'click' | 'view' | 'conversion' | 'signup' | 'purchase'
+          ip_address?: string | null
+          user_agent?: string | null
+          referer_url?: string | null
+          country_code?: string | null
+          region?: string | null
+          city?: string | null
+          device_type?: string | null
+          browser?: string | null
+          operating_system?: string | null
+          session_id?: string | null
+          conversion_value?: number | null
+          commission_earned?: number | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          link_id?: string
+          user_id?: string
+          event_type?: 'click' | 'view' | 'conversion' | 'signup' | 'purchase'
+          ip_address?: string | null
+          user_agent?: string | null
+          referer_url?: string | null
+          country_code?: string | null
+          region?: string | null
+          city?: string | null
+          device_type?: string | null
+          browser?: string | null
+          operating_system?: string | null
+          session_id?: string | null
+          conversion_value?: number | null
+          commission_earned?: number | null
+          metadata?: Json | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_analytics_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_links"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "link_analytics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      materials: {
+        Row: {
+          id: string
+          lesson_id: string | null
+          course_id: string | null
+          title: string
+          file_url: string
+          file_type: string | null
+          file_size: number | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          lesson_id?: string | null
+          course_id?: string | null
+          title: string
+          file_url: string
+          file_type?: string | null
+          file_size?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          lesson_id?: string | null
+          course_id?: string | null
+          title?: string
+          file_url?: string
+          file_type?: string | null
+          file_size?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "materials_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      messages: {
+        Row: {
+          id: string
+          room_id: string
+          sender_id: string
+          content: string
+          edited: boolean
+          edited_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          room_id: string
+          sender_id: string
+          content: string
+          edited?: boolean
+          edited_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          room_id?: string
+          sender_id?: string
+          content?: string
+          edited?: boolean
+          edited_at?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "chat_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          type: 'commission' | 'payment' | 'product' | 'system' | 'achievement'
+          title: string
+          message: string
+          action_url: string | null
+          action_label: string | null
+          is_read: boolean
+          is_sent_email: boolean
+          is_sent_push: boolean
+          priority: number
+          metadata: Json | null
+          expires_at: string | null
+          read_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          type: 'commission' | 'payment' | 'product' | 'system' | 'achievement'
+          title: string
+          message: string
+          action_url?: string | null
+          action_label?: string | null
+          is_read?: boolean
+          is_sent_email?: boolean
+          is_sent_push?: boolean
+          priority?: number
+          metadata?: Json | null
+          expires_at?: string | null
+          read_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          type?: 'commission' | 'payment' | 'product' | 'system' | 'achievement'
+          title?: string
+          message?: string
+          action_url?: string | null
+          action_label?: string | null
+          is_read?: boolean
+          is_sent_email?: boolean
+          is_sent_push?: boolean
+          priority?: number
+          metadata?: Json | null
+          expires_at?: string | null
+          read_at?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       products: {
         Row: {
@@ -332,15 +816,24 @@ export type Database = {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       profiles: {
         Row: {
-          avatar_url: string | null
-          created_at: string
-          email: string | null
-          full_name: string | null
           id: string
-          updated_at: string
+          email: string
+          first_name: string | null
+          last_name: string | null
+          full_name: string | null
+          avatar_url: string | null
           phone: string | null
           document_number: string | null
           birth_date: string | null
@@ -350,11 +843,14 @@ export type Database = {
           social_youtube: string | null
           social_tiktok: string | null
           social_linkedin: string | null
-          status: 'active' | 'inactive' | 'pending' | 'suspended'
+          role: string
+          affiliate_status: string
+          affiliate_id: string | null
           affiliate_code: string | null
           referral_code: string | null
           referred_by: string | null
-          total_commissions: number
+          commission_rate: number
+          total_earnings: number
           total_clicks: number
           total_conversions: number
           conversion_rate: number
@@ -362,14 +858,15 @@ export type Database = {
           onboarding_completed_at: string | null
           terms_accepted_at: string | null
           privacy_accepted_at: string | null
+          created_at: string
+          updated_at: string
         }
         Insert: {
-          avatar_url?: string | null
-          created_at?: string
-          email?: string | null
-          full_name?: string | null
           id: string
-          updated_at?: string
+          email: string
+          first_name?: string | null
+          last_name?: string | null
+          avatar_url?: string | null
           phone?: string | null
           document_number?: string | null
           birth_date?: string | null
@@ -379,11 +876,14 @@ export type Database = {
           social_youtube?: string | null
           social_tiktok?: string | null
           social_linkedin?: string | null
-          status?: 'active' | 'inactive' | 'pending' | 'suspended'
+          role?: string
+          affiliate_status?: string
+          affiliate_id?: string | null
           affiliate_code?: string | null
           referral_code?: string | null
           referred_by?: string | null
-          total_commissions?: number
+          commission_rate?: number
+          total_earnings?: number
           total_clicks?: number
           total_conversions?: number
           conversion_rate?: number
@@ -391,14 +891,15 @@ export type Database = {
           onboarding_completed_at?: string | null
           terms_accepted_at?: string | null
           privacy_accepted_at?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Update: {
-          avatar_url?: string | null
-          created_at?: string
-          email?: string | null
-          full_name?: string | null
           id?: string
-          updated_at?: string
+          email?: string
+          first_name?: string | null
+          last_name?: string | null
+          avatar_url?: string | null
           phone?: string | null
           document_number?: string | null
           birth_date?: string | null
@@ -408,11 +909,14 @@ export type Database = {
           social_youtube?: string | null
           social_tiktok?: string | null
           social_linkedin?: string | null
-          status?: 'active' | 'inactive' | 'pending' | 'suspended'
+          role?: string
+          affiliate_status?: string
+          affiliate_id?: string | null
           affiliate_code?: string | null
           referral_code?: string | null
           referred_by?: string | null
-          total_commissions?: number
+          commission_rate?: number
+          total_earnings?: number
           total_clicks?: number
           total_conversions?: number
           conversion_rate?: number
@@ -420,220 +924,33 @@ export type Database = {
           onboarding_completed_at?: string | null
           terms_accepted_at?: string | null
           privacy_accepted_at?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "profiles_referred_by_fkey"
             columns: ["referred_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           }
         ]
       }
-      notifications: {
-        Row: {
-          id: string
-          user_id: string
-          type: 'commission' | 'payment' | 'product' | 'system' | 'achievement'
-          title: string
-          message: string
-          action_url: string | null
-          action_label: string | null
-          is_read: boolean
-          is_sent_email: boolean
-          is_sent_push: boolean
-          priority: number
-          metadata: Json | null
-          expires_at: string | null
-          read_at: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          type: 'commission' | 'payment' | 'product' | 'system' | 'achievement'
-          title: string
-          message: string
-          action_url?: string | null
-          action_label?: string | null
-          is_read?: boolean
-          is_sent_email?: boolean
-          is_sent_push?: boolean
-          priority?: number
-          metadata?: Json | null
-          expires_at?: string | null
-          read_at?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          type?: 'commission' | 'payment' | 'product' | 'system' | 'achievement'
-          title?: string
-          message?: string
-          action_url?: string | null
-          action_label?: string | null
-          is_read?: boolean
-          is_sent_email?: boolean
-          is_sent_push?: boolean
-          priority?: number
-          metadata?: Json | null
-          expires_at?: string | null
-          read_at?: string | null
-          created_at?: string
-        }
-      }
-      link_analytics: {
-        Row: {
-          id: string
-          link_id: string
-          user_id: string
-          event_type: 'click' | 'view' | 'conversion' | 'signup' | 'purchase'
-          ip_address: string | null
-          user_agent: string | null
-          referer_url: string | null
-          country_code: string | null
-          region: string | null
-          city: string | null
-          device_type: string | null
-          browser: string | null
-          operating_system: string | null
-          session_id: string | null
-          conversion_value: number | null
-          commission_earned: number | null
-          metadata: Json | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          link_id: string
-          user_id: string
-          event_type: 'click' | 'view' | 'conversion' | 'signup' | 'purchase'
-          ip_address?: string | null
-          user_agent?: string | null
-          referer_url?: string | null
-          country_code?: string | null
-          region?: string | null
-          city?: string | null
-          device_type?: string | null
-          browser?: string | null
-          operating_system?: string | null
-          session_id?: string | null
-          conversion_value?: number | null
-          commission_earned?: number | null
-          metadata?: Json | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          link_id?: string
-          user_id?: string
-          event_type?: 'click' | 'view' | 'conversion' | 'signup' | 'purchase'
-          ip_address?: string | null
-          user_agent?: string | null
-          referer_url?: string | null
-          country_code?: string | null
-          region?: string | null
-          city?: string | null
-          device_type?: string | null
-          browser?: string | null
-          operating_system?: string | null
-          session_id?: string | null
-          conversion_value?: number | null
-          commission_earned?: number | null
-          metadata?: Json | null
-          created_at?: string
-        }
-      }
-      creatives: {
-        Row: {
-          id: string
-          product_id: string
-          created_by: string | null
-          title: string
-          description: string | null
-          creative_type: 'banner' | 'video' | 'text' | 'email' | 'social' | 'landing_page'
-          file_url: string | null
-          thumbnail_url: string | null
-          dimensions: string | null
-          file_size_bytes: number | null
-          file_format: string | null
-          duration_seconds: number | null
-          color_scheme: string[] | null
-          copy_text: string | null
-          call_to_action: string | null
-          target_audience: string | null
-          performance_notes: string | null
-          download_count: number
-          conversion_rate: number
-          is_featured: boolean
-          is_exclusive: boolean
-          is_active: boolean
-          tags: string[] | null
-          metadata: Json | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          product_id: string
-          created_by?: string | null
-          title: string
-          description?: string | null
-          creative_type: 'banner' | 'video' | 'text' | 'email' | 'social' | 'landing_page'
-          file_url?: string | null
-          thumbnail_url?: string | null
-          dimensions?: string | null
-          file_size_bytes?: number | null
-          file_format?: string | null
-          duration_seconds?: number | null
-          color_scheme?: string[] | null
-          copy_text?: string | null
-          call_to_action?: string | null
-          target_audience?: string | null
-          performance_notes?: string | null
-          download_count?: number
-          conversion_rate?: number
-          is_featured?: boolean
-          is_exclusive?: boolean
-          is_active?: boolean
-          tags?: string[] | null
-          metadata?: Json | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          product_id?: string
-          created_by?: string | null
-          title?: string
-          description?: string | null
-          creative_type?: 'banner' | 'video' | 'text' | 'email' | 'social' | 'landing_page'
-          file_url?: string | null
-          thumbnail_url?: string | null
-          dimensions?: string | null
-          file_size_bytes?: number | null
-          file_format?: string | null
-          duration_seconds?: number | null
-          color_scheme?: string[] | null
-          copy_text?: string | null
-          call_to_action?: string | null
-          target_audience?: string | null
-          performance_notes?: string | null
-          download_count?: number
-          conversion_rate?: number
-          is_featured?: boolean
-          is_exclusive?: boolean
-          is_active?: boolean
-          tags?: string[] | null
-          metadata?: Json | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
     }
     Views: {
-      [_ in never]: never
+      admin_dashboard_stats: {
+        Row: {
+          pending_affiliates: number | null
+          approved_affiliates: number | null
+          pending_commissions: number | null
+          pending_commissions_value: number | null
+          pending_payments: number | null
+          pending_payments_value: number | null
+          active_products: number | null
+          active_courses: number | null
+        }
+      }
     }
     Functions: {
       log_link_click: {
@@ -680,10 +997,9 @@ export type Database = {
       creative_type: 'banner' | 'video' | 'text' | 'email' | 'social' | 'landing_page'
       link_status: 'active' | 'inactive' | 'expired'
       notification_type: 'commission' | 'payment' | 'product' | 'system' | 'achievement'
-      payment_method: 'pix' | 'bank_transfer' | 'paypal' | 'crypto'
-      payment_status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled'
       product_status: 'active' | 'inactive' | 'pending' | 'archived'
-      user_status: 'active' | 'inactive' | 'pending' | 'suspended'
+      user_role: 'affiliate' | 'admin'
+      affiliate_status: 'pending' | 'approved' | 'rejected' | 'suspended'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -691,29 +1007,27 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+  PublicTableNameOrOptions extends
+    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
     | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
+        PublicSchema["Views"])
+    ? (PublicSchema["Tables"] &
+        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -721,22 +1035,20 @@ export type Tables<
     : never
 
 export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -744,22 +1056,20 @@ export type TablesInsert<
     : never
 
 export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -767,37 +1077,14 @@ export type TablesUpdate<
     : never
 
 export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
+  PublicEnumNameOrOptions extends
+    | keyof PublicSchema["Enums"]
     | { schema: keyof Database },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
+    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
     : never
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
-
-export const Constants = {
-  public: {
-    Enums: {},
-  },
-} as const
