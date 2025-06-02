@@ -1,83 +1,9 @@
 import ThemeToggle from '../components/ThemeToggle';
 import { LoadingScreen } from '../components/ui/loading';
+import EliteLogo from '../components/ui/EliteLogo';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-// New Elite Logo Component
-const EliteLogo: React.FC<{ className?: string }> = ({ className }) => (
-  <svg 
-    viewBox="0 0 120 120" 
-    className={className}
-    fill="none"
-  >
-    <defs>
-      <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#F97316" />
-        <stop offset="50%" stopColor="#FB923C" />
-        <stop offset="100%" stopColor="#EA580C" />
-      </linearGradient>
-      <filter id="glow">
-        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-        <feMerge> 
-          <feMergeNode in="coloredBlur"/>
-          <feMergeNode in="SourceGraphic"/>
-        </feMerge>
-      </filter>
-    </defs>
-    
-    {/* Outer Ring */}
-    <circle 
-      cx="60" 
-      cy="60" 
-      r="55" 
-      stroke="url(#logoGradient)" 
-      strokeWidth="3" 
-      fill="none"
-      opacity="0.3"
-    />
-    
-    {/* Main Logo Circle */}
-    <circle 
-      cx="60" 
-      cy="60" 
-      r="45" 
-      fill="url(#logoGradient)"
-      filter="url(#glow)"
-    />
-    
-    {/* Elite Star/Diamond */}
-    <g transform="translate(60,60)">
-      {/* Central Diamond */}
-      <path 
-        d="M-15,-8 L0,-25 L15,-8 L8,0 L15,8 L0,25 L-15,8 L-8,0 Z" 
-        fill="#0F172A"
-        stroke="#FFF"
-        strokeWidth="1"
-      />
-      
-      {/* Inner sparkle */}
-      <circle cx="0" cy="0" r="3" fill="#F97316" />
-      
-      {/* Side sparkles */}
-      <circle cx="-8" cy="-8" r="1.5" fill="#FCD34D" opacity="0.8" />
-      <circle cx="8" cy="-8" r="1.5" fill="#FCD34D" opacity="0.8" />
-      <circle cx="-8" cy="8" r="1.5" fill="#FCD34D" opacity="0.8" />
-      <circle cx="8" cy="8" r="1.5" fill="#FCD34D" opacity="0.8" />
-    </g>
-    
-    {/* Orbital elements */}
-    <circle cx="20" cy="30" r="2" fill="#FCD34D" opacity="0.6">
-      <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
-    </circle>
-    <circle cx="100" cy="90" r="1.5" fill="#F97316" opacity="0.4">
-      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2.5s" repeatCount="indefinite" />
-    </circle>
-    <circle cx="90" cy="25" r="1" fill="#FCD34D" opacity="0.7">
-      <animate attributeName="opacity" values="0.7;1;0.7" dur="1.8s" repeatCount="indefinite" />
-    </circle>
-  </svg>
-);
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -128,48 +54,34 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white relative overflow-hidden">
       {/* Background Effects */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(249,115,22,0.03)_0%,transparent_50%)] pointer-events-none"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(249,115,22,0.02)_0%,transparent_50%)] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(249,115,22,0.05)_0%,transparent_50%)] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(249,115,22,0.03)_0%,transparent_50%)] pointer-events-none"></div>
       
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-slate-950/80 border-b border-orange-500/20 shadow-lg shadow-orange-500/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+      {/* Navigation melhorada */}
+      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-slate-950/90 border-b border-orange-500/30 shadow-2xl shadow-orange-500/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
-            {/* Brand Section - Mobile First */}
-            <div className="flex items-center gap-2 sm:gap-3 slide-in-left">
-              <div className="relative group cursor-pointer">
-                {/* New Elite Logo */}
-                <EliteLogo className="w-8 h-8 sm:w-10 sm:h-10" />
-              </div>
-              
-              {/* Brand Text - Responsive */}
-              <div className="flex flex-col">
-                <span className="text-base sm:text-xl font-bold text-orange-400 tracking-tight">
-                  AFILIADOS DA ELITE
-                </span>
-                <span className="text-xs text-slate-400 font-medium hidden sm:block">
-                  Portal Premium de Marketing Digital
-                </span>
-              </div>
+            {/* Brand Section melhorada */}
+            <div className="slide-in-left">
+              <EliteLogo size="sm" showText={true} animated={true} />
             </div>
             
-            {/* Navigation Actions */}
-            <div className="flex items-center gap-2 sm:gap-3 slide-in-right">
+            {/* Navigation Actions melhoradas */}
+            <div className="flex items-center gap-3 slide-in-right">
               {user ? (
-                <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-3">
                   <div className="hidden sm:block">
                     <ThemeToggle />
                   </div>
                   <button 
-                    className="group relative overflow-hidden bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-slate-900 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-bold shadow-lg hover:shadow-orange-500/30 transition-all duration-300 transform hover:scale-105 border border-orange-300/30"
+                    className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold shadow-xl hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-orange-300/40"
                     onClick={() => navigate('/dashboard')}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative flex items-center gap-1.5 sm:gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                      <span className="hidden sm:inline">Dashboard</span>
+                    <div className="relative flex items-center gap-2">
+                      🏆
+                      <span className="hidden sm:inline">Dashboard Elite</span>
+                      <span className="sm:hidden">Dashboard</span>
                     </div>
                   </button>
                   <div className="sm:hidden">
@@ -177,12 +89,12 @@ const Index = () => {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-3">
                   <button 
-                    className="group relative text-slate-300 hover:text-white px-3 sm:px-4 py-2 rounded-lg transition-all duration-300 font-medium hover:bg-slate-800/50 backdrop-blur-sm"
+                    className="group relative text-slate-300 hover:text-white px-3 sm:px-4 py-2.5 rounded-lg transition-all duration-300 font-semibold hover:bg-slate-800/60 backdrop-blur-sm border border-transparent hover:border-orange-500/30"
                     onClick={() => handleAuthAction('login')}
                   >
-                    <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className="flex items-center gap-2">
                       <svg className="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                       </svg>
@@ -190,15 +102,13 @@ const Index = () => {
                     </div>
                   </button>
                   <button 
-                    className="group relative overflow-hidden bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-slate-900 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-bold shadow-lg hover:shadow-orange-500/30 transition-all duration-300 transform hover:scale-105 border border-orange-300/30"
+                    className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold shadow-xl hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-orange-300/40"
                     onClick={() => handleAuthAction('signup')}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative flex items-center gap-1.5 sm:gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                      </svg>
-                      <span className="hidden sm:inline">Cadastrar Grátis</span>
+                    <div className="relative flex items-center gap-2">
+                      🏆
+                      <span className="hidden sm:inline">Cadastrar Elite</span>
                       <span className="sm:hidden">Cadastrar</span>
                     </div>
                   </button>
@@ -212,137 +122,137 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 min-h-screen flex items-center relative" id="home">
+      {/* Hero Section melhorada */}
+      <section className="pt-28 pb-20 min-h-screen flex items-center relative" id="home">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left Content */}
+            {/* Left Content melhorado */}
             <div className="space-y-8 slide-in-left text-center lg:text-left">
               <div className="space-y-6">
-                <h1 className="text-3xl lg:text-5xl font-bold leading-tight">
+                <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
+                  <span className="text-4xl animate-pulse">🏆</span>
+                  <span className="text-orange-400 font-bold text-lg">Portal Premium Elite</span>
+                </div>
+                <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
                   Área de Membros <span className="text-orange-400 text-glow">Exclusiva e Premium</span><br />
-                  para Afiliados Elite
+                  para <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Afiliados Elite</span> 🏆
                 </h1>
               </div>
               
-              <p className="text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto lg:mx-0 font-light">
+              <p className="text-xl text-slate-300 leading-relaxed max-w-2xl mx-auto lg:mx-0 font-light">
                 Central completa para gerenciar seu desempenho como afiliado. Acesse conteúdos exclusivos, 
                 materiais de marketing premium, comunidade ativa e acompanhe suas comissões em tempo real.
               </p>
               
-              {/* Benefits Cards - Horizontal Layout with Smaller Font */}
-              <div className="flex flex-wrap justify-center lg:justify-start gap-5 max-w-5xl mx-auto lg:mx-0 mt-6">
-                <div className="flex items-center gap-2 group cursor-default">
-                  <div className="w-8 h-8 rounded-full bg-orange-400/10 flex items-center justify-center group-hover:bg-orange-400/20 transition-all duration-300">
-                    <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {/* Benefits Cards melhorados */}
+              <div className="flex flex-wrap justify-center lg:justify-start gap-6 max-w-5xl mx-auto lg:mx-0 mt-8">
+                <div className="flex items-center gap-3 group cursor-default bg-slate-800/30 backdrop-blur-sm px-4 py-3 rounded-xl border border-orange-500/20 hover:border-orange-500/40 transition-all duration-300">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
                   </div>
                   <div>
-                    <div className="text-white font-medium text-sm">Conteúdo Exclusivo</div>
-                    <div className="text-slate-400 text-xs">Videoaulas & Materiais</div>
+                    <div className="text-white font-bold text-sm">🏆 Conteúdo Exclusivo</div>
+                    <div className="text-orange-300 text-xs">Videoaulas & Materiais Elite</div>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2 group cursor-default">
-                  <div className="w-8 h-8 rounded-full bg-orange-400/10 flex items-center justify-center group-hover:bg-orange-400/20 transition-all duration-300">
-                    <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-3 group cursor-default bg-slate-800/30 backdrop-blur-sm px-4 py-3 rounded-xl border border-orange-500/20 hover:border-orange-500/40 transition-all duration-300">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                   </div>
                   <div>
-                    <div className="text-white font-medium text-sm">Comunidade Elite</div>
-                    <div className="text-slate-400 text-xs">Chat & Networking</div>
+                    <div className="text-white font-bold text-sm">🏆 Comunidade Elite</div>
+                    <div className="text-blue-300 text-xs">Chat & Networking Premium</div>
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-2 group cursor-default">
-                  <div className="w-8 h-8 rounded-full bg-orange-400/10 flex items-center justify-center group-hover:bg-orange-400/20 transition-all duration-300">
-                    <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-3 group cursor-default bg-slate-800/30 backdrop-blur-sm px-4 py-3 rounded-xl border border-orange-500/20 hover:border-orange-500/40 transition-all duration-300">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-400 to-green-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
                   </div>
                   <div>
-                    <div className="text-white font-medium text-sm">Dashboard Avançado</div>
-                    <div className="text-slate-400 text-xs">Comissões & Performance</div>
+                    <div className="text-white font-bold text-sm">🏆 Dashboard Avançado</div>
+                    <div className="text-green-300 text-xs">Comissões & Performance Elite</div>
                   </div>
                 </div>
               </div>
               
-              {/* CTAs */}
-              <div className="flex flex-col gap-4 justify-center lg:justify-start max-w-md mx-auto lg:mx-0">
+              {/* CTAs melhorados */}
+              <div className="flex flex-col gap-5 justify-center lg:justify-start max-w-md mx-auto lg:mx-0 mt-12">
                 {!user ? (
                   <>
                     {/* Primary CTA - Cadastro */}
                     <button 
-                      className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 font-bold py-4 px-8 rounded-2xl shadow-2xl shadow-orange-500/30 hover:shadow-orange-400/40 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-orange-400/30"
+                      className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 font-bold py-5 px-8 rounded-2xl shadow-2xl shadow-orange-500/40 hover:shadow-orange-400/50 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-orange-400/40 border-2 border-orange-300/50"
                       onClick={() => handleAuthAction('signup')}
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <div className="relative flex items-center justify-center gap-3">
-                        <svg className="w-6 h-6 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        <span className="text-xl">Acessar Área de Membros</span>
-                        <div className="bg-yellow-400 text-slate-900 text-xs font-bold px-2 py-1 rounded-full animate-pulse">
-                          🔥 ELITE
+                        <span className="text-2xl">🏆</span>
+                        <span className="text-xl">Acessar Área Elite</span>
+                        <div className="bg-yellow-400 text-slate-900 text-xs font-bold px-3 py-1.5 rounded-full animate-pulse border border-yellow-300">
+                          ⚡ PREMIUM
                         </div>
                       </div>
                     </button>
                     
                     {/* Secondary CTA - Login */}
                     <button 
-                      className="group relative bg-slate-800/50 hover:bg-slate-700/50 border-2 border-slate-600 hover:border-orange-400/50 text-white font-semibold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm"
+                      className="group relative bg-slate-800/60 hover:bg-slate-700/60 border-2 border-orange-500/40 hover:border-orange-400/60 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm"
                       onClick={() => handleAuthAction('login')}
                     >
                       <div className="flex items-center justify-center gap-3">
                         <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                         </svg>
-                        <span className="text-lg">Já sou afiliado - Entrar</span>
+                        <span className="text-lg">Já sou Elite - Entrar</span>
                       </div>
                     </button>
                   </>
                 ) : (
                   <button 
-                    className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 font-bold py-4 px-8 rounded-2xl shadow-2xl shadow-orange-500/30 hover:shadow-orange-400/40 transition-all duration-300 transform hover:scale-105"
+                    className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 font-bold py-5 px-8 rounded-2xl shadow-2xl shadow-orange-500/40 hover:shadow-orange-400/50 transition-all duration-300 transform hover:scale-105 border-2 border-orange-300/50"
                     onClick={() => navigate('/dashboard')}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="relative flex items-center justify-center gap-3">
-                      <svg className="w-6 h-6 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                      <span className="text-xl">Acessar Meu Dashboard</span>
+                      <span className="text-2xl">🏆</span>
+                      <span className="text-xl">Acessar Meu Dashboard Elite</span>
                     </div>
                   </button>
                 )}
               </div>
               
-              {/* Trust indicators */}
-              <div className="flex flex-wrap gap-6 text-sm text-slate-400 justify-center lg:justify-start">
-                <div className="flex items-center gap-2 scale-hover">
-                  <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {/* Trust indicators melhorados */}
+              <div className="flex flex-wrap gap-8 text-sm text-slate-400 justify-center lg:justify-start mt-8">
+                <div className="flex items-center gap-2 scale-hover bg-slate-800/20 px-3 py-2 rounded-lg border border-green-500/20">
+                  <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  Acesso Gratuito
+                  <span className="text-green-300 font-medium">🏆 Acesso Premium</span>
                 </div>
-                <div className="flex items-center gap-2 scale-hover">
-                  <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-2 scale-hover bg-slate-800/20 px-3 py-2 rounded-lg border border-blue-500/20">
+                  <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
-                  Seguro & Privado
+                  <span className="text-blue-300 font-medium">🛡️ Seguro & Privado</span>
                 </div>
-                <div className="flex items-center gap-2 scale-hover">
+                <div className="flex items-center gap-2 scale-hover bg-slate-800/20 px-3 py-2 rounded-lg border border-orange-500/20">
                   <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  Disponível 24/7
+                  <span className="text-orange-300 font-medium">⚡ Disponível 24/7</span>
                 </div>
               </div>
             </div>
             
-            {/* Right Side - Laptop Mockup */}
+            {/* Right Side - Laptop Mockup melhorado */}
             <div className="lg:flex justify-center hidden slide-in-right">
               <div className="relative">
                 {/* Laptop Frame */}
@@ -358,88 +268,88 @@ const Index = () => {
                           <div className="w-3 h-3 rounded-full bg-orange-400"></div>
                         </div>
                         <div className="flex-1 bg-slate-700/50 rounded px-3 py-1 mx-4">
-                          <span className="text-xs text-slate-400">app.afiliadosdaelite.com/dashboard</span>
+                          <span className="text-xs text-slate-400">🏆 app.afiliadoselite.com/dashboard</span>
                         </div>
                       </div>
                       
-                      {/* Dashboard Preview */}
+                      {/* Dashboard Preview melhorado */}
                       <div className="p-6 space-y-4 overflow-hidden">
                         {/* Header */}
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="text-white font-bold text-lg">Olá, Afiliado Elite! 👋</h3>
-                            <p className="text-slate-400 text-sm">Bem-vindo ao seu dashboard elite</p>
+                            <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                              🏆 Olá, Afiliado Elite!
+                            </h3>
+                            <p className="text-orange-400 text-sm">Bem-vindo ao seu dashboard premium</p>
                           </div>
-                          <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center">
-                            <span className="text-slate-900 text-sm font-bold">E</span>
+                          <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                            <span className="text-slate-900 text-lg font-bold">🏆</span>
                           </div>
                         </div>
                         
-                        {/* Stats Grid */}
+                        {/* Stats Grid melhorado */}
                         <div className="grid grid-cols-3 gap-3">
-                          <div className="bg-slate-700/50 rounded-lg p-3 border border-slate-600">
-                            <div className="text-orange-400 text-xl font-bold">R$ 2.847</div>
-                            <div className="text-slate-400 text-xs">Comissões</div>
+                          <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-lg p-3 border border-orange-500/30">
+                            <div className="text-orange-300 text-xl font-bold">R$ 2.847</div>
+                            <div className="text-orange-400 text-xs font-medium">🏆 Comissões</div>
                           </div>
-                          <div className="bg-slate-700/50 rounded-lg p-3 border border-slate-600">
-                            <div className="text-orange-400 text-xl font-bold">1.234</div>
-                            <div className="text-slate-400 text-xs">Cliques</div>
+                          <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg p-3 border border-blue-500/30">
+                            <div className="text-blue-300 text-xl font-bold">1.234</div>
+                            <div className="text-blue-400 text-xs font-medium">👆 Cliques</div>
                           </div>
-                          <div className="bg-slate-700/50 rounded-lg p-3 border border-slate-600">
-                            <div className="text-orange-400 text-xl font-bold">89%</div>
-                            <div className="text-slate-400 text-xs">Taxa Conv.</div>
+                          <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-lg p-3 border border-green-500/30">
+                            <div className="text-green-300 text-xl font-bold">89%</div>
+                            <div className="text-green-400 text-xs font-medium">📈 Conv.</div>
                           </div>
                         </div>
                         
-                        {/* Content Sections */}
+                        {/* Content Sections melhoradas */}
                         <div className="space-y-3">
-                          <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-600/50">
+                          <div className="bg-gradient-to-r from-orange-500/10 to-orange-600/5 rounded-lg p-3 border border-orange-500/20">
                             <div className="flex items-center gap-3 mb-2">
                               <div className="w-8 h-8 bg-orange-400 rounded flex items-center justify-center">
-                                <svg className="w-4 h-4 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-10-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                                <span className="text-slate-900 font-bold">🏆</span>
                               </div>
                               <div>
-                                <div className="text-white text-sm font-medium">Videoaulas Exclusivas</div>
-                                <div className="text-slate-400 text-xs">12 novos conteúdos</div>
+                                <div className="text-white text-sm font-medium">Videoaulas Elite</div>
+                                <div className="text-orange-400 text-xs">12 novos conteúdos premium</div>
                               </div>
                             </div>
                           </div>
                           
-                          <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-600/50">
+                          <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/5 rounded-lg p-3 border border-blue-500/20">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-blue-400 rounded flex items-center justify-center">
-                                <svg className="w-4 h-4 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-                                </svg>
+                                <span className="text-slate-900 font-bold">💬</span>
                               </div>
                               <div>
-                                <div className="text-white text-sm font-medium">Chat Comunidade</div>
-                                <div className="text-slate-400 text-xs">5 mensagens não lidas</div>
+                                <div className="text-white text-sm font-medium">Chat Elite</div>
+                                <div className="text-blue-400 text-xs">5 mensagens premium</div>
                               </div>
                             </div>
                           </div>
                         </div>
                         
-                        {/* Performance Chart Preview */}
-                        <div className="bg-slate-700/30 rounded-lg p-3 border border-slate-600/50">
-                          <div className="text-white text-sm font-medium mb-2">Performance (7 dias)</div>
+                        {/* Performance Chart Preview melhorado */}
+                        <div className="bg-gradient-to-r from-purple-500/10 to-purple-600/5 rounded-lg p-3 border border-purple-500/20">
+                          <div className="text-white text-sm font-medium mb-2 flex items-center gap-2">
+                            🏆 Performance Elite (7 dias)
+                          </div>
                           <div className="h-16 relative">
                             <svg className="w-full h-full" viewBox="0 0 200 40">
                               <defs>
                                 <linearGradient id="chartGradientMockup" x1="0%" y1="0%" x2="0%" y2="100%">
-                                  <stop offset="0%" stopColor="#f97316" stopOpacity="0.4"/>
+                                  <stop offset="0%" stopColor="#f97316" stopOpacity="0.6"/>
                                   <stop offset="100%" stopColor="#f97316" stopOpacity="0"/>
                                 </linearGradient>
                               </defs>
                               <path 
                                 d="M 5 30 Q 25 20 50 15 T 100 10 T 150 8 T 195 5" 
                                 stroke="#f97316" 
-                                strokeWidth="2" 
+                                strokeWidth="3" 
                                 fill="none"
                                 className="animate-pulse"
-                                filter="drop-shadow(0 0 4px rgba(249, 115, 22, 0.3))"
+                                filter="drop-shadow(0 0 6px rgba(249, 115, 22, 0.4))"
                               />
                               <path 
                                 d="M 5 30 Q 25 20 50 15 T 100 10 T 150 8 T 195 5 L 195 40 L 5 40 Z" 
@@ -458,15 +368,15 @@ const Index = () => {
                   </div>
                 </div>
                 
-                {/* Floating Elements - Enhanced */}
-                <div className="absolute -top-3 -right-3 bg-gradient-to-r from-orange-400 to-orange-500 text-slate-900 px-3 py-1.5 rounded-full text-xs font-bold animate-pulse shadow-lg border border-orange-300/30">
-                  ✨ ONLINE
+                {/* Floating Elements melhorados */}
+                <div className="absolute -top-3 -right-3 bg-gradient-to-r from-orange-400 to-orange-500 text-slate-900 px-4 py-2 rounded-full text-xs font-bold animate-pulse shadow-xl border-2 border-orange-300/40">
+                  🏆 ELITE ONLINE
                 </div>
-                <div className="absolute -bottom-3 -left-3 bg-gradient-to-r from-blue-400 to-blue-500 text-slate-900 px-3 py-1.5 rounded-full text-xs font-bold float-animation shadow-lg border border-blue-300/30">
-                  💬 Chat Ativo
+                <div className="absolute -bottom-3 -left-3 bg-gradient-to-r from-blue-400 to-blue-500 text-slate-900 px-4 py-2 rounded-full text-xs font-bold float-animation shadow-xl border-2 border-blue-300/40">
+                  💬 Chat Elite Ativo
                 </div>
-                <div className="absolute top-1/2 -right-4 bg-gradient-to-r from-purple-400 to-purple-500 text-white px-2 py-1 rounded-full text-xs font-bold transform -rotate-12 float-delay-2 shadow-lg border border-purple-300/30">
-                  🔥 ELITE
+                <div className="absolute top-1/2 -right-4 bg-gradient-to-r from-purple-400 to-purple-500 text-white px-3 py-1.5 rounded-full text-xs font-bold transform -rotate-12 float-delay-2 shadow-xl border-2 border-purple-300/40">
+                  🚀 PREMIUM
                 </div>
               </div>
             </div>
