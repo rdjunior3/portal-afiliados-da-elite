@@ -132,7 +132,7 @@ const Index = () => {
               <div className="space-y-6">
                 <h1 className="text-3xl lg:text-5xl font-bold leading-tight">
                   Área de Membros <span className="text-orange-400 text-glow">Exclusiva e Premium</span><br />
-                  para <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">Afiliados Elite</span>
+                  para <span className="text-white">Afiliados Elite</span>
                 </h1>
               </div>
               

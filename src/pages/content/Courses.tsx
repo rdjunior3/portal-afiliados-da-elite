@@ -37,7 +37,7 @@ interface CourseForm {
 
 const Courses = () => {
   const navigate = useNavigate();
-  const { isAdmin } = useAuth();
+  const { canManageContent } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -177,133 +177,255 @@ const Courses = () => {
       <div className="relative bg-gradient-to-b from-orange-600/20 to-transparent pb-32 pt-20">
         <div className="absolute inset-0 bg-grid-white/5 bg-[size:20px_20px]" />
         
-        <div className="container mx-auto px-6 relative">
-          <div className="flex items-center justify-between mb-12">
-            <div className="text-center space-y-4 flex-1">
-              <h1 className="text-5xl font-bold text-white flex items-center justify-center gap-3">
-                <span className="text-4xl">🏆</span>
-                Área de Aulas Elite
-              </h1>
-              <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-                {isAdmin() ? 'Gerencie aulas e eduque afiliados' : 'Aprenda com os melhores conteúdos e acelere sua jornada como afiliado'}
-              </p>
-            </div>
-            
-            {isAdmin() && (
-              <Dialog open={isCourseModalOpen} onOpenChange={setIsCourseModalOpen}>
-                <DialogTrigger asChild>
-                  <Button 
-                    onClick={handleCreateCourse}
-                    className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white shadow-lg hover:shadow-orange-500/30 transition-all duration-300"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Cadastrar Curso
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl bg-slate-800 border-slate-700">
-                  <DialogHeader>
-                    <DialogTitle className="text-white">
-                      {editingCourse ? 'Editar Curso' : 'Cadastrar Novo Curso'}
-                    </DialogTitle>
-                    <DialogDescription className="text-slate-300">
-                      {editingCourse ? 'Atualize as informações do curso' : 'Preencha as informações para criar um novo curso'}
-                    </DialogDescription>
-                  </DialogHeader>
-                  
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="title" className="text-right text-slate-200">Título</Label>
-                      <Input
-                        id="title"
-                        value={courseForm.title}
-                        onChange={(e) => setCourseForm({...courseForm, title: e.target.value})}
-                        className="col-span-3 bg-slate-700 border-slate-600 text-white"
-                        placeholder="Título do curso"
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="description" className="text-right text-slate-200">Descrição</Label>
-                      <Textarea
-                        id="description"
-                        value={courseForm.description}
-                        onChange={(e) => setCourseForm({...courseForm, description: e.target.value})}
-                        className="col-span-3 bg-slate-700 border-slate-600 text-white"
-                        placeholder="Descrição do curso"
-                        rows={4}
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="thumbnail_url" className="text-right text-slate-200">URL da Imagem</Label>
-                      <Input
-                        id="thumbnail_url"
-                        value={courseForm.thumbnail_url}
-                        onChange={(e) => setCourseForm({...courseForm, thumbnail_url: e.target.value})}
-                        className="col-span-3 bg-slate-700 border-slate-600 text-white"
-                        placeholder="https://..."
-                      />
-                    </div>
-                  </div>
-                  
-                  <DialogFooter>
-                    <Button
-                      type="submit"
-                      onClick={() => saveCourseMutation.mutate(courseForm)}
-                      disabled={saveCourseMutation.isPending}
-                      className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white"
+        <div className="w-full px-4 sm:px-6 lg:px-8 relative">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between mb-12">
+              <div className="text-center space-y-4 flex-1">
+                <h1 className="text-5xl font-bold text-white flex items-center justify-center gap-3">
+                  <span className="text-4xl">🏆</span>
+                  Área de Aulas Elite
+                </h1>
+                <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+                  {canManageContent() ? 'Gerencie aulas e eduque afiliados' : 'Aprenda com os melhores conteúdos e acelere sua jornada como afiliado'}
+                </p>
+              </div>
+              
+              {canManageContent() && (
+                <Dialog open={isCourseModalOpen} onOpenChange={setIsCourseModalOpen}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      onClick={handleCreateCourse}
+                      className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white shadow-lg hover:shadow-orange-500/30 transition-all duration-300"
                     >
-                      {editingCourse ? 'Atualizar' : 'Cadastrar'}
+                      <Plus className="h-4 w-4 mr-2" />
+                      Cadastrar Curso
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            )}
-          </div>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl bg-slate-800 border-slate-700">
+                    <DialogHeader>
+                      <DialogTitle className="text-white">
+                        {editingCourse ? 'Editar Curso' : 'Cadastrar Novo Curso'}
+                      </DialogTitle>
+                      <DialogDescription className="text-slate-300">
+                        {editingCourse ? 'Atualize as informações do curso' : 'Preencha as informações para criar um novo curso'}
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="grid gap-4 py-4">
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="title" className="text-right text-slate-200">Título</Label>
+                        <Input
+                          id="title"
+                          value={courseForm.title}
+                          onChange={(e) => setCourseForm({...courseForm, title: e.target.value})}
+                          className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                          placeholder="Título do curso"
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="description" className="text-right text-slate-200">Descrição</Label>
+                        <Textarea
+                          id="description"
+                          value={courseForm.description}
+                          onChange={(e) => setCourseForm({...courseForm, description: e.target.value})}
+                          className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                          placeholder="Descrição do curso"
+                          rows={4}
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="thumbnail_url" className="text-right text-slate-200">URL da Imagem</Label>
+                        <Input
+                          id="thumbnail_url"
+                          value={courseForm.thumbnail_url}
+                          onChange={(e) => setCourseForm({...courseForm, thumbnail_url: e.target.value})}
+                          className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                          placeholder="https://..."
+                        />
+                      </div>
+                    </div>
+                    
+                    <DialogFooter>
+                      <Button
+                        type="submit"
+                        onClick={() => saveCourseMutation.mutate(courseForm)}
+                        disabled={saveCourseMutation.isPending}
+                        className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white"
+                      >
+                        {editingCourse ? 'Atualizar' : 'Cadastrar'}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+            </div>
 
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
-              <Input
-                placeholder="Buscar cursos..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-14 text-lg bg-slate-700/50 backdrop-blur border-slate-600 text-white focus:border-orange-500 focus:ring-orange-500"
-              />
+            {/* Search Bar */}
+            <div className="max-w-2xl mx-auto">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
+                <Input
+                  placeholder="Buscar cursos..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-12 h-14 text-lg bg-slate-700/50 backdrop-blur border-slate-600 text-white focus:border-orange-500 focus:ring-orange-500"
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Courses Grid */}
-      <div className="container mx-auto px-6 -mt-20 relative z-10">
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <Card key={i} className="overflow-hidden bg-slate-800 border-slate-700">
-                <Skeleton className="aspect-video w-full bg-slate-700" />
-                <CardHeader>
-                  <Skeleton className="h-6 w-3/4 bg-slate-700" />
-                  <Skeleton className="h-4 w-full mt-2 bg-slate-700" />
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        ) : courses && courses.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {courses.map((course) => {
-              const totalDuration = getTotalDuration(course.lessons);
-              const lessonCount = course.lessons?.length || 0;
+      <div className="w-full px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
+        <div className="max-w-7xl mx-auto">
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <Card key={i} className="overflow-hidden bg-slate-800 border-slate-700">
+                  <Skeleton className="aspect-video w-full bg-slate-700" />
+                  <CardHeader>
+                    <Skeleton className="h-6 w-3/4 bg-slate-700" />
+                    <Skeleton className="h-4 w-full mt-2 bg-slate-700" />
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+          ) : courses && courses.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {courses.map((course) => {
+                const totalDuration = getTotalDuration(course.lessons);
+                const lessonCount = course.lessons?.length || 0;
 
-              return (
-                <Card
+                return (
+                  <Card
+                    key={course.id}
+                    className="overflow-hidden cursor-pointer group hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300 bg-slate-800 border-slate-700"
+                    onClick={() => handleCourseClick(course.id)}
+                  >
+                    {/* Thumbnail */}
+                    <div className="relative aspect-video bg-gradient-to-br from-orange-500/20 to-orange-600/20">
+                      {course.thumbnail_url ? (
+                        <img
+                          src={course.thumbnail_url}
+                          alt={course.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          <GraduationCap className="h-16 w-16 text-orange-500/50" />
+                        </div>
+                      )}
+
+                      {/* Play Button Overlay */}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <div className="bg-orange-500 rounded-full p-4 transform scale-0 group-hover:scale-100 transition-transform duration-300">
+                          <Play className="h-8 w-8 text-white fill-white" />
+                        </div>
+                      </div>
+
+                      {/* Admin Actions */}
+                      {canManageContent() && (
+                        <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditCourse(course);
+                            }}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteCourseMutation.mutate(course.id);
+                            }}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Course Info Badge */}
+                      <div className="absolute bottom-2 right-2 flex gap-2">
+                        {lessonCount > 0 && (
+                          <Badge className="bg-black/70 text-white border-0">
+                            <BookOpen className="h-3 w-3 mr-1" />
+                            {lessonCount} aulas
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    <CardHeader className="space-y-2">
+                      <CardTitle className="line-clamp-2 text-white group-hover:text-orange-300 transition-colors">
+                        {course.title}
+                      </CardTitle>
+                      {course.description && (
+                        <CardDescription className="line-clamp-3 text-slate-300">
+                          {course.description}
+                        </CardDescription>
+                      )}
+                    </CardHeader>
+
+                    <CardFooter className="pt-0">
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center text-sm text-slate-400">
+                          <Clock className="h-4 w-4 mr-1" />
+                          {formatDuration(totalDuration)}
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="text-orange-400 hover:text-orange-300"
+                        >
+                          Assistir
+                          <Play className="h-4 w-4 ml-1" />
+                        </Button>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <Card className="p-12 text-center bg-slate-800 border-slate-700">
+              <GraduationCap className="h-16 w-16 mx-auto text-slate-500 mb-4" />
+              <h3 className="text-lg font-semibold mb-2 text-white">Nenhum curso disponível</h3>
+              <p className="text-slate-400">
+                {searchQuery 
+                  ? 'Nenhum curso encontrado com sua busca. Tente outros termos.'
+                  : 'Em breve novos cursos estarão disponíveis para você.'}
+              </p>
+            </Card>
+          )}
+        </div>
+      </div>
+
+      {/* Featured Section */}
+      {courses && courses.length > 3 && (
+        <div className="w-full px-4 sm:px-6 lg:px-8 mt-16 pb-16">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-2xl font-bold mb-6 text-orange-300 flex items-center gap-2">
+              <span className="text-xl">🏆</span>
+              Continue Assistindo
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {courses.slice(0, 6).map((course) => (
+                <div
                   key={course.id}
-                  className="overflow-hidden cursor-pointer group hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300 bg-slate-800 border-slate-700"
+                  className="cursor-pointer group"
                   onClick={() => handleCourseClick(course.id)}
                 >
-                  {/* Thumbnail */}
-                  <div className="relative aspect-video bg-gradient-to-br from-orange-500/20 to-orange-600/20">
+                  <div className="relative aspect-video rounded-lg overflow-hidden bg-gradient-to-br from-orange-500/20 to-orange-600/20">
                     {course.thumbnail_url ? (
                       <img
                         src={course.thumbnail_url}
@@ -312,133 +434,17 @@ const Courses = () => {
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full">
-                        <GraduationCap className="h-16 w-16 text-orange-500/50" />
+                        <GraduationCap className="h-8 w-8 text-orange-500/50" />
                       </div>
                     )}
-
-                    {/* Play Button Overlay */}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <div className="bg-orange-500 rounded-full p-4 transform scale-0 group-hover:scale-100 transition-transform duration-300">
-                        <Play className="h-8 w-8 text-white fill-white" />
-                      </div>
-                    </div>
-
-                    {/* Admin Actions */}
-                    {isAdmin() && (
-                      <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditCourse(course);
-                          }}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteCourseMutation.mutate(course.id);
-                          }}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
-
-                    {/* Course Info Badge */}
-                    <div className="absolute bottom-2 right-2 flex gap-2">
-                      {lessonCount > 0 && (
-                        <Badge className="bg-black/70 text-white border-0">
-                          <BookOpen className="h-3 w-3 mr-1" />
-                          {lessonCount} aulas
-                        </Badge>
-                      )}
-                    </div>
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300" />
                   </div>
-
-                  <CardHeader className="space-y-2">
-                    <CardTitle className="line-clamp-2 text-white group-hover:text-orange-300 transition-colors">
-                      {course.title}
-                    </CardTitle>
-                    {course.description && (
-                      <CardDescription className="line-clamp-3 text-slate-300">
-                        {course.description}
-                      </CardDescription>
-                    )}
-                  </CardHeader>
-
-                  <CardFooter className="pt-0">
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center text-sm text-slate-400">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {formatDuration(totalDuration)}
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        className="text-orange-400 hover:text-orange-300"
-                      >
-                        Assistir
-                        <Play className="h-4 w-4 ml-1" />
-                      </Button>
-                    </div>
-                  </CardFooter>
-                </Card>
-              );
-            })}
-          </div>
-        ) : (
-          <Card className="p-12 text-center bg-slate-800 border-slate-700">
-            <GraduationCap className="h-16 w-16 mx-auto text-slate-500 mb-4" />
-            <h3 className="text-lg font-semibold mb-2 text-white">Nenhum curso disponível</h3>
-            <p className="text-slate-400">
-              {searchQuery 
-                ? 'Nenhum curso encontrado com sua busca. Tente outros termos.'
-                : 'Em breve novos cursos estarão disponíveis para você.'}
-            </p>
-          </Card>
-        )}
-      </div>
-
-      {/* Featured Section */}
-      {courses && courses.length > 3 && (
-        <div className="container mx-auto px-6 mt-16 pb-16">
-          <h2 className="text-2xl font-bold mb-6 text-orange-300 flex items-center gap-2">
-            <span className="text-xl">🏆</span>
-            Continue Assistindo
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {courses.slice(0, 6).map((course) => (
-              <div
-                key={course.id}
-                className="cursor-pointer group"
-                onClick={() => handleCourseClick(course.id)}
-              >
-                <div className="relative aspect-video rounded-lg overflow-hidden bg-gradient-to-br from-orange-500/20 to-orange-600/20">
-                  {course.thumbnail_url ? (
-                    <img
-                      src={course.thumbnail_url}
-                      alt={course.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <GraduationCap className="h-8 w-8 text-orange-500/50" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300" />
+                  <p className="mt-2 text-sm font-medium line-clamp-2 text-slate-300 group-hover:text-orange-300 transition-colors">
+                    {course.title}
+                  </p>
                 </div>
-                <p className="mt-2 text-sm font-medium line-clamp-2 text-slate-300 group-hover:text-orange-300 transition-colors">
-                  {course.title}
-                </p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       )}

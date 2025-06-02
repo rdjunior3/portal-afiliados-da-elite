@@ -10,6 +10,9 @@ interface AuthContextType {
   loading: boolean;
   profile: any | null;
   isAdmin: () => boolean;
+  isSuperAdmin: () => boolean;
+  isModerator: () => boolean;
+  canManageContent: () => boolean;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
@@ -36,7 +39,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Helper function to check if user is admin
   const isAdmin = () => {
-    return profile?.role === 'admin';
+    return profile?.role === 'admin' || 
+           profile?.role === 'super_admin' || 
+           profile?.role === 'moderator';
+  };
+
+  // Helper function to check specific admin levels
+  const isSuperAdmin = () => {
+    return profile?.role === 'super_admin';
+  };
+
+  const isModerator = () => {
+    return profile?.role === 'moderator' || 
+           profile?.role === 'admin' || 
+           profile?.role === 'super_admin';
+  };
+
+  // Check if user can manage content/products
+  const canManageContent = () => {
+    return profile?.role === 'admin' || 
+           profile?.role === 'super_admin';
   };
 
   // Fetch or create user profile
@@ -390,6 +412,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading,
     profile,
     isAdmin,
+    isSuperAdmin,
+    isModerator,
+    canManageContent,
     signUp,
     signIn,
     signOut,

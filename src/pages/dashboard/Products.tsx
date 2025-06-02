@@ -38,7 +38,7 @@ interface ProductForm {
 }
 
 const Products = () => {
-  const { user, isAdmin } = useAuth();
+  const { user, canManageContent } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -281,11 +281,11 @@ const Products = () => {
               Produtos para Afiliação
             </h1>
             <p className="text-slate-300 mt-2">
-              {isAdmin() ? 'Gerencie produtos e ganhe comissões' : 'Escolha produtos para promover e ganhar comissões'}
+              {canManageContent ? 'Gerencie produtos e ganhe comissões' : 'Escolha produtos para promover e ganhar comissões'}
             </p>
           </div>
           
-          {isAdmin() && (
+          {canManageContent && (
             <Dialog open={isProductModalOpen} onOpenChange={setIsProductModalOpen}>
               <DialogTrigger asChild>
                 <Button 
@@ -515,7 +515,7 @@ const Products = () => {
                   </Badge>
 
                   {/* Admin Actions */}
-                  {isAdmin() && (
+                  {canManageContent && (
                     <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                       <Button
                         variant="secondary"
