@@ -70,7 +70,7 @@ const Index = () => {
                 {/* Logo limpa sem container */}
                 <div className="relative">
                   <EliteLogo size="lg" showText={true} animated={true} />
-                </div>
+              </div>
               </div>
             </div>
             
@@ -89,7 +89,7 @@ const Index = () => {
                       <span className="sm:hidden">Dashboard</span>
                     </div>
                   </button>
-                  <ThemeToggle />
+                    <ThemeToggle />
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
@@ -115,7 +115,7 @@ const Index = () => {
                       <span className="sm:hidden">Cadastrar</span>
                     </div>
                   </button>
-                  <ThemeToggle />
+                    <ThemeToggle />
                 </div>
               )}
             </div>
@@ -149,15 +149,15 @@ const Index = () => {
                     <div className="relative">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-md group-hover:shadow-orange-400/30 transition-all duration-300">
                         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                      </div>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                  </div>
                       {/* Badge indicador */}
                       <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center border border-slate-900">
                         <span className="text-[9px]">📚</span>
-                      </div>
-                    </div>
-                    
+                  </div>
+                </div>
+                
                     <div className="text-left">
                       <h3 className="text-sm font-bold text-white mb-0.5">Conteúdo Exclusivo</h3>
                       <p className="text-orange-300 text-xs font-medium">Videoaulas & Materiais Elite</p>
@@ -169,15 +169,15 @@ const Index = () => {
                     <div className="relative">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-md group-hover:shadow-blue-400/30 transition-all duration-300">
                         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                      </div>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
                       {/* Badge indicador */}
                       <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full flex items-center justify-center border border-slate-900">
                         <span className="text-[9px]">💬</span>
-                      </div>
-                    </div>
-                    
+                  </div>
+                </div>
+                
                     <div className="text-left">
                       <h3 className="text-sm font-bold text-white mb-0.5">Comunidade Elite</h3>
                       <p className="text-blue-300 text-xs font-medium">Chat & Networking Premium</p>
@@ -189,9 +189,9 @@ const Index = () => {
                     <div className="relative">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-md group-hover:shadow-green-400/30 transition-all duration-300">
                         <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                      </div>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
                       {/* Badge indicador */}
                       <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-400 rounded-full flex items-center justify-center border border-slate-900">
                         <span className="text-[9px]">📊</span>

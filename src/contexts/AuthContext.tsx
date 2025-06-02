@@ -293,7 +293,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setSession(null);
       setProfile(null);
-      
+    
       // PASSO 2: Fazer logout no Supabase
       const { error } = await supabase.auth.signOut();
       

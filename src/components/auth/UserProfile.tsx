@@ -33,7 +33,7 @@ export const UserProfile: React.FC = () => {
 
   const handleSignOut = async () => {
     try {
-      const { error } = await signOut();
+    const { error } = await signOut();
       
       if (error) {
         console.error('Erro no logout:', error);

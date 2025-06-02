@@ -13,6 +13,7 @@ import { Search, Play, Clock, BookOpen, GraduationCap, Plus, Edit, Trash2 } from
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { formatDuration } from '@/lib/utils';
 
 interface Course {
@@ -201,7 +202,7 @@ const Courses = () => {
                       Cadastrar Curso
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-2xl bg-slate-800 border-slate-700">
+                  <DialogContent className="max-w-4xl bg-slate-800/95 backdrop-blur border-slate-700/50">
                     <DialogHeader>
                       <DialogTitle className="text-white">
                         {editingCourse ? 'Editar Curso' : 'Cadastrar Novo Curso'}
@@ -211,50 +212,63 @@ const Courses = () => {
                       </DialogDescription>
                     </DialogHeader>
                     
-                    <div className="grid gap-4 py-4">
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="title" className="text-right text-slate-200">Título</Label>
-                        <Input
-                          id="title"
-                          value={courseForm.title}
-                          onChange={(e) => setCourseForm({...courseForm, title: e.target.value})}
-                          className="col-span-3 bg-slate-700 border-slate-600 text-white"
-                          placeholder="Título do curso"
-                        />
-                      </div>
-                      
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="description" className="text-right text-slate-200">Descrição</Label>
-                        <Textarea
-                          id="description"
-                          value={courseForm.description}
-                          onChange={(e) => setCourseForm({...courseForm, description: e.target.value})}
-                          className="col-span-3 bg-slate-700 border-slate-600 text-white"
-                          placeholder="Descrição do curso"
-                          rows={4}
-                        />
-                      </div>
-                      
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="thumbnail_url" className="text-right text-slate-200">URL da Imagem</Label>
-                        <Input
-                          id="thumbnail_url"
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 py-4 max-h-[70vh] overflow-y-auto">
+                      {/* Coluna da Imagem */}
+                      <div className="lg:col-span-1">
+                        <ImageUpload
                           value={courseForm.thumbnail_url}
-                          onChange={(e) => setCourseForm({...courseForm, thumbnail_url: e.target.value})}
-                          className="col-span-3 bg-slate-700 border-slate-600 text-white"
-                          placeholder="https://..."
+                          onChange={(url) => setCourseForm({...courseForm, thumbnail_url: url})}
+                          bucket="courses"
+                          folder="thumbnails"
+                          label="Imagem do Curso"
+                          placeholder="Envie uma imagem do curso"
+                          maxWidth={500}
+                          maxHeight={500}
                         />
+                      </div>
+                      
+                      {/* Coluna dos Campos */}
+                      <div className="lg:col-span-2 space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="title" className="text-slate-200">Título do Curso</Label>
+                          <Input
+                            id="title"
+                            value={courseForm.title}
+                            onChange={(e) => setCourseForm({...courseForm, title: e.target.value})}
+                            className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                            placeholder="Título do curso"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="description" className="text-slate-200">Descrição do Curso</Label>
+                          <Textarea
+                            id="description"
+                            value={courseForm.description}
+                            onChange={(e) => setCourseForm({...courseForm, description: e.target.value})}
+                            className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                            placeholder="Descrição detalhada do curso"
+                            rows={6}
+                          />
+                        </div>
                       </div>
                     </div>
                     
-                    <DialogFooter>
+                    <DialogFooter className="pt-6 border-t border-slate-700/50">
                       <Button
                         type="submit"
                         onClick={() => saveCourseMutation.mutate(courseForm)}
                         disabled={saveCourseMutation.isPending}
-                        className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white"
+                        className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white px-8"
                       >
-                        {editingCourse ? 'Atualizar' : 'Cadastrar'}
+                        {saveCourseMutation.isPending ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                            Salvando...
+                          </>
+                        ) : (
+                          editingCourse ? 'Atualizar Curso' : 'Cadastrar Curso'
+                        )}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -270,7 +284,7 @@ const Courses = () => {
                   placeholder="Buscar cursos..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 h-14 text-lg bg-slate-700/50 backdrop-blur border-slate-600 text-white focus:border-orange-500 focus:ring-orange-500"
+                  className="pl-12 h-14 text-lg bg-slate-800/60 backdrop-blur border-slate-600/50 text-white focus:border-orange-500 focus:ring-orange-500"
                 />
               </div>
             </div>
@@ -284,11 +298,11 @@ const Courses = () => {
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(8)].map((_, i) => (
-                <Card key={i} className="overflow-hidden bg-slate-800 border-slate-700">
-                  <Skeleton className="aspect-video w-full bg-slate-700" />
+                <Card key={i} className="overflow-hidden bg-slate-800/60 border-slate-700/50 backdrop-blur-sm">
+                  <Skeleton className="aspect-video w-full bg-slate-700/50" />
                   <CardHeader>
-                    <Skeleton className="h-6 w-3/4 bg-slate-700" />
-                    <Skeleton className="h-4 w-full mt-2 bg-slate-700" />
+                    <Skeleton className="h-6 w-3/4 bg-slate-700/50" />
+                    <Skeleton className="h-4 w-full mt-2 bg-slate-700/50" />
                   </CardHeader>
                 </Card>
               ))}
@@ -302,11 +316,11 @@ const Courses = () => {
                 return (
                   <Card
                     key={course.id}
-                    className="overflow-hidden cursor-pointer group hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300 bg-slate-800 border-slate-700"
+                    className="overflow-hidden cursor-pointer group hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300 bg-slate-800/60 border-slate-700/50 backdrop-blur-sm"
                     onClick={() => handleCourseClick(course.id)}
                   >
                     {/* Thumbnail */}
-                    <div className="relative aspect-video bg-gradient-to-br from-orange-500/20 to-orange-600/20">
+                    <div className="relative aspect-video bg-gradient-to-br from-slate-900/40 to-slate-800/40">
                       {course.thumbnail_url ? (
                         <img
                           src={course.thumbnail_url}
@@ -315,13 +329,13 @@ const Courses = () => {
                         />
                       ) : (
                         <div className="flex items-center justify-center h-full">
-                          <GraduationCap className="h-16 w-16 text-orange-500/50" />
+                          <GraduationCap className="h-16 w-16 text-slate-500/50" />
                         </div>
                       )}
 
                       {/* Play Button Overlay */}
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                        <div className="bg-orange-500 rounded-full p-4 transform scale-0 group-hover:scale-100 transition-transform duration-300">
+                        <div className="bg-orange-500/90 backdrop-blur-sm rounded-full p-4 transform scale-0 group-hover:scale-100 transition-transform duration-300">
                           <Play className="h-8 w-8 text-white fill-white" />
                         </div>
                       </div>
@@ -336,7 +350,7 @@ const Courses = () => {
                               e.stopPropagation();
                               handleEditCourse(course);
                             }}
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 bg-slate-800/80 backdrop-blur-sm"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -347,7 +361,7 @@ const Courses = () => {
                               e.stopPropagation();
                               deleteCourseMutation.mutate(course.id);
                             }}
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 bg-red-600/80 backdrop-blur-sm"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -357,7 +371,7 @@ const Courses = () => {
                       {/* Course Info Badge */}
                       <div className="absolute bottom-2 right-2 flex gap-2">
                         {lessonCount > 0 && (
-                          <Badge className="bg-black/70 text-white border-0">
+                          <Badge className="bg-black/70 text-white border-0 backdrop-blur-sm">
                             <BookOpen className="h-3 w-3 mr-1" />
                             {lessonCount} aulas
                           </Badge>
@@ -365,7 +379,7 @@ const Courses = () => {
                       </div>
                     </div>
 
-                    <CardHeader className="space-y-2">
+                    <CardHeader className="space-y-2 pb-4">
                       <CardTitle className="line-clamp-2 text-white group-hover:text-orange-300 transition-colors">
                         {course.title}
                       </CardTitle>
@@ -376,7 +390,7 @@ const Courses = () => {
                       )}
                     </CardHeader>
 
-                    <CardFooter className="pt-0">
+                    <CardFooter className="pt-0 border-t border-slate-700/50">
                       <div className="flex items-center justify-between w-full">
                         <div className="flex items-center text-sm text-slate-400">
                           <Clock className="h-4 w-4 mr-1" />
@@ -385,7 +399,7 @@ const Courses = () => {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          className="text-orange-400 hover:text-orange-300"
+                          className="text-orange-400 hover:text-orange-300 hover:bg-orange-500/10"
                         >
                           Assistir
                           <Play className="h-4 w-4 ml-1" />
@@ -397,7 +411,7 @@ const Courses = () => {
               })}
             </div>
           ) : (
-            <Card className="p-12 text-center bg-slate-800 border-slate-700">
+            <Card className="p-12 text-center bg-slate-800/60 border-slate-700/50 backdrop-blur-sm">
               <GraduationCap className="h-16 w-16 mx-auto text-slate-500 mb-4" />
               <h3 className="text-lg font-semibold mb-2 text-white">Nenhum curso disponível</h3>
               <p className="text-slate-400">
@@ -425,7 +439,7 @@ const Courses = () => {
                   className="cursor-pointer group"
                   onClick={() => handleCourseClick(course.id)}
                 >
-                  <div className="relative aspect-video rounded-lg overflow-hidden bg-gradient-to-br from-orange-500/20 to-orange-600/20">
+                  <div className="relative aspect-video rounded-lg overflow-hidden bg-gradient-to-br from-slate-900/40 to-slate-800/40 border border-slate-700/50 backdrop-blur-sm">
                     {course.thumbnail_url ? (
                       <img
                         src={course.thumbnail_url}
@@ -434,7 +448,7 @@ const Courses = () => {
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full">
-                        <GraduationCap className="h-8 w-8 text-orange-500/50" />
+                        <GraduationCap className="h-8 w-8 text-slate-500/50" />
                       </div>
                     )}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300" />

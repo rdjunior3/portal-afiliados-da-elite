@@ -91,15 +91,15 @@ const DashboardLayout: React.FC = () => {
 
   const handleSignOut = async () => {
     try {
-      const { error } = await signOut();
+    const { error } = await signOut();
       
-      if (error) {
-        toast({
-          title: "Erro ao sair",
-          description: "Não foi possível fazer logout. Tente novamente.",
-          variant: "destructive",
-        });
-      } else {
+    if (error) {
+      toast({
+        title: "Erro ao sair",
+        description: "Não foi possível fazer logout. Tente novamente.",
+        variant: "destructive",
+      });
+    } else {
         toast({
           title: "Logout realizado",
           description: "Até a próxima!",
@@ -189,14 +189,14 @@ const DashboardLayout: React.FC = () => {
               >
                 <ChevronLeft className={cn("h-4 w-4 transition-transform duration-200", sidebarCollapsed && "rotate-180")} />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
+            <Button
+              variant="ghost"
+              size="sm"
                 className="lg:hidden text-slate-400 hover:text-white hover:bg-slate-700/50"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <X className="h-5 w-5" />
-              </Button>
+              onClick={() => setSidebarOpen(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
             </div>
           </div>
 
@@ -204,46 +204,46 @@ const DashboardLayout: React.FC = () => {
           {!sidebarCollapsed && (
             <div className="border-b border-slate-700/50 bg-gradient-to-r from-slate-800/30 to-slate-700/30 p-6">
               <div className="flex items-center gap-4">
-                <div className="relative">
+              <div className="relative">
                   <div className="h-12 w-12 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center shadow-lg border-2 border-orange-300/20">
                     <span className="text-sm font-bold text-slate-900">🏆</span>
-                  </div>
-                  <div className="absolute -bottom-1 -right-1">
-                    {profile?.affiliate_status === 'approved' && (
-                      <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border-2 border-slate-900">
-                        <Sparkles className="w-2.5 h-2.5 text-white" />
-                      </div>
-                    )}
-                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="absolute -bottom-1 -right-1">
+                  {profile?.affiliate_status === 'approved' && (
+                      <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center border-2 border-slate-900">
+                      <Sparkles className="w-2.5 h-2.5 text-white" />
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-white truncate">
-                    {getDisplayName()}
-                  </p>
+                  {getDisplayName()}
+                </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <p className="text-xs text-slate-400 truncate">
+                  <p className="text-xs text-slate-400 truncate">
                       ID: {profile?.affiliate_id || 'Pendente'}
-                    </p>
-                    {profile?.affiliate_status && (
-                      <Badge 
-                        variant="outline"
-                        className={cn(
+                  </p>
+                  {profile?.affiliate_status && (
+                    <Badge 
+                      variant="outline"
+                      className={cn(
                           "text-xs px-2 py-0.5 h-5 font-bold border",
-                          profile.affiliate_status === 'approved' 
+                        profile.affiliate_status === 'approved' 
                             ? 'border-orange-400/60 text-orange-200 bg-orange-500/20' 
-                            : profile.affiliate_status === 'pending'
+                          : profile.affiliate_status === 'pending'
                             ? 'border-yellow-400/60 text-yellow-200 bg-yellow-500/20'
                             : 'border-red-400/60 text-red-200 bg-red-500/20'
-                        )}
-                      >
+                      )}
+                    >
                         {profile.affiliate_status === 'approved' ? 'ELITE' : 
                          profile.affiliate_status === 'pending' ? 'PENDENTE' : 'INATIVO'}
-                      </Badge>
-                    )}
-                  </div>
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
+          </div>
           )}
 
           {sidebarCollapsed && (
@@ -307,7 +307,7 @@ const DashboardLayout: React.FC = () => {
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                       <Shield className="h-3 w-3" />
                       Admin
-                    </h3>
+                </h3>
                     <div className="h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent flex-1" />
                   </div>
                 )}
@@ -348,22 +348,22 @@ const DashboardLayout: React.FC = () => {
           <div className="border-t border-slate-700/50 bg-gradient-to-r from-slate-800/30 to-slate-700/30 p-4 space-y-2">
             {!sidebarCollapsed ? (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/')}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
                   className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-700/40 transition-all duration-200"
-                >
-                  <Home className="h-4 w-4 mr-3" />
-                  Voltar ao Site
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSignOut}
+            >
+              <Home className="h-4 w-4 mr-3" />
+              Voltar ao Site
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
                   className="w-full justify-start text-red-300 hover:text-red-200 hover:bg-red-500/20 transition-all duration-200"
-                >
-                  <LogOut className="h-4 w-4 mr-3" />
+            >
+              <LogOut className="h-4 w-4 mr-3" />
                   Sair da Conta
                 </Button>
               </>
@@ -386,7 +386,7 @@ const DashboardLayout: React.FC = () => {
                   title="Sair da Conta"
                 >
                   <LogOut className="h-4 w-4" />
-                </Button>
+            </Button>
               </>
             )}
           </div>
@@ -429,34 +429,34 @@ const DashboardLayout: React.FC = () => {
               <ThemeToggle />
               
               {/* Notifications melhoradas */}
-              <div className="relative" ref={notificationsRef}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setNotificationsOpen(!notificationsOpen)}
+            <div className="relative" ref={notificationsRef}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setNotificationsOpen(!notificationsOpen)}
                   className="text-slate-300 hover:text-white relative hover:bg-slate-700/50 transition-all duration-200"
-                >
-                  <Bell className="h-5 w-5" />
-                  {/* Notification badge */}
+              >
+                <Bell className="h-5 w-5" />
+                {/* Notification badge */}
                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-lg">
                     <span className="text-xs text-slate-900 font-bold">3</span>
-                  </span>
-                </Button>
-                
+                </span>
+              </Button>
+              
                 {/* Notifications Dropdown melhorado */}
-                {notificationsOpen && (
+              {notificationsOpen && (
                   <div className="absolute right-0 top-full mt-3 w-96 bg-slate-800/95 backdrop-blur-xl border border-slate-600/50 rounded-xl shadow-2xl z-50">
                     <div className="p-4 border-b border-slate-600/50 bg-gradient-to-r from-slate-700/30 to-slate-600/30">
                       <h3 className="text-white font-bold flex items-center gap-2">
                         <span className="text-sm">🏆</span>
                         Notificações Elite
                       </h3>
-                    </div>
+                  </div>
                     <div className="max-h-80 overflow-y-auto">
                       <div className="p-4 border-b border-slate-600/30 hover:bg-slate-700/30 cursor-pointer transition-colors duration-200">
-                        <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3">
                           <div className="w-3 h-3 bg-orange-500 rounded-full mt-2 animate-pulse"></div>
-                          <div className="flex-1">
+                        <div className="flex-1">
                             <p className="text-sm text-white font-medium">Nova comissão disponível</p>
                             <p className="text-xs text-orange-200 mt-1">Você ganhou R$ 25,00 em comissões</p>
                             <p className="text-xs text-slate-400 mt-1">há 2 horas</p>
@@ -464,9 +464,9 @@ const DashboardLayout: React.FC = () => {
                         </div>
                       </div>
                       <div className="p-4 border-b border-slate-600/30 hover:bg-slate-700/30 cursor-pointer transition-colors duration-200">
-                        <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3">
                           <div className="w-3 h-3 bg-blue-500 rounded-full mt-2"></div>
-                          <div className="flex-1">
+                        <div className="flex-1">
                             <p className="text-sm text-white font-medium">📚 Novo produto disponível</p>
                             <p className="text-xs text-slate-300 mt-1">Confira o novo curso lançado</p>
                             <p className="text-xs text-slate-400 mt-1">há 5 horas</p>
@@ -474,9 +474,9 @@ const DashboardLayout: React.FC = () => {
                         </div>
                       </div>
                       <div className="p-4 hover:bg-slate-700/30 cursor-pointer transition-colors duration-200">
-                        <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3">
                           <div className="w-3 h-3 bg-green-500 rounded-full mt-2"></div>
-                          <div className="flex-1">
+                        <div className="flex-1">
                             <p className="text-sm text-white font-medium">🎯 Meta mensal atingida</p>
                             <p className="text-xs text-slate-300 mt-1">Parabéns! Você bateu sua meta</p>
                             <p className="text-xs text-slate-400 mt-1">ontem</p>
@@ -485,20 +485,20 @@ const DashboardLayout: React.FC = () => {
                       </div>
                     </div>
                     <div className="p-4 border-t border-slate-600/50">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
                         className="w-full text-orange-300 hover:text-orange-200 hover:bg-orange-500/20 transition-all duration-200"
-                        onClick={() => {
-                          navigate('/dashboard/notifications');
-                          setNotificationsOpen(false);
-                        }}
-                      >
-                        Ver todas as notificações
-                      </Button>
-                    </div>
+                      onClick={() => {
+                        navigate('/dashboard/notifications');
+                        setNotificationsOpen(false);
+                      }}
+                    >
+                      Ver todas as notificações
+                    </Button>
                   </div>
-                )}
+                </div>
+              )}
               </div>
             </div>
           </div>

@@ -14,8 +14,11 @@ import { Search, ExternalLink, Link, DollarSign, Package, Filter, Plus, Edit, Tr
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import CreateLinkModal from '@/components/CreateLinkModal';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { formatCurrency } from '@/lib/utils';
 import { Tables } from '@/integrations/supabase/types';
+import { PageLayout } from '@/components/layout/PageLayout';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 type Product = Tables<'products'> & {
   categories?: {
@@ -271,20 +274,22 @@ const Products = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col space-y-4">
+    <PageLayout
+      fullWidth={true}
+      headerContent={
+        <div className="max-w-7xl mx-auto">
+          <PageHeader
+            title="Produtos para Afiliação"
+            description={canManageContent ? 'Gerencie produtos e ganhe comissões' : 'Escolha produtos para promover e ganhar comissões'}
+            icon="🏆"
+          />
+        </div>
+      }
+    >
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Actions Section */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-              <span className="text-2xl">🏆</span>
-              Produtos para Afiliação
-            </h1>
-            <p className="text-slate-300 mt-2">
-              {canManageContent ? 'Gerencie produtos e ganhe comissões' : 'Escolha produtos para promover e ganhar comissões'}
-            </p>
-          </div>
-          
+          <div className="flex-1" />
           {canManageContent && (
             <Dialog open={isProductModalOpen} onOpenChange={setIsProductModalOpen}>
               <DialogTrigger asChild>
@@ -296,7 +301,7 @@ const Products = () => {
                   Cadastrar Produto
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl bg-slate-800 border-slate-700">
+              <DialogContent className="max-w-4xl bg-slate-800/95 backdrop-blur border-slate-700/50">
                 <DialogHeader>
                   <DialogTitle className="text-white">
                     {editingProduct ? 'Editar Produto' : 'Cadastrar Novo Produto'}
@@ -306,9 +311,26 @@ const Products = () => {
                   </DialogDescription>
                 </DialogHeader>
                 
-                <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right text-slate-200">Nome</Label>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 py-4 max-h-[70vh] overflow-y-auto">
+                  {/* Coluna da Imagem */}
+                  <div className="lg:col-span-1">
+                    <ImageUpload
+                      value={productForm.thumbnail_url}
+                      onChange={(url) => setProductForm({...productForm, thumbnail_url: url})}
+                      bucket="products"
+                      folder="thumbnails"
+                      label="Imagem do Produto"
+                      placeholder="Envie uma imagem do produto"
+                      maxWidth={500}
+                      maxHeight={500}
+                    />
+                  </div>
+                  
+                  {/* Coluna dos Campos */}
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name" className="text-slate-200">Nome do Produto</Label>
                     <Input
                       id="name"
                       value={productForm.name}
@@ -320,76 +342,79 @@ const Products = () => {
                           slug: generateSlug(name)
                         });
                       }}
-                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                          className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
                       placeholder="Nome do produto"
                     />
                   </div>
                   
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="slug" className="text-right text-slate-200">Slug</Label>
+                      <div className="space-y-2">
+                        <Label htmlFor="slug" className="text-slate-200">Slug (URL)</Label>
                     <Input
                       id="slug"
                       value={productForm.slug}
                       onChange={(e) => setProductForm({...productForm, slug: e.target.value})}
-                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                          className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
                       placeholder="slug-do-produto"
                     />
+                      </div>
                   </div>
                   
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="short_description" className="text-right text-slate-200">Descrição Curta</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="short_description" className="text-slate-200">Descrição Curta</Label>
                     <Textarea
                       id="short_description"
                       value={productForm.short_description}
                       onChange={(e) => setProductForm({...productForm, short_description: e.target.value})}
-                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                        className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
                       placeholder="Descrição curta do produto"
                       rows={2}
                     />
                   </div>
                   
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="description" className="text-right text-slate-200">Descrição</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="description" className="text-slate-200">Descrição Completa</Label>
                     <Textarea
                       id="description"
                       value={productForm.description}
                       onChange={(e) => setProductForm({...productForm, description: e.target.value})}
-                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                        className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
                       placeholder="Descrição completa do produto"
+                        rows={3}
                     />
                   </div>
                   
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="price" className="text-right text-slate-200">Preço</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="price" className="text-slate-200">Preço (R$)</Label>
                     <Input
                       id="price"
                       type="number"
                       value={productForm.price}
                       onChange={(e) => setProductForm({...productForm, price: Number(e.target.value)})}
-                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                          className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
                       placeholder="0.00"
                     />
                   </div>
                   
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="commission" className="text-right text-slate-200">Comissão (%)</Label>
+                      <div className="space-y-2">
+                        <Label htmlFor="commission" className="text-slate-200">Comissão (%)</Label>
                     <Input
                       id="commission"
                       type="number"
                       value={productForm.commission_rate}
                       onChange={(e) => setProductForm({...productForm, commission_rate: Number(e.target.value)})}
-                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
+                          className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
                       placeholder="0"
                     />
                   </div>
                   
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="category" className="text-right text-slate-200">Categoria</Label>
+                      <div className="space-y-2">
+                        <Label htmlFor="category" className="text-slate-200">Categoria</Label>
                     <Select value={productForm.category_id} onValueChange={(value) => setProductForm({...productForm, category_id: value})}>
-                      <SelectTrigger className="col-span-3 bg-slate-700 border-slate-600 text-white">
+                          <SelectTrigger className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm">
                         <SelectValue placeholder="Selecione uma categoria" />
                       </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-700">
+                          <SelectContent className="bg-slate-800/95 border-slate-700/50 backdrop-blur">
                         {categories?.map((category) => (
                           <SelectItem key={category.id} value={category.id} className="text-white">
                             {category.name}
@@ -397,39 +422,37 @@ const Products = () => {
                         ))}
                       </SelectContent>
                     </Select>
+                      </div>
                   </div>
                   
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="affiliate_link" className="text-right text-slate-200">Link de Afiliado</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="affiliate_link" className="text-slate-200">Link de Afiliado</Label>
                     <Input
                       id="affiliate_link"
                       value={productForm.affiliate_link}
                       onChange={(e) => setProductForm({...productForm, affiliate_link: e.target.value})}
-                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
-                      placeholder="https://..."
+                        className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                        placeholder="https://exemplo.com/produto"
                     />
                   </div>
-                  
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="thumbnail_url" className="text-right text-slate-200">URL da Imagem</Label>
-                    <Input
-                      id="thumbnail_url"
-                      value={productForm.thumbnail_url}
-                      onChange={(e) => setProductForm({...productForm, thumbnail_url: e.target.value})}
-                      className="col-span-3 bg-slate-700 border-slate-600 text-white"
-                      placeholder="https://..."
-                    />
                   </div>
                 </div>
                 
-                <DialogFooter>
+                <DialogFooter className="pt-6 border-t border-slate-700/50">
                   <Button
                     type="submit"
                     onClick={() => saveProductMutation.mutate(productForm)}
                     disabled={saveProductMutation.isPending}
-                    className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white"
+                    className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white px-8"
                   >
-                    {editingProduct ? 'Atualizar' : 'Cadastrar'}
+                    {saveProductMutation.isPending ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                        Salvando...
+                      </>
+                    ) : (
+                      editingProduct ? 'Atualizar Produto' : 'Cadastrar Produto'
+                    )}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -438,6 +461,8 @@ const Products = () => {
         </div>
 
         {/* Filtros */}
+        <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm">
+          <CardContent className="p-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
@@ -445,16 +470,16 @@ const Products = () => {
               placeholder="Buscar produtos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-slate-700 border-slate-600 text-white"
+                  className="pl-10 bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
             />
           </div>
           
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full sm:w-[200px] bg-slate-700 border-slate-600 text-white">
+                <SelectTrigger className="w-full sm:w-[200px] bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Categoria" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectContent className="bg-slate-800/95 border-slate-700/50 backdrop-blur">
               <SelectItem value="all" className="text-white">Todas as categorias</SelectItem>
               {categories?.map((category) => (
                 <SelectItem key={category.id} value={category.id} className="text-white">
@@ -464,23 +489,24 @@ const Products = () => {
             </SelectContent>
           </Select>
         </div>
-      </div>
+          </CardContent>
+        </Card>
 
       {/* Grid de Produtos */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
-            <Card key={i} className="overflow-hidden bg-slate-800 border-slate-700">
-              <Skeleton className="h-48 w-full bg-slate-700" />
+              <Card key={i} className="overflow-hidden bg-slate-800/60 border-slate-700/50 backdrop-blur-sm">
+                <Skeleton className="h-48 w-full bg-slate-700/50" />
               <CardHeader>
-                <Skeleton className="h-6 w-3/4 bg-slate-700" />
-                <Skeleton className="h-4 w-full mt-2 bg-slate-700" />
+                  <Skeleton className="h-6 w-3/4 bg-slate-700/50" />
+                  <Skeleton className="h-4 w-full mt-2 bg-slate-700/50" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-20 w-full bg-slate-700" />
+                  <Skeleton className="h-20 w-full bg-slate-700/50" />
               </CardContent>
               <CardFooter>
-                <Skeleton className="h-10 w-full bg-slate-700" />
+                  <Skeleton className="h-10 w-full bg-slate-700/50" />
               </CardFooter>
             </Card>
           ))}
@@ -493,10 +519,10 @@ const Products = () => {
             return (
               <Card 
                 key={product.id} 
-                className="overflow-hidden hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300 bg-slate-800 border-slate-700 group"
+                  className="overflow-hidden hover:shadow-lg hover:shadow-orange-500/20 transition-all duration-300 bg-slate-800/60 border-slate-700/50 backdrop-blur-sm group"
               >
                 {/* Imagem do Produto */}
-                <div className="relative h-48 bg-gradient-to-br from-orange-900/20 to-orange-800/20">
+                  <div className="relative h-48 bg-gradient-to-br from-slate-900/40 to-slate-800/40">
                   {product.thumbnail_url ? (
                     <img
                       src={product.thumbnail_url}
@@ -505,23 +531,23 @@ const Products = () => {
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full">
-                      <Package className="h-16 w-16 text-orange-500/50" />
+                        <Package className="h-16 w-16 text-slate-500/50" />
                     </div>
                   )}
                   
                   {/* Badge de Comissão */}
-                  <Badge className="absolute top-3 right-3 bg-orange-500 text-white">
+                    <Badge className="absolute top-3 right-3 bg-orange-500/90 text-white backdrop-blur-sm">
                     {product.commission_rate}% de comissão
                   </Badge>
 
                   {/* Admin Actions */}
-                  {canManageContent && (
+                    {canManageContent && (
                     <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
                       <Button
                         variant="secondary"
                         size="sm"
                         onClick={() => handleEditProduct(product)}
-                        className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 bg-slate-800/80 backdrop-blur-sm"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -529,7 +555,7 @@ const Products = () => {
                         variant="destructive"
                         size="sm"
                         onClick={() => deleteProductMutation.mutate(product.id)}
-                        className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 bg-red-600/80 backdrop-blur-sm"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -537,7 +563,7 @@ const Products = () => {
                   )}
                 </div>
 
-                <CardHeader>
+                  <CardHeader className="pb-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <CardTitle className="text-xl line-clamp-2 text-white group-hover:text-orange-300 transition-colors">
@@ -546,7 +572,7 @@ const Products = () => {
                       {product.categories && (
                         <Badge 
                           variant="secondary" 
-                          className="mt-2 bg-slate-700 text-slate-300"
+                            className="mt-2 bg-slate-700/60 text-slate-300 backdrop-blur-sm"
                           style={{ backgroundColor: product.categories.color + '20', color: product.categories.color }}
                         >
                           {product.categories.name}
@@ -556,7 +582,7 @@ const Products = () => {
                   </div>
                 </CardHeader>
 
-                <CardContent className="space-y-4">
+                  <CardContent className="space-y-4 pb-4">
                   <p className="text-sm text-slate-300 line-clamp-3">
                     {product.short_description || product.description || 'Sem descrição disponível'}
                   </p>
@@ -573,19 +599,19 @@ const Products = () => {
                     </div>
                     
                     {product.gravity_score > 0 && (
-                      <Badge variant="outline" className="text-orange-400 border-orange-400">
+                        <Badge variant="outline" className="text-orange-400 border-orange-400/50">
                         Score: {product.gravity_score}
                       </Badge>
                     )}
                   </div>
                 </CardContent>
 
-                <CardFooter className="flex flex-col gap-2">
+                  <CardFooter className="flex flex-col gap-2 pt-4 border-t border-slate-700/50">
                   {affiliateLink ? (
                     <>
                       <Button
                         variant="outline"
-                        className="w-full border-slate-600 text-slate-300 hover:border-orange-500 hover:text-orange-300"
+                          className="w-full border-slate-600/50 text-slate-300 hover:border-orange-500 hover:text-orange-300 backdrop-blur-sm"
                         onClick={() => copyToClipboard(affiliateLink)}
                       >
                         <Link className="h-4 w-4 mr-2" />
@@ -612,7 +638,7 @@ const Products = () => {
                       </Button>
                       <Button
                         variant="outline"
-                        className="w-full border-slate-600 text-slate-300 hover:border-orange-500 hover:text-orange-300"
+                          className="w-full border-slate-600/50 text-slate-300 hover:border-orange-500 hover:text-orange-300 backdrop-blur-sm"
                         onClick={() => window.open(product.affiliate_link, '_blank')}
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
@@ -629,7 +655,7 @@ const Products = () => {
 
       {/* Empty State */}
       {!isLoading && products?.length === 0 && (
-        <Card className="p-12 text-center bg-slate-800 border-slate-700">
+          <Card className="p-12 text-center bg-slate-800/60 border-slate-700/50 backdrop-blur-sm">
           <Package className="h-16 w-16 mx-auto text-slate-500 mb-4" />
           <h3 className="text-lg font-semibold mb-2 text-white">Nenhum produto encontrado</h3>
           <p className="text-slate-400">
@@ -650,6 +676,7 @@ const Products = () => {
         />
       )}
     </div>
+    </PageLayout>
   );
 };
 
