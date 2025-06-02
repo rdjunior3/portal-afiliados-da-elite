@@ -70,11 +70,6 @@ const Index = () => {
                 {/* Logo limpa sem container */}
                 <div className="relative">
                   <EliteLogo size="lg" showText={true} animated={true} />
-                  
-                  {/* Badge premium flutuante */}
-                  <div className="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-orange-400 text-slate-900 text-xs font-bold px-2 py-0.5 rounded-full animate-pulse shadow-lg">
-                    PREMIUM
-                  </div>
                 </div>
               </div>
             </div>
@@ -146,71 +141,71 @@ const Index = () => {
                 materiais de marketing premium, comunidade ativa e acompanhe suas comissões em tempo real.
               </p>
               
-              {/* Benefits Cards Compactos - Logo abaixo da headline */}
-              <div className="w-full max-w-4xl mx-auto lg:mx-0 mt-8">
-                <div className="flex flex-wrap sm:flex-nowrap gap-3 justify-center lg:justify-start">
-                  {/* Card 1 - Conteúdo Exclusivo - Compacto */}
-                  <div className="group flex-1 min-w-[160px] max-w-[200px] bg-gradient-to-br from-orange-500/15 via-orange-500/8 to-transparent backdrop-blur-sm border border-orange-500/20 rounded-xl p-4 hover:border-orange-400/40 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-orange-500/15">
-                    <div className="flex flex-col items-center text-center space-y-2">
+              {/* Benefits Cards Ultra Compactos - Micro cards abaixo da headline */}
+              <div className="w-full max-w-3xl mx-auto lg:mx-0 mt-6">
+                <div className="flex flex-wrap sm:flex-nowrap gap-2 justify-center lg:justify-start">
+                  {/* Card 1 - Conteúdo Exclusivo - Ultra Compacto */}
+                  <div className="group flex-1 min-w-[120px] max-w-[150px] bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-transparent backdrop-blur-sm border border-orange-500/15 rounded-lg p-3 hover:border-orange-400/30 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-orange-500/10">
+                    <div className="flex flex-col items-center text-center space-y-1.5">
                       <div className="relative">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-lg group-hover:shadow-orange-400/30 transition-all duration-300">
-                          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-md group-hover:shadow-orange-400/20 transition-all duration-300">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                           </svg>
                         </div>
                         {/* Badge micro */}
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center border border-slate-900">
-                          <span className="text-[10px]">📚</span>
+                        <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-yellow-400 rounded-full flex items-center justify-center border border-slate-900">
+                          <span className="text-[8px]">📚</span>
                         </div>
                       </div>
                       
                       <div>
-                        <h3 className="text-sm font-bold text-white mb-1">Conteúdo Exclusivo</h3>
-                        <p className="text-orange-300 text-xs font-medium">Videoaulas & Materiais Elite</p>
+                        <h3 className="text-xs font-bold text-white mb-0.5">Conteúdo Exclusivo</h3>
+                        <p className="text-orange-300 text-[10px] font-medium">Videoaulas & Materiais Elite</p>
                       </div>
                     </div>
                   </div>
                   
-                  {/* Card 2 - Comunidade Elite - Compacto */}
-                  <div className="group flex-1 min-w-[160px] max-w-[200px] bg-gradient-to-br from-blue-500/15 via-blue-500/8 to-transparent backdrop-blur-sm border border-blue-500/20 rounded-xl p-4 hover:border-blue-400/40 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-blue-500/15">
-                    <div className="flex flex-col items-center text-center space-y-2">
+                  {/* Card 2 - Comunidade Elite - Ultra Compacto */}
+                  <div className="group flex-1 min-w-[120px] max-w-[150px] bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent backdrop-blur-sm border border-blue-500/15 rounded-lg p-3 hover:border-blue-400/30 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-blue-500/10">
+                    <div className="flex flex-col items-center text-center space-y-1.5">
                       <div className="relative">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-lg group-hover:shadow-blue-400/30 transition-all duration-300">
-                          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-md group-hover:shadow-blue-400/20 transition-all duration-300">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                           </svg>
                         </div>
                         {/* Badge micro */}
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full flex items-center justify-center border border-slate-900">
-                          <span className="text-[10px]">💬</span>
+                        <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full flex items-center justify-center border border-slate-900">
+                          <span className="text-[8px]">💬</span>
                         </div>
                       </div>
                       
                       <div>
-                        <h3 className="text-sm font-bold text-white mb-1">Comunidade Elite</h3>
-                        <p className="text-blue-300 text-xs font-medium">Chat & Networking Premium</p>
+                        <h3 className="text-xs font-bold text-white mb-0.5">Comunidade Elite</h3>
+                        <p className="text-blue-300 text-[10px] font-medium">Chat & Networking Premium</p>
                       </div>
                     </div>
                   </div>
                   
-                  {/* Card 3 - Dashboard Avançado - Compacto */}
-                  <div className="group flex-1 min-w-[160px] max-w-[200px] bg-gradient-to-br from-green-500/15 via-green-500/8 to-transparent backdrop-blur-sm border border-green-500/20 rounded-xl p-4 hover:border-green-400/40 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-green-500/15">
-                    <div className="flex flex-col items-center text-center space-y-2">
+                  {/* Card 3 - Dashboard Avançado - Ultra Compacto */}
+                  <div className="group flex-1 min-w-[120px] max-w-[150px] bg-gradient-to-br from-green-500/10 via-green-500/5 to-transparent backdrop-blur-sm border border-green-500/15 rounded-lg p-3 hover:border-green-400/30 transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-green-500/10">
+                    <div className="flex flex-col items-center text-center space-y-1.5">
                       <div className="relative">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg group-hover:shadow-green-400/30 transition-all duration-300">
-                          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-md group-hover:shadow-green-400/20 transition-all duration-300">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                           </svg>
                         </div>
                         {/* Badge micro */}
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-400 rounded-full flex items-center justify-center border border-slate-900">
-                          <span className="text-[10px]">📊</span>
+                        <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-purple-400 rounded-full flex items-center justify-center border border-slate-900">
+                          <span className="text-[8px]">📊</span>
                         </div>
                       </div>
                       
                       <div>
-                        <h3 className="text-sm font-bold text-white mb-1">Dashboard Avançado</h3>
-                        <p className="text-green-300 text-xs font-medium">Comissões & Performance Elite</p>
+                        <h3 className="text-xs font-bold text-white mb-0.5">Dashboard Avançado</h3>
+                        <p className="text-green-300 text-[10px] font-medium">Comissões & Performance Elite</p>
                       </div>
                     </div>
                   </div>
