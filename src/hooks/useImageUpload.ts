@@ -17,33 +17,44 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
   const validateImage = (file: File): Promise<boolean> => {
     return new Promise((resolve) => {
+      // Validar tipo de arquivo primeiro
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Arquivo inválido",
+          description: "Por favor, selecione apenas arquivos de imagem (PNG, JPG, JPEG, WEBP)",
+          variant: "destructive",
+        });
+        resolve(false);
+        return;
+      }
+
+      // Validar tamanho do arquivo
+      const maxSize = (options.maxSizeInMB || 5) * 1024 * 1024;
+      if (file.size > maxSize) {
+        toast({
+          title: "Arquivo muito grande",
+          description: `O arquivo deve ter no máximo ${options.maxSizeInMB || 5}MB`,
+          variant: "destructive",
+        });
+        resolve(false);
+        return;
+      }
+
+      // Validar dimensões da imagem
       const img = new Image();
       const url = URL.createObjectURL(file);
       
       img.onload = () => {
         URL.revokeObjectURL(url);
         
-        // Verificar tamanho do arquivo
-        const maxSize = (options.maxSizeInMB || 5) * 1024 * 1024;
-        if (file.size > maxSize) {
-          toast({
-            title: "Arquivo muito grande",
-            description: `O arquivo deve ter no máximo ${options.maxSizeInMB || 5}MB`,
-            variant: "destructive",
-          });
-          resolve(false);
-          return;
-        }
-
-        // Verificar dimensões é opcional - remover limitação rígida
-        const maxWidth = options.maxWidth || 2000; // Aumentar limite padrão
-        const maxHeight = options.maxHeight || 2000; // Aumentar limite padrão
+        const maxWidth = options.maxWidth || 2000;
+        const maxHeight = options.maxHeight || 2000;
         
+        // Apenas avisar sobre imagens muito grandes, não bloquear
         if (img.width > maxWidth || img.height > maxHeight) {
-          // Apenas avisar, não bloquear
           toast({
             title: "Imagem grande detectada",
-            description: `Recomendamos imagens até ${options.maxWidth || 500}x${options.maxHeight || 500}px para melhor performance.`,
+            description: `Recomendamos imagens até ${options.maxWidth || 500}x${options.maxHeight || 500}px para melhor performance. A imagem será otimizada automaticamente.`,
             variant: "default",
           });
         }
@@ -55,11 +66,22 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         URL.revokeObjectURL(url);
         toast({
           title: "Arquivo inválido",
-          description: "O arquivo selecionado não é uma imagem válida",
+          description: "O arquivo selecionado não é uma imagem válida ou está corrompido",
           variant: "destructive",
         });
         resolve(false);
       };
+
+      // Timeout para evitar travamento
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+        toast({
+          title: "Erro na validação",
+          description: "Não foi possível validar a imagem. Tente novamente.",
+          variant: "destructive",
+        });
+        resolve(false);
+      }, 10000);
 
       img.src = url;
     });
@@ -101,8 +123,25 @@ export const useImageUpload = (options: ImageUploadOptions) => {
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
+    if (uploading) {
+      toast({
+        title: "Upload em andamento",
+        description: "Aguarde o upload atual terminar antes de enviar outra imagem.",
+        variant: "default",
+      });
+      return null;
+    }
+
     try {
       setUploading(true);
+
+      console.log('🔄 Iniciando upload de imagem:', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        bucket: options.bucket,
+        folder: options.folder
+      });
 
       // Validar imagem
       const isValid = await validateImage(file);
@@ -127,26 +166,38 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       }
 
       // Gerar nome único para o arquivo
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const timestamp = Date.now();
+      const random = Math.random().toString(36).substring(7);
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${timestamp}-${random}.${fileExt}`;
       const filePath = `${options.folder}/${fileName}`;
 
-      console.log(`Fazendo upload para: ${options.bucket}/${filePath}`);
+      console.log(`📤 Fazendo upload para: ${options.bucket}/${filePath}`);
 
-      // Upload para o Supabase
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      // Upload para o Supabase com timeout
+      const uploadPromise = supabase.storage
         .from(options.bucket)
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
         });
 
+      // Timeout de 30 segundos para upload
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Upload timeout - operação cancelada')), 30000)
+      );
+
+      const { data: uploadData, error: uploadError } = await Promise.race([
+        uploadPromise,
+        timeoutPromise
+      ]) as any;
+
       if (uploadError) {
         console.error('Erro detalhado do upload:', uploadError);
         throw uploadError;
       }
 
-      console.log('Upload realizado com sucesso:', uploadData);
+      console.log('✅ Upload realizado com sucesso:', uploadData);
 
       // Obter URL pública
       const { data } = supabase.storage
@@ -154,7 +205,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         .getPublicUrl(filePath);
 
       const publicUrl = data.publicUrl;
-      console.log('URL pública gerada:', publicUrl);
+      console.log('🔗 URL pública gerada:', publicUrl);
       
       setImageUrl(publicUrl);
 
@@ -165,7 +216,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
       return publicUrl;
     } catch (error: any) {
-      console.error('Erro completo no upload:', error);
+      console.error('💥 Erro completo no upload:', error);
       
       let errorMessage = "Não foi possível fazer o upload da imagem";
       
@@ -174,12 +225,18 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         errorMessage = `Bucket '${options.bucket}' não encontrado. Verifique as configurações do Supabase Storage.`;
       } else if (error.message?.includes('The resource was not found')) {
         errorMessage = `Serviço de storage não configurado. Verifique as configurações do projeto Supabase.`;
-      } else if (error.message?.includes('JWT')) {
+      } else if (error.message?.includes('JWT') || error.message?.includes('authentication')) {
         errorMessage = "Erro de autenticação. Faça login novamente.";
-      } else if (error.message?.includes('permission')) {
+      } else if (error.message?.includes('permission') || error.message?.includes('unauthorized')) {
         errorMessage = "Sem permissão para upload. Verifique as políticas de storage.";
-      } else if (error.message?.includes('size')) {
+      } else if (error.message?.includes('size') || error.message?.includes('large')) {
         errorMessage = "Arquivo muito grande para upload.";
+      } else if (error.message?.includes('timeout')) {
+        errorMessage = "Upload demorou muito. Verifique sua conexão e tente novamente.";
+      } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        errorMessage = "Erro de conexão. Verifique sua internet e tente novamente.";
+      } else if (error.message) {
+        errorMessage = error.message;
       }
 
       toast({

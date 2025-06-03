@@ -70,10 +70,46 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Força dark mode por padrão para melhor contraste */
+  html {
+    color-scheme: dark;
+  }
+  
+  /* Melhora de contraste para elementos específicos */
+  .text-slate-400 {
+    color: rgb(148 163 184) !important; /* Força cor mais clara */
+  }
+  
+  .text-slate-300 {
+    color: rgb(203 213 225) !important; /* Força cor mais clara */
+  }
+  
+  /* Previne fundos brancos acidentais */
+  .bg-background {
+    background-color: rgb(15 23 42) !important; /* Força fundo escuro */
+  }
+  
+  .bg-card {
+    background-color: rgb(30 41 59) !important; /* Força fundo escuro para cards */
+  }
 }
 
 /* Futuristic design enhancements */
 @layer components {
+  /* Classes de contraste melhorado */
+  .contrast-safe {
+    @apply bg-slate-800 text-white border-slate-700;
+  }
+  
+  .contrast-safe-light {
+    @apply bg-slate-700 text-slate-100 border-slate-600;
+  }
+  
+  .contrast-safe-dark {
+    @apply bg-slate-900 text-white border-slate-700;
+  }
+
   /* Glow effects for primary elements */
   .glow-orange {
     @apply shadow-lg;
@@ -99,12 +135,12 @@
 
   /* Futuristic card styles */
   .futuristic-card {
-    @apply backdrop-blur-sm bg-white/10 dark:bg-black/10 border border-white/20 dark:border-white/10;
+    @apply backdrop-blur-sm bg-slate-800/90 border border-slate-700/50;
   }
 
   /* Animated borders */
   .border-gradient {
-    background: linear-gradient(var(--background), var(--background)) padding-box,
+    background: linear-gradient(rgb(30 41 59), rgb(30 41 59)) padding-box,
                 linear-gradient(135deg, #fb923c, #f97316) border-box;
     border: 2px solid transparent;
   }
@@ -123,7 +159,7 @@
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-secondary;
+    @apply bg-slate-800;
   }
 
   ::-webkit-scrollbar-thumb {
@@ -132,6 +168,27 @@
 
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-orange-600;
+  }
+
+  /* Melhoria de contraste para modais e dialogs */
+  .modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.8) !important;
+    backdrop-filter: blur(4px);
+  }
+  
+  .modal-content {
+    background-color: rgb(30 41 59) !important;
+    border: 1px solid rgb(71 85 105);
+    color: white;
+  }
+  
+  /* Melhoria para inputs e forms */
+  .input-dark {
+    @apply bg-slate-700 border-slate-600 text-white placeholder:text-slate-400;
+  }
+  
+  .input-dark:focus {
+    @apply border-orange-400 ring-orange-400/20;
   }
 }
 
@@ -192,7 +249,7 @@
 
 /* Glass morphism effect */
 .glass {
-  @apply backdrop-blur-md bg-white/30 dark:bg-black/30 border border-white/20 dark:border-white/10;
+  @apply backdrop-blur-md bg-slate-800/60 border border-slate-700/50;
 }
 
 /* Custom focus styles */
@@ -242,7 +299,7 @@
 
 /* Modern input styles */
 .input-futuristic {
-  @apply border-0 border-b-2 border-gray-300 dark:border-gray-600 focus:border-orange-500 bg-transparent transition-colors duration-300;
+  @apply border-0 border-b-2 border-gray-600 focus:border-orange-500 bg-slate-800 text-white transition-colors duration-300;
 }
 
 /* Responsive utilities */
@@ -270,6 +327,9 @@ body {
   font-family: 'Inter', sans-serif;
   letter-spacing: -0.01em;
   overflow-x: hidden;
+  /* Força modo escuro */
+  background-color: rgb(15 23 42) !important;
+  color: white !important;
 }
 
 /* Custom Properties */
@@ -499,45 +559,43 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(30, 41, 59, 0.3);
+  background: rgb(30 41 59);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(249, 115, 22, 0.6);
+  background: rgb(249 115 22);
   border-radius: 4px;
-  transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(249, 115, 22, 0.8);
+  background: rgb(234 88 12);
 }
 
-/* Responsive Adjustments */
 @media (max-width: 768px) {
   .card-hover:hover {
     transform: none;
   }
-  
+
   .btn-primary:hover {
     transform: none;
   }
-  
+
   .scale-hover:hover {
     transform: none;
   }
-  
+
   .laptop-mockup {
-    max-width: 100%;
+    transform: none !important;
   }
 }
 
 @media (max-width: 1024px) {
   .laptop-mockup {
-    transform: scale(0.9);
+    max-width: 400px;
+    margin: 0 auto;
   }
 }
 
-/* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User, Phone, AtSign, CheckCircle, X, ArrowRight } from 'lucide-react';
+import { Loader2, User, Phone, AtSign, CheckCircle, X, ArrowRight, AlertTriangle } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 
 const CompleteProfile: React.FC = () => {
@@ -23,6 +23,7 @@ const CompleteProfile: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<string[]>([]);
 
   // Atualizar formData quando profile mudar
   useEffect(() => {
@@ -42,6 +43,10 @@ const CompleteProfile: React.FC = () => {
       ...prev,
       [field]: value
     }));
+    // Limpar erros quando usuário começa a digitar
+    if (errors.length > 0) {
+      setErrors([]);
+    }
   };
 
   const generateUsername = () => {
@@ -53,27 +58,27 @@ const CompleteProfile: React.FC = () => {
   };
 
   const validateForm = () => {
-    const errors = [];
+    const validationErrors = [];
     
     if (!formData.first_name.trim()) {
-      errors.push('Nome é obrigatório');
+      validationErrors.push('Nome é obrigatório');
     }
     
     if (!formData.last_name.trim()) {
-      errors.push('Sobrenome é obrigatório');
+      validationErrors.push('Sobrenome é obrigatório');
     }
     
     if (!formData.phone.trim()) {
-      errors.push('Telefone é obrigatório');
+      validationErrors.push('Telefone é obrigatório');
     }
     
     // Validar formato do telefone (básico)
     const phoneRegex = /^[\d\s\(\)\-\+]{10,}$/;
     if (formData.phone.trim() && !phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
-      errors.push('Formato de telefone inválido');
+      validationErrors.push('Formato de telefone inválido (use apenas números, espaços, parênteses ou hífens)');
     }
     
-    return errors;
+    return validationErrors;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,12 +86,16 @@ const CompleteProfile: React.FC = () => {
     
     console.log('🚀 Iniciando processo de completar perfil...');
     
+    // Limpar erros anteriores
+    setErrors([]);
+    
     // Validar formulário
     const validationErrors = validateForm();
     if (validationErrors.length > 0) {
+      setErrors(validationErrors);
       toast({
         title: "Erro de validação",
-        description: validationErrors.join(', '),
+        description: "Por favor, corrija os erros abaixo.",
         variant: "destructive",
       });
       return;
@@ -94,19 +103,13 @@ const CompleteProfile: React.FC = () => {
 
     setLoading(true);
 
-    // Timeout de segurança para evitar carregamento infinito
-    const timeoutId = setTimeout(() => {
-      console.error('⏰ Timeout: Operação demorou muito');
-      setLoading(false);
-      toast({
-        title: "Timeout",
-        description: "A operação demorou muito. Tente novamente.",
-        variant: "destructive",
-      });
-    }, 15000); // 15 segundos
-
     try {
       console.log('📝 Dados do formulário:', formData);
+      
+      // Verificar se o usuário existe
+      if (!user?.id) {
+        throw new Error('Usuário não encontrado. Faça login novamente.');
+      }
       
       // Gerar username se não foi preenchido
       const profileUsername = formData.profile_username.trim() || generateUsername();
@@ -131,14 +134,15 @@ const CompleteProfile: React.FC = () => {
 
       console.log('📥 Resultado da atualização:', result);
 
-      clearTimeout(timeoutId);
-
       if (result.error) {
         console.error('❌ Erro na atualização:', result.error);
         throw result.error;
       }
 
       console.log('✅ Perfil atualizado com sucesso!');
+
+      // Remover flag de skip do sessionStorage
+      sessionStorage.removeItem('profile_skip_allowed');
 
       toast({
         title: "Perfil Completo! 🎉",
@@ -152,21 +156,26 @@ const CompleteProfile: React.FC = () => {
       }, 1500);
       
     } catch (error: any) {
-      clearTimeout(timeoutId);
       console.error('💥 Erro ao completar perfil:', error);
       
       let errorMessage = "Não foi possível completar seu perfil. Tente novamente.";
       
       // Mensagens de erro mais específicas
-      if (error.message?.includes('duplicate')) {
-        errorMessage = "Já existe um usuário com essas informações.";
-      } else if (error.message?.includes('network')) {
-        errorMessage = "Erro de conexão. Verifique sua internet.";
-      } else if (error.message?.includes('invalid')) {
-        errorMessage = "Dados inválidos. Verifique as informações.";
-      } else if (error.code === 'PGRST301') {
+      if (error.message?.includes('duplicate') || error.message?.includes('already exists')) {
+        errorMessage = "Já existe um usuário com essas informações. Tente usar dados diferentes.";
+      } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        errorMessage = "Erro de conexão. Verifique sua internet e tente novamente.";
+      } else if (error.message?.includes('invalid') || error.message?.includes('validation')) {
+        errorMessage = "Dados inválidos. Verifique as informações e tente novamente.";
+      } else if (error.code === 'PGRST301' || error.message?.includes('permission')) {
         errorMessage = "Erro de permissão. Tente fazer login novamente.";
+      } else if (error.message?.includes('timeout')) {
+        errorMessage = "A operação demorou muito. Tente novamente.";
+      } else if (error.message) {
+        errorMessage = error.message;
       }
+      
+      setErrors([errorMessage]);
       
       toast({
         title: "Erro ao salvar",
@@ -180,6 +189,9 @@ const CompleteProfile: React.FC = () => {
 
   // Função para pular e ir direto ao dashboard com limitações
   const handleSkipToLimitedDashboard = () => {
+    // Definir flag para permitir acesso limitado
+    sessionStorage.setItem('profile_skip_allowed', 'true');
+    
     toast({
       title: "Acesso Limitado Ativado",
       description: "Você pode completar seu perfil depois para ter acesso completo às funcionalidades.",
@@ -225,6 +237,25 @@ const CompleteProfile: React.FC = () => {
         </CardHeader>
 
         <CardContent className="space-y-6">
+          {/* Exibir erros se houver */}
+          {errors.length > 0 && (
+            <div className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 backdrop-blur-sm">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-red-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="text-red-100 font-medium mb-2">
+                    Erro{errors.length > 1 ? 's' : ''} encontrado{errors.length > 1 ? 's' : ''}:
+                  </h4>
+                  <ul className="text-sm text-red-200 space-y-1">
+                    {errors.map((error, index) => (
+                      <li key={index}>• {error}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Upload de Avatar com Recorte */}
             <div className="flex justify-center">
@@ -254,7 +285,7 @@ const CompleteProfile: React.FC = () => {
                   value={formData.first_name}
                   onChange={(e) => handleInputChange('first_name', e.target.value)}
                   placeholder="Seu primeiro nome"
-                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-orange-400 focus:ring-orange-400/20"
                   required
                   disabled={loading}
                 />
@@ -268,7 +299,7 @@ const CompleteProfile: React.FC = () => {
                   value={formData.last_name}
                   onChange={(e) => handleInputChange('last_name', e.target.value)}
                   placeholder="Seu sobrenome"
-                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                  className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-orange-400 focus:ring-orange-400/20"
                   required
                   disabled={loading}
                 />
@@ -287,7 +318,7 @@ const CompleteProfile: React.FC = () => {
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 placeholder="(11) 99999-9999"
-                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-orange-400 focus:ring-orange-400/20"
                 required
                 disabled={loading}
               />
@@ -304,7 +335,7 @@ const CompleteProfile: React.FC = () => {
                 value={formData.profile_username}
                 onChange={(e) => handleInputChange('profile_username', e.target.value.toLowerCase())}
                 placeholder="seunome123"
-                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-orange-400 focus:ring-orange-400/20"
                 disabled={loading}
               />
               <p className="text-xs text-slate-400">
@@ -354,6 +385,7 @@ const CompleteProfile: React.FC = () => {
                 type="button"
                 variant="outline"
                 onClick={handleSkipToLimitedDashboard}
+                disabled={loading}
                 className="border-slate-600 text-slate-300 hover:border-blue-500 hover:text-blue-300 h-auto py-3"
               >
                 <ArrowRight className="mr-2 h-5 w-5" />
