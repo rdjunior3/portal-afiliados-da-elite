@@ -52,7 +52,7 @@ const CompleteProfile: React.FC = () => {
   const generateUsername = () => {
     const firstName = formData.first_name.toLowerCase().replace(/\s+/g, '');
     const lastName = formData.last_name.toLowerCase().replace(/\s+/g, '');
-    const randomSuffix = Math.floor(Math.random() * 1000);
+    const randomSuffix = Math.floor(Math.random() * 10000);
     
     return `${firstName}${lastName}${randomSuffix}`;
   };
@@ -72,7 +72,7 @@ const CompleteProfile: React.FC = () => {
       validationErrors.push('Telefone é obrigatório');
     }
     
-    // Validar formato do telefone (básico)
+    // Validar formato do telefone (aceita formatos brasileiros)
     const phoneRegex = /^[\d\s\(\)\-\+]{10,}$/;
     if (formData.phone.trim() && !phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
       validationErrors.push('Formato de telefone inválido (use apenas números, espaços, parênteses ou hífens)');
@@ -112,7 +112,7 @@ const CompleteProfile: React.FC = () => {
       }
       
       // Gerar username se não foi preenchido
-      const profileUsername = formData.profile_username.trim() || generateUsername();
+      const affiliateCode = formData.profile_username.trim() || generateUsername();
       
       // Calcular full_name
       const fullName = `${formData.first_name.trim()} ${formData.last_name.trim()}`;
@@ -122,18 +122,18 @@ const CompleteProfile: React.FC = () => {
         last_name: formData.last_name.trim(),
         full_name: fullName,
         phone: formData.phone.trim(),
-        affiliate_code: profileUsername.toLowerCase(),
+        affiliate_code: affiliateCode.toLowerCase(),
         avatar_url: formData.avatar_url || null,
-        affiliate_status: 'approved', // Alterar status para aprovado
+        affiliate_status: 'approved',
         onboarding_completed_at: new Date().toISOString()
       };
 
       console.log('📤 Enviando dados para atualização:', updateData);
 
-      // Adicionar timeout de 10 segundos para o updateProfile
+      // Adicionar timeout de 15 segundos para o updateProfile
       const updatePromise = updateProfile(updateData);
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Operação demorou muito para responder')), 10000)
+        setTimeout(() => reject(new Error('Operação demorou muito para responder (timeout)')), 15000)
       );
 
       const result = await Promise.race([updatePromise, timeoutPromise]) as any;
@@ -159,7 +159,7 @@ const CompleteProfile: React.FC = () => {
       setTimeout(() => {
         console.log('🔄 Redirecionando para dashboard...');
         navigate('/dashboard');
-      }, 1500);
+      }, 2000);
       
     } catch (error: any) {
       console.error('💥 Erro ao completar perfil:', error);
@@ -167,7 +167,7 @@ const CompleteProfile: React.FC = () => {
       let errorMessage = "Não foi possível completar seu perfil. Tente novamente.";
       
       // Mensagens de erro mais específicas
-      if (error.message?.includes('demorou muito')) {
+      if (error.message?.includes('timeout')) {
         errorMessage = "A operação está demorando muito. Verifique sua conexão e tente novamente.";
       } else if (error.message?.includes('duplicate') || error.message?.includes('already exists')) {
         errorMessage = "Já existe um usuário com essas informações. Tente usar dados diferentes.";
@@ -177,8 +177,8 @@ const CompleteProfile: React.FC = () => {
         errorMessage = "Dados inválidos. Verifique as informações e tente novamente.";
       } else if (error.code === 'PGRST301' || error.message?.includes('permission')) {
         errorMessage = "Erro de permissão. Tente fazer login novamente.";
-      } else if (error.message?.includes('timeout')) {
-        errorMessage = "A operação demorou muito. Tente novamente.";
+      } else if (error.message?.includes('affiliate_code') && error.message?.includes('unique')) {
+        errorMessage = "Este nome de usuário já está em uso. Tente outro.";
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -336,22 +336,22 @@ const CompleteProfile: React.FC = () => {
             <div className="space-y-2">
               <Label htmlFor="username" className="text-slate-200 font-medium">
                 <AtSign className="inline h-4 w-4 mr-2" />
-                Nome de Perfil (Opcional)
+                Nome de Usuário (Opcional)
               </Label>
               <Input
                 id="username"
                 value={formData.profile_username}
                 onChange={(e) => handleInputChange('profile_username', e.target.value.toLowerCase())}
-                placeholder="seunome123"
+                placeholder="meuusername123"
                 className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-orange-400 focus:ring-orange-400/20"
                 disabled={loading}
               />
               <p className="text-xs text-slate-400">
-                Será gerado automaticamente se não preenchido
+                Será gerado automaticamente se não preenchido. Este será seu código de afiliado.
               </p>
             </div>
 
-            {/* Informações sobre ativação - TEXTO ATUALIZADO */}
+            {/* Informações sobre ativação */}
             <div className="bg-gradient-to-r from-orange-500/20 to-orange-600/10 border border-orange-500/30 rounded-xl p-4 backdrop-blur-sm">
               <div className="flex items-start gap-3">
                 <CheckCircle className="h-6 w-6 text-orange-400 mt-1 flex-shrink-0" />
@@ -365,6 +365,7 @@ const CompleteProfile: React.FC = () => {
                     <li>• Acesso a produtos para afiliação</li>
                     <li>• Materiais exclusivos para divulgação</li>
                     <li>• Aulas e estratégias exclusivas</li>
+                    <li>• Seu código de afiliado personalizado</li>
                   </ul>
                 </div>
               </div>

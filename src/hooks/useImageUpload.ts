@@ -17,8 +17,11 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
   const validateImage = (file: File): Promise<boolean> => {
     return new Promise((resolve) => {
+      console.log('🔍 [validateImage] Iniciando validação de:', file.name);
+      
       // Validar tipo de arquivo primeiro
       if (!file.type.startsWith('image/')) {
+        console.error('❌ [validateImage] Tipo de arquivo inválido:', file.type);
         toast({
           title: "Arquivo inválido",
           description: "Por favor, selecione apenas arquivos de imagem (PNG, JPG, JPEG, WEBP)",
@@ -31,6 +34,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       // Validar tamanho do arquivo
       const maxSize = (options.maxSizeInMB || 5) * 1024 * 1024;
       if (file.size > maxSize) {
+        console.error('❌ [validateImage] Arquivo muito grande:', file.size, 'bytes');
         toast({
           title: "Arquivo muito grande",
           description: `O arquivo deve ter no máximo ${options.maxSizeInMB || 5}MB`,
@@ -40,11 +44,14 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         return;
       }
 
+      console.log('⏳ [validateImage] Validando dimensões da imagem...');
+
       // Validar dimensões da imagem
       const img = new Image();
       const url = URL.createObjectURL(file);
       
       img.onload = () => {
+        console.log('✅ [validateImage] Imagem carregada:', img.width, 'x', img.height);
         URL.revokeObjectURL(url);
         
         const maxWidth = options.maxWidth || 2000;
@@ -52,6 +59,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         
         // Apenas avisar sobre imagens muito grandes, não bloquear
         if (img.width > maxWidth || img.height > maxHeight) {
+          console.warn('⚠️ [validateImage] Imagem grande detectada');
           toast({
             title: "Imagem grande detectada",
             description: `Recomendamos imagens até ${options.maxWidth || 500}x${options.maxHeight || 500}px para melhor performance. A imagem será otimizada automaticamente.`,
@@ -59,10 +67,12 @@ export const useImageUpload = (options: ImageUploadOptions) => {
           });
         }
 
+        console.log('✅ [validateImage] Validação concluída com sucesso');
         resolve(true);
       };
 
       img.onerror = () => {
+        console.error('❌ [validateImage] Erro ao carregar imagem');
         URL.revokeObjectURL(url);
         toast({
           title: "Arquivo inválido",
@@ -72,16 +82,51 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         resolve(false);
       };
 
-      // Timeout para evitar travamento
-      setTimeout(() => {
+      // Timeout aumentado para 30 segundos
+      const timeoutId = setTimeout(() => {
+        console.error('⏰ [validateImage] Timeout na validação (30s)');
         URL.revokeObjectURL(url);
         toast({
-          title: "Erro na validação",
-          description: "Não foi possível validar a imagem. Tente novamente.",
+          title: "Timeout na validação",
+          description: "A validação da imagem demorou muito. Tente uma imagem menor ou verifique sua conexão.",
           variant: "destructive",
         });
         resolve(false);
-      }, 10000);
+      }, 30000); // 30 segundos
+
+      img.onload = () => {
+        clearTimeout(timeoutId);
+        console.log('✅ [validateImage] Imagem carregada:', img.width, 'x', img.height);
+        URL.revokeObjectURL(url);
+        
+        const maxWidth = options.maxWidth || 2000;
+        const maxHeight = options.maxHeight || 2000;
+        
+        // Apenas avisar sobre imagens muito grandes, não bloquear
+        if (img.width > maxWidth || img.height > maxHeight) {
+          console.warn('⚠️ [validateImage] Imagem grande detectada');
+          toast({
+            title: "Imagem grande detectada",
+            description: `Recomendamos imagens até ${options.maxWidth || 500}x${options.maxHeight || 500}px para melhor performance. A imagem será otimizada automaticamente.`,
+            variant: "default",
+          });
+        }
+
+        console.log('✅ [validateImage] Validação concluída com sucesso');
+        resolve(true);
+      };
+
+      img.onerror = () => {
+        clearTimeout(timeoutId);
+        console.error('❌ [validateImage] Erro ao carregar imagem');
+        URL.revokeObjectURL(url);
+        toast({
+          title: "Arquivo inválido",
+          description: "O arquivo selecionado não é uma imagem válida ou está corrompido",
+          variant: "destructive",
+        });
+        resolve(false);
+      };
 
       img.src = url;
     });
@@ -89,20 +134,24 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
   const checkBucketExists = async (bucketName: string): Promise<boolean> => {
     try {
+      console.log('🪣 [checkBucketExists] Verificando bucket:', bucketName);
       const { data, error } = await supabase.storage.getBucket(bucketName);
       if (error) {
-        console.warn(`Bucket ${bucketName} não encontrado:`, error);
+        console.warn(`❌ [checkBucketExists] Bucket ${bucketName} não encontrado:`, error);
         return false;
       }
+      console.log('✅ [checkBucketExists] Bucket existe:', data.id);
       return !!data;
     } catch (error) {
-      console.warn(`Erro ao verificar bucket ${bucketName}:`, error);
+      console.warn(`💥 [checkBucketExists] Erro ao verificar bucket ${bucketName}:`, error);
       return false;
     }
   };
 
   const createBucketIfNotExists = async (bucketName: string): Promise<boolean> => {
     try {
+      console.log('🔨 [createBucketIfNotExists] Tentando criar bucket:', bucketName);
+      
       // Configurações específicas por bucket
       const bucketConfig = {
         avatars: {
@@ -122,20 +171,21 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       const { data, error } = await supabase.storage.createBucket(bucketName, config);
 
       if (error) {
-        console.warn(`Não foi possível criar bucket ${bucketName}:`, error);
+        console.warn(`❌ [createBucketIfNotExists] Não foi possível criar bucket ${bucketName}:`, error);
         return false;
       }
       
-      console.log(`Bucket ${bucketName} criado com sucesso:`, data);
+      console.log(`✅ [createBucketIfNotExists] Bucket ${bucketName} criado com sucesso:`, data);
       return true;
     } catch (error) {
-      console.warn(`Erro ao criar bucket ${bucketName}:`, error);
+      console.warn(`💥 [createBucketIfNotExists] Erro ao criar bucket ${bucketName}:`, error);
       return false;
     }
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
     if (uploading) {
+      console.warn('⚠️ [uploadImage] Upload já em andamento');
       toast({
         title: "Upload em andamento",
         description: "Aguarde o upload atual terminar antes de enviar outra imagem.",
@@ -147,7 +197,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
     try {
       setUploading(true);
 
-      console.log('🔄 Iniciando upload de imagem:', {
+      console.log('🚀 [uploadImage] Iniciando upload de imagem:', {
         fileName: file.name,
         fileSize: file.size,
         fileType: file.type,
@@ -156,15 +206,18 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       });
 
       // Validar imagem
+      console.log('🔍 [uploadImage] Validando imagem...');
       const isValid = await validateImage(file);
       if (!isValid) {
+        console.error('❌ [uploadImage] Validação falhou');
         return null;
       }
 
       // Verificar se bucket existe, senão tentar criar
+      console.log('🪣 [uploadImage] Verificando bucket...');
       const bucketExists = await checkBucketExists(options.bucket);
       if (!bucketExists) {
-        console.log(`Tentando criar bucket ${options.bucket}...`);
+        console.log(`🔨 [uploadImage] Tentando criar bucket ${options.bucket}...`);
         
         toast({
           title: "Configurando storage...",
@@ -174,7 +227,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         const bucketCreated = await createBucketIfNotExists(options.bucket);
         if (!bucketCreated) {
           // Para buckets específicos como 'products', vamos tentar upload mesmo sem criar bucket
-          console.warn(`Bucket '${options.bucket}' não pôde ser criado, tentando upload direto...`);
+          console.warn(`⚠️ [uploadImage] Bucket '${options.bucket}' não pôde ser criado, tentando upload direto...`);
         }
       }
 
@@ -185,9 +238,9 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       const fileName = `${timestamp}-${random}.${fileExt}`;
       const filePath = `${options.folder}/${fileName}`;
 
-      console.log(`📤 Fazendo upload para: ${options.bucket}/${filePath}`);
+      console.log(`📤 [uploadImage] Fazendo upload para: ${options.bucket}/${filePath}`);
 
-      // Upload para o Supabase com timeout
+      // Upload para o Supabase com timeout aumentado para 60 segundos
       const uploadPromise = supabase.storage
         .from(options.bucket)
         .upload(filePath, file, {
@@ -195,18 +248,19 @@ export const useImageUpload = (options: ImageUploadOptions) => {
           upsert: false
         });
 
-      // Timeout de 30 segundos para upload
+      // Timeout de 60 segundos para upload (aumentado)
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Upload timeout - operação cancelada')), 30000)
+        setTimeout(() => reject(new Error('Upload timeout - operação cancelada após 60 segundos')), 60000)
       );
 
+      console.log('⏳ [uploadImage] Upload em progresso...');
       const { data: uploadData, error: uploadError } = await Promise.race([
         uploadPromise,
         timeoutPromise
       ]) as any;
 
       if (uploadError) {
-        console.error('Erro detalhado do upload:', uploadError);
+        console.error('❌ [uploadImage] Erro detalhado do upload:', uploadError);
         
         // Tratamento específico para erro de bucket não encontrado
         if (uploadError.message?.includes('The resource was not found') || 
@@ -217,7 +271,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         throw uploadError;
       }
 
-      console.log('✅ Upload realizado com sucesso:', uploadData);
+      console.log('✅ [uploadImage] Upload realizado com sucesso:', uploadData);
 
       // Obter URL pública
       const { data } = supabase.storage
@@ -225,7 +279,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         .getPublicUrl(filePath);
 
       const publicUrl = data.publicUrl;
-      console.log('🔗 URL pública gerada:', publicUrl);
+      console.log('🔗 [uploadImage] URL pública gerada:', publicUrl);
       
       setImageUrl(publicUrl);
 
@@ -236,7 +290,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
       return publicUrl;
     } catch (error: any) {
-      console.error('💥 Erro completo no upload:', error);
+      console.error('💥 [uploadImage] Erro completo no upload:', error);
       
       let errorMessage = "Não foi possível fazer o upload da imagem";
       
@@ -255,6 +309,8 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         errorMessage = "Upload demorou muito. Verifique sua conexão e tente novamente.";
       } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
         errorMessage = "Erro de conexão. Verifique sua internet e tente novamente.";
+      } else if (error.message?.includes('mime') || error.message?.includes('type')) {
+        errorMessage = "Tipo de arquivo não permitido. Use apenas imagens PNG, JPG ou WEBP.";
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -272,6 +328,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
   };
 
   const resetUpload = () => {
+    console.log('🔄 [resetUpload] Resetando estado do upload');
     setImageUrl('');
   };
 

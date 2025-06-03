@@ -367,38 +367,139 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateProfile = async (updates: any) => {
+    console.log('🚀 [updateProfile] INICIANDO...');
+    console.log('📝 [updateProfile] Dados recebidos:', updates);
+    
     if (!user) {
-      console.error('❌ updateProfile: Usuário não autenticado');
-      return { error: new Error('User not authenticated') };
+      console.error('❌ [updateProfile] Usuário não autenticado');
+      const error = new Error('User not authenticated');
+      
+      toast({
+        title: "Erro de Autenticação",
+        description: "Você precisa estar logado para atualizar o perfil. Faça login novamente.",
+        variant: "destructive",
+      });
+      
+      return { error };
     }
     
     try {
-      console.log('🔄 updateProfile: Iniciando atualização...', updates);
+      console.log('🔄 [updateProfile] Tentando atualizar perfil do usuário:', user.id);
       
-      const { data, error } = await supabase
+      // Preparar dados para atualização
+      const updateData = {
+        ...updates,
+        updated_at: new Date().toISOString()
+      };
+      
+      console.log('📤 [updateProfile] Dados para envio:', updateData);
+      
+      // Tentar atualização com timeout de 30 segundos
+      const updatePromise = supabase
         .from('profiles')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', user.id)
         .select()
         .single();
 
-      console.log('📊 updateProfile: Resposta do Supabase:', { data, error });
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout: Operação demorou mais de 30 segundos')), 30000)
+      );
+
+      console.log('⏳ [updateProfile] Executando query no Supabase...');
+      
+      const { data, error } = await Promise.race([
+        updatePromise,
+        timeoutPromise
+      ]) as any;
+
+      console.log('📊 [updateProfile] Resposta do Supabase recebida');
+      console.log('📊 [updateProfile] Data:', data);
+      console.log('📊 [updateProfile] Error:', error);
 
       if (error) {
-        console.error('❌ updateProfile: Erro do Supabase:', error);
+        console.error('❌ [updateProfile] Erro do Supabase:', error);
+        console.error('❌ [updateProfile] Código do erro:', error.code);
+        console.error('❌ [updateProfile] Mensagem do erro:', error.message);
+        console.error('❌ [updateProfile] Detalhes completos:', JSON.stringify(error, null, 2));
+        
+        // Mensagens de erro específicas
+        let errorMessage = 'Não foi possível atualizar o perfil. Tente novamente.';
+        
+        if (error.code === 'PGRST301' || error.message?.includes('permission')) {
+          errorMessage = 'Sem permissão para atualizar o perfil. Verifique suas credenciais.';
+        } else if (error.code === '23505' || error.message?.includes('duplicate')) {
+          errorMessage = 'Este nome de usuário ou email já está em uso. Tente outro.';
+        } else if (error.message?.includes('timeout')) {
+          errorMessage = 'A operação demorou muito. Verifique sua conexão.';
+        } else if (error.message?.includes('network')) {
+          errorMessage = 'Erro de conexão. Verifique sua internet.';
+        } else if (error.message?.includes('constraint')) {
+          errorMessage = 'Dados inválidos. Verifique as informações preenchidas.';
+        } else if (error.message) {
+          errorMessage = `Erro: ${error.message}`;
+        }
+        
+        toast({
+          title: "Erro ao Atualizar Perfil",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        
         return { error };
       }
 
+      if (!data) {
+        console.warn('⚠️ [updateProfile] Nenhum dado retornado, mas sem erro');
+        
+        // Tentar buscar o perfil atualizado
+        const { data: fetchedProfile, error: fetchError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+          
+        if (fetchError) {
+          console.error('❌ [updateProfile] Erro ao buscar perfil atualizado:', fetchError);
+          return { error: fetchError };
+        }
+        
+        console.log('✅ [updateProfile] Perfil buscado após update:', fetchedProfile);
+        setProfile(fetchedProfile);
+        
+        return { error: null };
+      }
+
+      // Sucesso!
+      console.log('✅ [updateProfile] Atualização bem-sucedida!');
+      console.log('📊 [updateProfile] Perfil atualizado:', data);
+      
       // Atualizar o estado local do perfil
-      console.log('✅ updateProfile: Atualizando estado local com:', data);
       setProfile(data);
       
+      console.log('🎉 [updateProfile] Estado local atualizado com sucesso');
+      
       return { error: null };
-    } catch (error) {
-      console.error('💥 updateProfile: Erro inesperado:', error);
+    } catch (error: any) {
+      console.error('💥 [updateProfile] Erro inesperado:', error);
+      console.error('💥 [updateProfile] Stack trace:', error.stack);
+      
+      let errorMessage = 'Erro inesperado ao atualizar perfil.';
+      
+      if (error.message?.includes('Timeout')) {
+        errorMessage = 'A operação demorou muito. Verifique sua conexão e tente novamente.';
+      } else if (error.message?.includes('network')) {
+        errorMessage = 'Erro de rede. Verifique sua conexão com a internet.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast({
+        title: "Erro Inesperado",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      
       return { error };
     }
   };
