@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User, Phone, AtSign, CheckCircle } from 'lucide-react';
+import { Loader2, User, Phone, AtSign, CheckCircle, X, ArrowRight } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 
 const CompleteProfile: React.FC = () => {
@@ -178,6 +178,17 @@ const CompleteProfile: React.FC = () => {
     }
   };
 
+  // Função para pular e ir direto ao dashboard com limitações
+  const handleSkipToLimitedDashboard = () => {
+    toast({
+      title: "Acesso Limitado Ativado",
+      description: "Você pode completar seu perfil depois para ter acesso completo às funcionalidades.",
+      variant: "default",
+    });
+    
+    navigate('/dashboard');
+  };
+
   // Verificar se usuário já tem perfil completo
   useEffect(() => {
     if (profile && profile.onboarding_completed_at) {
@@ -188,7 +199,19 @@ const CompleteProfile: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-xl">
+      <Card className="w-full max-w-2xl bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-xl relative">
+        {/* Botão de Fechar */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleSkipToLimitedDashboard}
+          className="absolute top-4 right-4 text-slate-400 hover:text-white hover:bg-slate-700/50 z-10"
+          title="Pular e acessar dashboard com funcionalidades limitadas"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+
         <CardHeader className="text-center pb-6">
           <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg shadow-orange-500/20">
             <User className="h-8 w-8 text-white" />
@@ -203,7 +226,7 @@ const CompleteProfile: React.FC = () => {
 
         <CardContent className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Upload de Avatar */}
+            {/* Upload de Avatar com Recorte */}
             <div className="flex justify-center">
               <ImageUpload
                 value={formData.avatar_url}
@@ -214,6 +237,8 @@ const CompleteProfile: React.FC = () => {
                 placeholder="Adicione sua foto"
                 maxWidth={300}
                 maxHeight={300}
+                enableCrop={true}
+                cropAspect={1} // Aspecto quadrado para perfil
                 className="text-center"
               />
             </div>
@@ -306,24 +331,54 @@ const CompleteProfile: React.FC = () => {
               </div>
             </div>
 
-            {/* Botão de submissão */}
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white font-semibold py-3 h-auto disabled:opacity-50"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Completando Perfil...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="mr-2 h-5 w-5" />
-                  Completar Perfil Elite
-                </>
-              )}
-            </Button>
+            {/* Informação sobre acesso limitado */}
+            <div className="bg-gradient-to-r from-blue-500/20 to-blue-600/10 border border-blue-500/30 rounded-xl p-4 backdrop-blur-sm">
+              <div className="flex items-start gap-3">
+                <ArrowRight className="h-5 w-5 text-blue-400 mt-1 flex-shrink-0" />
+                <div>
+                  <h4 className="text-blue-100 font-medium mb-1">
+                    Quer acessar agora mesmo?
+                  </h4>
+                  <p className="text-sm text-blue-200">
+                    Você pode fechar este quadro e acessar o dashboard com funcionalidades básicas. 
+                    Complete seu perfil depois para ter acesso total.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Botões de ação */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Botão de pular */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSkipToLimitedDashboard}
+                className="border-slate-600 text-slate-300 hover:border-blue-500 hover:text-blue-300 h-auto py-3"
+              >
+                <ArrowRight className="mr-2 h-5 w-5" />
+                Acessar Dashboard Agora
+              </Button>
+
+              {/* Botão de submissão */}
+              <Button
+                type="submit"
+                disabled={loading}
+                className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white font-semibold py-3 h-auto disabled:opacity-50"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Completando...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="mr-2 h-5 w-5" />
+                    Completar Perfil Elite
+                  </>
+                )}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>

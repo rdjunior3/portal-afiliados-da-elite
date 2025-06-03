@@ -1,8 +1,9 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Upload, Image as ImageIcon, X } from 'lucide-react';
+import { Upload, Image as ImageIcon, X, Crop } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { ImageCropper } from './ImageCropper';
 import { cn } from '@/lib/utils';
 
 interface ImageUploadProps {
@@ -15,6 +16,8 @@ interface ImageUploadProps {
   className?: string;
   maxWidth?: number;
   maxHeight?: number;
+  enableCrop?: boolean;
+  cropAspect?: number;
 }
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -26,9 +29,14 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   placeholder = "Selecione uma imagem",
   className,
   maxWidth = 500,
-  maxHeight = 500
+  maxHeight = 500,
+  enableCrop = true,
+  cropAspect = 1
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [showCropper, setShowCropper] = useState(false);
   
   const { uploadImage, uploading, resetUpload } = useImageUpload({
     bucket,
@@ -42,14 +50,58 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const uploadedUrl = await uploadImage(file);
-    if (uploadedUrl) {
-      onChange(uploadedUrl);
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      return;
+    }
+
+    setSelectedFile(file);
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+
+    if (enableCrop) {
+      setShowCropper(true);
+    } else {
+      // Upload direto sem recorte
+      const uploadedUrl = await uploadImage(file);
+      if (uploadedUrl) {
+        onChange(uploadedUrl);
+      }
     }
 
     // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    // Converter blob para file
+    const croppedFile = new File([croppedBlob], selectedFile?.name || 'cropped-image.jpg', {
+      type: 'image/jpeg',
+      lastModified: Date.now(),
+    });
+
+    const uploadedUrl = await uploadImage(croppedFile);
+    if (uploadedUrl) {
+      onChange(uploadedUrl);
+    }
+
+    // Cleanup
+    setShowCropper(false);
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl('');
+    }
+  };
+
+  const handleCropCancel = () => {
+    setShowCropper(false);
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl('');
     }
   };
 
@@ -109,6 +161,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               </p>
               <p className="text-xs text-slate-400">
                 Máximo {maxWidth}x{maxHeight}px, 2MB - PNG, JPG, JPEG
+                {enableCrop && <><br />🔄 Recorte automático disponível</>}
               </p>
             </div>
             
@@ -127,8 +180,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                 </>
               ) : (
                 <>
-                  <Upload className="h-4 w-4 mr-2" />
-                  {value ? "Alterar Imagem" : "Selecionar Imagem"}
+                  {enableCrop ? <Crop className="h-4 w-4 mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
+                  {value ? (enableCrop ? "Alterar e Recortar" : "Alterar Imagem") : (enableCrop ? "Selecionar e Recortar" : "Selecionar Imagem")}
                 </>
               )}
             </Button>
@@ -143,6 +196,17 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           className="hidden"
         />
       </div>
+
+      {/* Image Cropper Modal */}
+      {showCropper && previewUrl && (
+        <ImageCropper
+          isOpen={showCropper}
+          imageUrl={previewUrl}
+          onClose={handleCropCancel}
+          onCropComplete={handleCropComplete}
+          aspect={cropAspect}
+        />
+      )}
     </div>
   );
 }; 
