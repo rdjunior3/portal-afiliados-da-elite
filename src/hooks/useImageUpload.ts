@@ -103,11 +103,23 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
   const createBucketIfNotExists = async (bucketName: string): Promise<boolean> => {
     try {
-      const { data, error } = await supabase.storage.createBucket(bucketName, {
-        public: true,
-        fileSizeLimit: 10 * 1024 * 1024, // 10MB
-        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
-      });
+      // Configurações específicas por bucket
+      const bucketConfig = {
+        avatars: {
+          public: true,
+          fileSizeLimit: 5 * 1024 * 1024, // 5MB
+          allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
+        },
+        products: {
+          public: true,
+          fileSizeLimit: 10 * 1024 * 1024, // 10MB para produtos
+          allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/jpg', 'image/gif']
+        }
+      };
+
+      const config = bucketConfig[bucketName as keyof typeof bucketConfig] || bucketConfig.avatars;
+
+      const { data, error } = await supabase.storage.createBucket(bucketName, config);
 
       if (error) {
         console.warn(`Não foi possível criar bucket ${bucketName}:`, error);
@@ -161,7 +173,8 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
         const bucketCreated = await createBucketIfNotExists(options.bucket);
         if (!bucketCreated) {
-          throw new Error(`Bucket '${options.bucket}' não existe e não pode ser criado. Verifique as configurações do Supabase Storage.`);
+          // Para buckets específicos como 'products', vamos tentar upload mesmo sem criar bucket
+          console.warn(`Bucket '${options.bucket}' não pôde ser criado, tentando upload direto...`);
         }
       }
 
@@ -194,6 +207,13 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
       if (uploadError) {
         console.error('Erro detalhado do upload:', uploadError);
+        
+        // Tratamento específico para erro de bucket não encontrado
+        if (uploadError.message?.includes('The resource was not found') || 
+            uploadError.message?.includes('Bucket not found')) {
+          throw new Error(`Bucket '${options.bucket}' não configurado. Entre em contato com o administrador para configurar o upload de ${options.bucket === 'products' ? 'produtos' : 'imagens'}.`);
+        }
+        
         throw uploadError;
       }
 
@@ -224,11 +244,11 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       if (error.message?.includes('Bucket not found')) {
         errorMessage = `Bucket '${options.bucket}' não encontrado. Verifique as configurações do Supabase Storage.`;
       } else if (error.message?.includes('The resource was not found')) {
-        errorMessage = `Serviço de storage não configurado. Verifique as configurações do projeto Supabase.`;
+        errorMessage = `Serviço de storage não configurado para ${options.bucket}. Verifique as configurações do projeto Supabase.`;
       } else if (error.message?.includes('JWT') || error.message?.includes('authentication')) {
         errorMessage = "Erro de autenticação. Faça login novamente.";
       } else if (error.message?.includes('permission') || error.message?.includes('unauthorized')) {
-        errorMessage = "Sem permissão para upload. Verifique as políticas de storage.";
+        errorMessage = `Sem permissão para upload em ${options.bucket}. Verifique as políticas de storage.`;
       } else if (error.message?.includes('size') || error.message?.includes('large')) {
         errorMessage = "Arquivo muito grande para upload.";
       } else if (error.message?.includes('timeout')) {

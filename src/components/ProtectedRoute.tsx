@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingScreen } from '@/components/ui/loading';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [timeoutReached, setTimeoutReached] = useState(false);
   const [showEscapeButton, setShowEscapeButton] = useState(false);
   
@@ -22,9 +23,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         console.warn('ProtectedRoute: Timeout de verificação de autenticação atingido');
         setTimeoutReached(true);
         
-        // Se não há usuário após timeout, redireciona para home
+        // Se não há usuário após timeout, redireciona para LOGIN, não home
         if (!user) {
-          navigate('/', { replace: true });
+          console.log('ProtectedRoute: Redirecionando usuário não autenticado para login');
+          navigate('/login', { 
+            replace: true,
+            state: { 
+              from: location.pathname,
+              reason: 'session_timeout' 
+            }
+          });
         }
       }, 8000);
 
@@ -41,28 +49,35 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       setTimeoutReached(false);
       setShowEscapeButton(false);
     }
-  }, [loading, user, navigate]);
+  }, [loading, user, navigate, location.pathname]);
 
-  const handleEscapeToHome = () => {
-    console.log('ProtectedRoute: Usuário escapou para home');
-    navigate('/', { replace: true });
+  const handleEscapeToLogin = () => {
+    console.log('ProtectedRoute: Usuário escapou para login');
+    navigate('/login', { 
+      replace: true,
+      state: { 
+        from: location.pathname,
+        reason: 'user_requested' 
+      }
+    });
   };
 
-  // Se timeout foi atingido e não há usuário, redireciona
+  // Se timeout foi atingido e não há usuário, redireciona para LOGIN
   if (timeoutReached && !user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
   
   if (loading) {
     return <LoadingScreen 
       message="Verificando autenticação..." 
       showTimeout={true}
-      onEscape={handleEscapeToHome}
+      onEscape={handleEscapeToLogin}
     />;
   }
   
+  // Se não tem usuário, redireciona para LOGIN (não home)
   if (!user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
   
   return <>{children}</>;

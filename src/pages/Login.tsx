@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -93,6 +93,10 @@ const Login = () => {
   const { signIn, signInWithGoogle } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Obter página de origem ou usar dashboard como padrão
+  const from = location.state?.from || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,7 +116,10 @@ const Login = () => {
           title: 'Login realizado!',
           description: 'Bem-vindo de volta à sua área de membros.'
         });
-        navigate('/dashboard');
+        
+        // Redirecionar para a página de origem ou dashboard
+        console.log('Login: Redirecionando para:', from);
+        navigate(from, { replace: true });
       }
     } catch (error) {
       toast({
@@ -128,7 +135,11 @@ const Login = () => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      await signInWithGoogle();
+      const { error } = await signInWithGoogle();
+      if (!error) {
+        // O Google OAuth já redireciona automaticamente
+        console.log('Login Google: Sucesso, redirecionamento automático');
+      }
     } finally {
       setLoading(false);
     }
