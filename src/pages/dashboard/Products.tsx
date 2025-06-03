@@ -15,10 +15,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import CreateLinkModal from '@/components/CreateLinkModal';
 import { ImageUpload } from '@/components/ui/ImageUpload';
+import ProductOffersManager from '@/components/product/ProductOffersManager';
 import { formatCurrency } from '@/lib/utils';
 import { Tables } from '@/integrations/supabase/types';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { ProductOffer } from '@/types/product-offers.types';
 
 type Product = Tables<'products'> & {
   categories?: {
@@ -51,6 +53,7 @@ const Products = () => {
   const [isCreateLinkModalOpen, setIsCreateLinkModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [productOffers, setProductOffers] = useState<ProductOffer[]>([]);
   const [productForm, setProductForm] = useState<ProductForm>({
     name: '',
     slug: '',
@@ -301,7 +304,7 @@ const Products = () => {
                   Cadastrar Produto
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl bg-slate-800/95 backdrop-blur border-slate-700/50">
+              <DialogContent className="max-w-6xl bg-slate-800/95 backdrop-blur border-slate-700/50">
                 <DialogHeader>
                   <DialogTitle className="text-white">
                     {editingProduct ? 'Editar Produto' : 'Cadastrar Novo Produto'}
@@ -311,130 +314,151 @@ const Products = () => {
                   </DialogDescription>
                 </DialogHeader>
                 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 py-4 max-h-[70vh] overflow-y-auto">
-                  {/* Coluna da Imagem */}
-                  <div className="lg:col-span-1">
-                    <ImageUpload
-                      value={productForm.thumbnail_url}
-                      onChange={(url) => setProductForm({...productForm, thumbnail_url: url})}
-                      bucket="products"
-                      folder="thumbnails"
-                      label="Imagem do Produto"
-                      placeholder="Envie uma imagem do produto"
-                      maxWidth={500}
-                      maxHeight={500}
-                    />
-                  </div>
-                  
-                  {/* Coluna dos Campos */}
-                  <div className="lg:col-span-2 space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name" className="text-slate-200">Nome do Produto</Label>
-                    <Input
-                      id="name"
-                      value={productForm.name}
-                      onChange={(e) => {
-                        const name = e.target.value;
-                        setProductForm({
-                          ...productForm, 
-                          name,
-                          slug: generateSlug(name)
-                        });
-                      }}
-                          className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                      placeholder="Nome do produto"
-                    />
-                  </div>
-                  
-                      <div className="space-y-2">
-                        <Label htmlFor="slug" className="text-slate-200">Slug (URL)</Label>
-                    <Input
-                      id="slug"
-                      value={productForm.slug}
-                      onChange={(e) => setProductForm({...productForm, slug: e.target.value})}
-                          className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                      placeholder="slug-do-produto"
-                    />
+                <div className="space-y-6 py-4 max-h-[80vh] overflow-y-auto">
+                  {/* Seção Informações Básicas */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Coluna da Imagem */}
+                    <div className="lg:col-span-1">
+                      <ImageUpload
+                        value={productForm.thumbnail_url}
+                        onChange={(url) => setProductForm({...productForm, thumbnail_url: url})}
+                        bucket="products"
+                        folder="thumbnails"
+                        label="Imagem do Produto"
+                        placeholder="Envie uma imagem do produto"
+                        maxWidth={500}
+                        maxHeight={500}
+                      />
+                    </div>
+                    
+                    {/* Coluna dos Campos */}
+                    <div className="lg:col-span-2 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="name" className="text-slate-200">Nome do Produto</Label>
+                          <Input
+                            id="name"
+                            value={productForm.name}
+                            onChange={(e) => {
+                              const name = e.target.value;
+                              setProductForm({
+                                ...productForm, 
+                                name,
+                                slug: generateSlug(name)
+                              });
+                            }}
+                            className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                            placeholder="Nome do produto"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="slug" className="text-slate-200">Slug (URL)</Label>
+                          <Input
+                            id="slug"
+                            value={productForm.slug}
+                            onChange={(e) => setProductForm({...productForm, slug: e.target.value})}
+                            className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                            placeholder="slug-do-produto"
+                          />
+                        </div>
                       </div>
-                  </div>
-                  
-                    <div className="space-y-2">
-                      <Label htmlFor="short_description" className="text-slate-200">Descrição Curta</Label>
-                    <Textarea
-                      id="short_description"
-                      value={productForm.short_description}
-                      onChange={(e) => setProductForm({...productForm, short_description: e.target.value})}
-                        className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                      placeholder="Descrição curta do produto"
-                      rows={2}
-                    />
-                  </div>
-                  
-                    <div className="space-y-2">
-                      <Label htmlFor="description" className="text-slate-200">Descrição Completa</Label>
-                    <Textarea
-                      id="description"
-                      value={productForm.description}
-                      onChange={(e) => setProductForm({...productForm, description: e.target.value})}
-                        className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                      placeholder="Descrição completa do produto"
-                        rows={3}
-                    />
-                  </div>
-                  
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      
                       <div className="space-y-2">
-                        <Label htmlFor="price" className="text-slate-200">Preço (R$)</Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      value={productForm.price}
-                      onChange={(e) => setProductForm({...productForm, price: Number(e.target.value)})}
+                        <Label htmlFor="short_description" className="text-slate-200">Descrição Curta</Label>
+                        <Textarea
+                          id="short_description"
+                          value={productForm.short_description}
+                          onChange={(e) => setProductForm({...productForm, short_description: e.target.value})}
                           className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                      placeholder="0.00"
-                    />
-                  </div>
-                  
-                      <div className="space-y-2">
-                        <Label htmlFor="commission" className="text-slate-200">Comissão (%)</Label>
-                    <Input
-                      id="commission"
-                      type="number"
-                      value={productForm.commission_rate}
-                      onChange={(e) => setProductForm({...productForm, commission_rate: Number(e.target.value)})}
-                          className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                      placeholder="0"
-                    />
-                  </div>
-                  
-                      <div className="space-y-2">
-                        <Label htmlFor="category" className="text-slate-200">Categoria</Label>
-                    <Select value={productForm.category_id} onValueChange={(value) => setProductForm({...productForm, category_id: value})}>
-                          <SelectTrigger className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm">
-                        <SelectValue placeholder="Selecione uma categoria" />
-                      </SelectTrigger>
-                          <SelectContent className="bg-slate-800/95 border-slate-700/50 backdrop-blur">
-                        {categories?.map((category) => (
-                          <SelectItem key={category.id} value={category.id} className="text-white">
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                          placeholder="Descrição curta do produto"
+                          rows={2}
+                        />
                       </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="description" className="text-slate-200">Descrição Completa</Label>
+                        <Textarea
+                          id="description"
+                          value={productForm.description}
+                          onChange={(e) => setProductForm({...productForm, description: e.target.value})}
+                          className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                          placeholder="Descrição completa do produto"
+                          rows={3}
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="price" className="text-slate-200">Preço Padrão (R$)</Label>
+                          <Input
+                            id="price"
+                            type="number"
+                            value={productForm.price}
+                            onChange={(e) => setProductForm({...productForm, price: Number(e.target.value)})}
+                            className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                            placeholder="0.00"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="commission" className="text-slate-200">Comissão Padrão (%)</Label>
+                          <Input
+                            id="commission"
+                            type="number"
+                            value={productForm.commission_rate}
+                            onChange={(e) => setProductForm({...productForm, commission_rate: Number(e.target.value)})}
+                            className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                            placeholder="0"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="category" className="text-slate-200">Categoria</Label>
+                          <Select value={productForm.category_id} onValueChange={(value) => setProductForm({...productForm, category_id: value})}>
+                            <SelectTrigger className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm">
+                              <SelectValue placeholder="Selecione uma categoria" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-slate-800/95 border-slate-700/50 backdrop-blur z-50">
+                              {categories?.map((category) => (
+                                <SelectItem key={category.id} value={category.id} className="text-white hover:bg-slate-700/50">
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="affiliate_link" className="text-slate-200">Link de Afiliado Padrão</Label>
+                        <Input
+                          id="affiliate_link"
+                          value={productForm.affiliate_link}
+                          onChange={(e) => setProductForm({...productForm, affiliate_link: e.target.value})}
+                          className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                          placeholder="https://exemplo.com/produto"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  
-                    <div className="space-y-2">
-                      <Label htmlFor="affiliate_link" className="text-slate-200">Link de Afiliado</Label>
-                    <Input
-                      id="affiliate_link"
-                      value={productForm.affiliate_link}
-                      onChange={(e) => setProductForm({...productForm, affiliate_link: e.target.value})}
-                        className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                        placeholder="https://exemplo.com/produto"
+
+                  {/* Seção de Ofertas Múltiplas */}
+                  <div className="border-t border-slate-700/50 pt-6">
+                    <div className="bg-slate-700/20 rounded-xl p-1 mb-4">
+                      <h3 className="text-lg font-semibold text-white mb-2 px-3 py-2">
+                        💰 Ofertas e Preços do Produto
+                      </h3>
+                      <p className="text-sm text-slate-400 px-3 pb-2">
+                        Configure diferentes preços e comissões para o mesmo produto. Útil para ofertas promocionais, versões diferentes, etc.
+                      </p>
+                    </div>
+                    
+                    <ProductOffersManager
+                      offers={productOffers}
+                      onChange={setProductOffers}
+                      productId={editingProduct?.id}
                     />
-                  </div>
                   </div>
                 </div>
                 

@@ -130,11 +130,17 @@ const CompleteProfile: React.FC = () => {
 
       console.log('📤 Enviando dados para atualização:', updateData);
 
-      const result = await updateProfile(updateData);
+      // Adicionar timeout de 10 segundos para o updateProfile
+      const updatePromise = updateProfile(updateData);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Operação demorou muito para responder')), 10000)
+      );
+
+      const result = await Promise.race([updatePromise, timeoutPromise]) as any;
 
       console.log('📥 Resultado da atualização:', result);
 
-      if (result.error) {
+      if (result?.error) {
         console.error('❌ Erro na atualização:', result.error);
         throw result.error;
       }
@@ -161,7 +167,9 @@ const CompleteProfile: React.FC = () => {
       let errorMessage = "Não foi possível completar seu perfil. Tente novamente.";
       
       // Mensagens de erro mais específicas
-      if (error.message?.includes('duplicate') || error.message?.includes('already exists')) {
+      if (error.message?.includes('demorou muito')) {
+        errorMessage = "A operação está demorando muito. Verifique sua conexão e tente novamente.";
+      } else if (error.message?.includes('duplicate') || error.message?.includes('already exists')) {
         errorMessage = "Já existe um usuário com essas informações. Tente usar dados diferentes.";
       } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
         errorMessage = "Erro de conexão. Verifique sua internet e tente novamente.";
