@@ -3,6 +3,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import { QueryProvider } from './providers/QueryProvider';
 import { Toaster } from './components/ui/toaster';
 import ProtectedRoute from './components/ProtectedRoute';
+import ProfileGuard from './components/ProfileGuard';
+import ChatGuard from './components/ChatGuard';
 import { usePageTracking, usePerformanceMonitoring } from './hooks/useAnalytics';
 import { validateEnv } from './config/env';
 
@@ -14,6 +16,7 @@ import Index from './pages/Index';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
+import CompleteProfile from './pages/CompleteProfile';
 
 // Dashboard Pages
 import Products from './pages/dashboard/Products';
@@ -48,13 +51,20 @@ function AppContent() {
       <Route path="/" element={<Index />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/complete-profile" element={
+        <ProtectedRoute>
+          <CompleteProfile />
+        </ProtectedRoute>
+      } />
       
       {/* Dashboard Routes with Layout */}
       <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <DashboardLayout />
+            <ProfileGuard>
+              <DashboardLayout />
+            </ProfileGuard>
           </ProtectedRoute>
         }
       >
@@ -62,7 +72,11 @@ function AppContent() {
         <Route path="products" element={<Products />} />
         <Route path="content" element={<Courses />} />
         <Route path="content/:courseId" element={<CourseDetail />} />
-        <Route path="chat" element={<ChatPage />} />
+        <Route path="chat" element={
+          <ChatGuard>
+            <ChatPage />
+          </ChatGuard>
+        } />
         <Route path="reports" element={<Reports />} />
         <Route path="profile" element={<Profile />} />
         <Route path="notifications" element={<Notifications />} />
