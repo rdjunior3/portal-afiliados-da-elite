@@ -367,9 +367,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateProfile = async (updates: any) => {
-    if (!user) return { error: new Error('User not authenticated') };
+    if (!user) {
+      console.error('❌ updateProfile: Usuário não autenticado');
+      return { error: new Error('User not authenticated') };
+    }
     
     try {
+      console.log('🔄 updateProfile: Iniciando atualização...', updates);
+      
       const { data, error } = await supabase
         .from('profiles')
         .update({
@@ -380,28 +385,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .select()
         .single();
 
+      console.log('📊 updateProfile: Resposta do Supabase:', { data, error });
+
       if (error) {
-        toast({
-          title: "Erro ao atualizar perfil",
-          description: "Não foi possível salvar as alterações.",
-          variant: "destructive",
-        });
-      } else {
-        setProfile(data);
-        toast({
-          title: "Perfil atualizado! ✅",
-          description: "Suas informações foram salvas com sucesso.",
-        });
+        console.error('❌ updateProfile: Erro do Supabase:', error);
+        return { error };
       }
 
-      return { error };
-    } catch (error) {
-      toast({
-        title: "Erro inesperado",
-        description: "Tente novamente em alguns instantes.",
-        variant: "destructive",
-      });
+      // Atualizar o estado local do perfil
+      console.log('✅ updateProfile: Atualizando estado local com:', data);
+      setProfile(data);
       
+      return { error: null };
+    } catch (error) {
+      console.error('💥 updateProfile: Erro inesperado:', error);
       return { error };
     }
   };

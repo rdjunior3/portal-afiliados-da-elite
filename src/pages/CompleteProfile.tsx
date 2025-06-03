@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +24,19 @@ const CompleteProfile: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
 
+  // Atualizar formData quando profile mudar
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
+        phone: profile.phone || '',
+        profile_username: profile.affiliate_code || '',
+        avatar_url: profile.avatar_url || ''
+      });
+    }
+  }, [profile]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -39,13 +52,41 @@ const CompleteProfile: React.FC = () => {
     return `${firstName}${lastName}${randomSuffix}`;
   };
 
+  const validateForm = () => {
+    const errors = [];
+    
+    if (!formData.first_name.trim()) {
+      errors.push('Nome é obrigatório');
+    }
+    
+    if (!formData.last_name.trim()) {
+      errors.push('Sobrenome é obrigatório');
+    }
+    
+    if (!formData.phone.trim()) {
+      errors.push('Telefone é obrigatório');
+    }
+    
+    // Validar formato do telefone (básico)
+    const phoneRegex = /^[\d\s\(\)\-\+]{10,}$/;
+    if (formData.phone.trim() && !phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
+      errors.push('Formato de telefone inválido');
+    }
+    
+    return errors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.first_name.trim() || !formData.last_name.trim() || !formData.phone.trim()) {
+    console.log('🚀 Iniciando processo de completar perfil...');
+    
+    // Validar formulário
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
       toast({
-        title: "Campos obrigatórios",
-        description: "Por favor, preencha todos os campos obrigatórios.",
+        title: "Erro de validação",
+        description: validationErrors.join(', '),
         variant: "destructive",
       });
       return;
@@ -53,7 +94,20 @@ const CompleteProfile: React.FC = () => {
 
     setLoading(true);
 
+    // Timeout de segurança para evitar carregamento infinito
+    const timeoutId = setTimeout(() => {
+      console.error('⏰ Timeout: Operação demorou muito');
+      setLoading(false);
+      toast({
+        title: "Timeout",
+        description: "A operação demorou muito. Tente novamente.",
+        variant: "destructive",
+      });
+    }, 15000); // 15 segundos
+
     try {
+      console.log('📝 Dados do formulário:', formData);
+      
       // Gerar username se não foi preenchido
       const profileUsername = formData.profile_username.trim() || generateUsername();
       
@@ -66,36 +120,71 @@ const CompleteProfile: React.FC = () => {
         full_name: fullName,
         phone: formData.phone.trim(),
         affiliate_code: profileUsername.toLowerCase(),
-        avatar_url: formData.avatar_url,
+        avatar_url: formData.avatar_url || null,
         affiliate_status: 'approved', // Alterar status para aprovado
         onboarding_completed_at: new Date().toISOString()
       };
 
-      const { error } = await updateProfile(updateData);
+      console.log('📤 Enviando dados para atualização:', updateData);
 
-      if (error) {
-        throw error;
+      const result = await updateProfile(updateData);
+
+      console.log('📥 Resultado da atualização:', result);
+
+      clearTimeout(timeoutId);
+
+      if (result.error) {
+        console.error('❌ Erro na atualização:', result.error);
+        throw result.error;
       }
+
+      console.log('✅ Perfil atualizado com sucesso!');
 
       toast({
         title: "Perfil Completo! 🎉",
         description: "Seu perfil foi atualizado com sucesso. Bem-vindo à Elite!",
       });
 
-      // Redirecionar para o dashboard
-      navigate('/dashboard');
+      // Aguardar um pouco antes de redirecionar para garantir que o estado foi atualizado
+      setTimeout(() => {
+        console.log('🔄 Redirecionando para dashboard...');
+        navigate('/dashboard');
+      }, 1500);
       
-    } catch (error) {
-      console.error('Erro ao completar perfil:', error);
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      console.error('💥 Erro ao completar perfil:', error);
+      
+      let errorMessage = "Não foi possível completar seu perfil. Tente novamente.";
+      
+      // Mensagens de erro mais específicas
+      if (error.message?.includes('duplicate')) {
+        errorMessage = "Já existe um usuário com essas informações.";
+      } else if (error.message?.includes('network')) {
+        errorMessage = "Erro de conexão. Verifique sua internet.";
+      } else if (error.message?.includes('invalid')) {
+        errorMessage = "Dados inválidos. Verifique as informações.";
+      } else if (error.code === 'PGRST301') {
+        errorMessage = "Erro de permissão. Tente fazer login novamente.";
+      }
+      
       toast({
         title: "Erro ao salvar",
-        description: "Não foi possível completar seu perfil. Tente novamente.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
+
+  // Verificar se usuário já tem perfil completo
+  useEffect(() => {
+    if (profile && profile.onboarding_completed_at) {
+      console.log('👤 Usuário já tem perfil completo, redirecionando...');
+      navigate('/dashboard');
+    }
+  }, [profile, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
@@ -142,6 +231,7 @@ const CompleteProfile: React.FC = () => {
                   placeholder="Seu primeiro nome"
                   className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
                   required
+                  disabled={loading}
                 />
               </div>
               <div className="space-y-2">
@@ -155,6 +245,7 @@ const CompleteProfile: React.FC = () => {
                   placeholder="Seu sobrenome"
                   className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -173,6 +264,7 @@ const CompleteProfile: React.FC = () => {
                 placeholder="(11) 99999-9999"
                 className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -188,13 +280,14 @@ const CompleteProfile: React.FC = () => {
                 onChange={(e) => handleInputChange('profile_username', e.target.value.toLowerCase())}
                 placeholder="seunome123"
                 className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+                disabled={loading}
               />
               <p className="text-xs text-slate-400">
                 Será gerado automaticamente se não preenchido
               </p>
             </div>
 
-            {/* Informações sobre ativação */}
+            {/* Informações sobre ativação - TEXTO ATUALIZADO */}
             <div className="bg-gradient-to-r from-orange-500/20 to-orange-600/10 border border-orange-500/30 rounded-xl p-4 backdrop-blur-sm">
               <div className="flex items-start gap-3">
                 <CheckCircle className="h-6 w-6 text-orange-400 mt-1 flex-shrink-0" />
@@ -204,10 +297,10 @@ const CompleteProfile: React.FC = () => {
                   </h4>
                   <ul className="text-sm text-orange-200 space-y-1">
                     <li>• Status de Afiliado Ativo</li>
-                    <li>• Acesso ao Chat Elite</li>
-                    <li>• Criação de links de afiliado</li>
-                    <li>• Relatórios de performance</li>
-                    <li>• Materiais exclusivos para promoção</li>
+                    <li>• Acesso ao Chat da Comunidade Elite</li>
+                    <li>• Acesso a produtos para afiliação</li>
+                    <li>• Materiais exclusivos para divulgação</li>
+                    <li>• Aulas e estratégias exclusivas</li>
                   </ul>
                 </div>
               </div>
@@ -217,7 +310,7 @@ const CompleteProfile: React.FC = () => {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white font-semibold py-3 h-auto"
+              className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white font-semibold py-3 h-auto disabled:opacity-50"
             >
               {loading ? (
                 <>
