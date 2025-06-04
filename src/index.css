@@ -575,15 +575,15 @@ body {
   .card-hover:hover {
     transform: none;
   }
-
+  
   .btn-primary:hover {
     transform: none;
   }
-
+  
   .scale-hover:hover {
     transform: none;
   }
-
+  
   .laptop-mockup {
     transform: none !important;
   }

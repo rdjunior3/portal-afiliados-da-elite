@@ -17,6 +17,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
   signInWithGoogle: () => Promise<{ error: any }>;
+  resetPassword: (email: string) => Promise<{ error: any }>;
   updateProfile: (updates: any) => Promise<{ error: any }>;
 }
 
@@ -366,6 +367,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const resetPassword = async (email: string) => {
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        let errorMessage = 'Erro ao enviar email de recuperação.';
+        
+        if (error.message.includes('not found')) {
+          errorMessage = 'Email não encontrado em nossa base de dados.';
+        } else if (error.message.includes('rate limit')) {
+          errorMessage = 'Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.';
+        } else if (error.message.includes('invalid')) {
+          errorMessage = 'Email inválido.';
+        }
+        
+        toast({
+          title: "Erro na recuperação",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Email enviado! 📧",
+          description: "Verifique sua caixa de entrada para redefinir sua senha.",
+        });
+      }
+
+      return { error };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const updateProfile = async (updates: any) => {
     console.log('🚀 [updateProfile] INICIANDO...');
     console.log('📝 [updateProfile] Dados recebidos:', updates);
@@ -473,7 +511,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Sucesso!
       console.log('✅ [updateProfile] Atualização bem-sucedida!');
       console.log('📊 [updateProfile] Perfil atualizado:', data);
-      
+
       // Atualizar o estado local do perfil
       setProfile(data);
       
@@ -517,6 +555,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signIn,
     signOut,
     signInWithGoogle,
+    resetPassword,
     updateProfile,
   };
 

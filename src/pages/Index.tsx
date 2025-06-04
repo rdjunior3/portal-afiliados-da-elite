@@ -5,6 +5,33 @@ import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// Componente de ícone troféu pequeno para uso em botões e elementos
+const TrophyIcon = ({ className = "w-4 h-4", color = "currentColor" }) => (
+  <svg className={className} fill={color} viewBox="0 0 24 24">
+    {/* Base/Pedestal */}
+    <rect x="7" y="19" width="10" height="2.5" rx="0.5" fill="rgba(0,0,0,0.3)"/>
+    <rect x="8" y="18.5" width="8" height="1" fill="rgba(0,0,0,0.2)"/>
+    
+    {/* Haste */}
+    <rect x="10.5" y="16" width="3" height="3" fill={color}/>
+    
+    {/* Copa Principal */}
+    <path d="M6 4C6 3.45 6.45 3 7 3H17C17.55 3 18 3.45 18 4V9C18 12.31 15.31 15 12 15C8.69 15 6 12.31 6 9V4Z" fill={color}/>
+    
+    {/* Alças Laterais */}
+    <ellipse cx="5" cy="7.5" rx="1.5" ry="2" fill={color}/>
+    <ellipse cx="19" cy="7.5" rx="1.5" ry="2" fill={color}/>
+    <ellipse cx="5" cy="7.5" rx="0.8" ry="1.3" fill="rgba(255,255,255,0.2)"/>
+    <ellipse cx="19" cy="7.5" rx="0.8" ry="1.3" fill="rgba(255,255,255,0.2)"/>
+    
+    {/* Número 1 Central */}
+    <text x="12" y="11" fontFamily="Arial, sans-serif" fontSize="6" fontWeight="bold" textAnchor="middle" fill="rgba(255,255,255,0.95)">1</text>
+    
+    {/* Estrela decorativa central */}
+    <polygon points="12,6 12.1,6.4 12.5,6.4 12.2,6.7 12.3,7.1 12,6.9 11.7,7.1 11.8,6.7 11.5,6.4 11.9,6.4" fill="rgba(255,255,255,0.9)" />
+  </svg>
+);
+
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -61,16 +88,60 @@ const Index = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-slate-950/90 border-b border-orange-500/30 shadow-2xl shadow-orange-500/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
-            {/* Brand Section melhorada - Design limpo sem caixa */}
+            {/* Brand Section melhorada - Design Clean */}
             <div className="slide-in-left">
               <div className="relative group">
-                {/* Efeito de brilho sutil atrás da logo */}
-                <div className="absolute -inset-1 bg-gradient-to-r from-orange-400/15 via-orange-500/8 to-orange-600/15 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
-                
-                {/* Logo limpa sem container */}
-                <div className="relative">
-                  <EliteLogo size="lg" showText={true} animated={true} />
-              </div>
+                {/* Logo clean sem container */}
+                <div className="relative flex items-center gap-3">
+                  {/* Ícone Troféu Elite - Inspirado na Imagem */}
+                  <div className="relative">
+                    <div className="w-10 h-10 bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-lg">
+                      <svg className="w-7 h-7 text-slate-900" fill="currentColor" viewBox="0 0 24 24">
+                        {/* Base/Pedestal escuro */}
+                        <rect x="7" y="19" width="10" height="2.5" rx="0.5" fill="rgba(0,0,0,0.7)"/>
+                        <rect x="8" y="18.5" width="8" height="1" fill="rgba(0,0,0,0.5)"/>
+                        
+                        {/* Haste */}
+                        <rect x="10.5" y="16" width="3" height="3" fill="currentColor"/>
+                        
+                        {/* Copa Principal - Formato mais largo */}
+                        <path d="M6 4C6 3.45 6.45 3 7 3H17C17.55 3 18 3.45 18 4V9C18 12.31 15.31 15 12 15C8.69 15 6 12.31 6 9V4Z" fill="currentColor"/>
+                        
+                        {/* Detalhes da Copa - linhas decorativas */}
+                        <rect x="7" y="4" width="10" height="0.5" fill="rgba(255,255,255,0.3)"/>
+                        <rect x="7" y="6" width="10" height="0.3" fill="rgba(255,255,255,0.2)"/>
+                        
+                        {/* Alças Laterais mais visíveis */}
+                        <ellipse cx="5" cy="7.5" rx="1.5" ry="2" fill="currentColor"/>
+                        <ellipse cx="19" cy="7.5" rx="1.5" ry="2" fill="currentColor"/>
+                        <ellipse cx="5" cy="7.5" rx="0.8" ry="1.3" fill="rgba(255,255,255,0.2)"/>
+                        <ellipse cx="19" cy="7.5" rx="0.8" ry="1.3" fill="rgba(255,255,255,0.2)"/>
+                        
+                        {/* Número 1 Central - mais proeminente */}
+                        <text x="12" y="11" font-family="Arial, sans-serif" font-size="6" font-weight="bold" text-anchor="middle" fill="rgba(255,255,255,0.95)">1</text>
+                        
+                        {/* Estrelas ao redor do número 1 */}
+                        <g fill="rgba(255,255,255,0.9)">
+                          <polygon points="9,8 9.2,8.6 9.8,8.6 9.3,9 9.5,9.6 9,9.2 8.5,9.6 8.7,9 8.2,8.6 8.8,8.6" />
+                          <polygon points="15,8 15.2,8.6 15.8,8.6 15.3,9 15.5,9.6 15,9.2 14.5,9.6 14.7,9 14.2,8.6 14.8,8.6" />
+                          <polygon points="10.5,6 10.6,6.4 11,6.4 10.7,6.7 10.8,7.1 10.5,6.9 10.2,7.1 10.3,6.7 10,6.4 10.4,6.4" />
+                          <polygon points="13.5,6 13.6,6.4 14,6.4 13.7,6.7 13.8,7.1 13.5,6.9 13.2,7.1 13.3,6.7 13,6.4 13.4,6.4" />
+                          <polygon points="12,5 12.1,5.4 12.5,5.4 12.2,5.7 12.3,6.1 12,5.9 11.7,6.1 11.8,5.7 11.5,5.4 11.9,5.4" />
+                        </g>
+                      </svg>
+                    </div>
+                  </div>
+                  
+                  {/* Texto da Marca */}
+                  <div className="flex flex-col">
+                    <span className="text-lg font-bold text-white tracking-tight">
+                      AFILIADOS DA ELITE
+                    </span>
+                    <span className="text-xs text-orange-400 font-semibold tracking-wide">
+                      PORTAL PREMIUM
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -84,7 +155,7 @@ const Index = () => {
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="relative flex items-center gap-2">
-                      🏆
+                      <TrophyIcon className="w-4 h-4" color="#1e293b" />
                       <span className="hidden sm:inline">Dashboard Elite</span>
                       <span className="sm:hidden">Dashboard</span>
                     </div>
@@ -110,7 +181,7 @@ const Index = () => {
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="relative flex items-center gap-2">
-                      🏆
+                      <TrophyIcon className="w-4 h-4" color="#1e293b" />
                       <span className="hidden sm:inline">Cadastrar Elite</span>
                       <span className="sm:hidden">Cadastrar</span>
                     </div>
@@ -123,166 +194,126 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Hero Section melhorada */}
-      <section className="pt-28 pb-20 min-h-screen flex items-center relative" id="home">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left Content melhorado */}
-            <div className="space-y-8 slide-in-left text-center lg:text-left">
-              <div className="space-y-6">
+      {/* Hero Section Clean e Alinhada */}
+      <section className="pt-32 pb-16 min-h-screen flex items-center relative" id="home">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content - Organizado e Clean */}
+            <div className="space-y-8 slide-in-left text-center lg:text-left flex flex-col justify-center">
+              {/* Título Principal */}
+              <div className="space-y-4">
                 <h1 className="text-3xl lg:text-5xl font-bold leading-tight">
                   Área de Membros <span className="text-orange-400 text-glow">Exclusiva e Premium</span><br />
                   para <span className="text-white">Afiliados Elite</span>
                 </h1>
+                <p className="text-lg lg:text-xl text-slate-300 leading-relaxed max-w-2xl mx-auto lg:mx-0 font-light">
+                  Central completa para gerenciar seu desempenho como afiliado. Acesse conteúdos exclusivos, 
+                  materiais de marketing premium, comunidade ativa e acompanhe suas comissões em tempo real.
+                </p>
               </div>
               
-              <p className="text-xl text-slate-300 leading-relaxed max-w-2xl mx-auto lg:mx-0 font-light">
-                Central completa para gerenciar seu desempenho como afiliado. Acesse conteúdos exclusivos, 
-                materiais de marketing premium, comunidade ativa e acompanhe suas comissões em tempo real.
-              </p>
-              
-              {/* Benefits Badges Horizontais - Formato da segunda imagem */}
-              <div className="w-full max-w-4xl mx-auto lg:mx-0 mt-6">
-                <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
-                  {/* Badge 1 - Conteúdo Exclusivo - Formato Horizontal */}
-                  <div className="group flex items-center gap-3 bg-gradient-to-r from-orange-500/15 via-orange-500/10 to-orange-500/5 backdrop-blur-sm border border-orange-500/30 rounded-xl px-4 py-3 hover:border-orange-400/50 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-orange-500/20">
-                    <div className="relative">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-md group-hover:shadow-orange-400/30 transition-all duration-300">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </div>
-                      {/* Badge indicador */}
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center border border-slate-900">
-                        <span className="text-[9px]">📚</span>
-                  </div>
-                </div>
-                
-                    <div className="text-left">
-                      <h3 className="text-sm font-bold text-white mb-0.5">Conteúdo Exclusivo</h3>
-                      <p className="text-orange-300 text-xs font-medium">Videoaulas & Materiais Elite</p>
-                    </div>
-                  </div>
-                  
-                  {/* Badge 2 - Comunidade Elite - Formato Horizontal */}
-                  <div className="group flex items-center gap-3 bg-gradient-to-r from-blue-500/15 via-blue-500/10 to-blue-500/5 backdrop-blur-sm border border-blue-500/30 rounded-xl px-4 py-3 hover:border-blue-400/50 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/20">
-                    <div className="relative">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-md group-hover:shadow-blue-400/30 transition-all duration-300">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                  </div>
-                      {/* Badge indicador */}
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full flex items-center justify-center border border-slate-900">
-                        <span className="text-[9px]">💬</span>
-                  </div>
-                </div>
-                
-                    <div className="text-left">
-                      <h3 className="text-sm font-bold text-white mb-0.5">Comunidade Elite</h3>
-                      <p className="text-blue-300 text-xs font-medium">Chat & Networking Premium</p>
-                    </div>
-                  </div>
-                  
-                  {/* Badge 3 - Dashboard Avançado - Formato Horizontal */}
-                  <div className="group flex items-center gap-3 bg-gradient-to-r from-green-500/15 via-green-500/10 to-green-500/5 backdrop-blur-sm border border-green-500/30 rounded-xl px-4 py-3 hover:border-green-400/50 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/20">
-                    <div className="relative">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-md group-hover:shadow-green-400/30 transition-all duration-300">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                      {/* Badge indicador */}
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-400 rounded-full flex items-center justify-center border border-slate-900">
-                        <span className="text-[9px]">📊</span>
+              {/* Benefits Badges - Compactos e Alinhados */}
+              <div className="w-full max-w-2xl mx-auto lg:mx-0">
+                <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+                  {/* Badge 1 - Conteúdo Exclusivo */}
+                  <div className="group flex items-center gap-2 bg-slate-800/40 backdrop-blur-sm border border-orange-500/20 rounded-lg px-2.5 py-1.5 hover:border-orange-400/40 hover:bg-slate-800/60 transition-all duration-300 transform hover:scale-[1.02]">
+                    <div className="flex-shrink-0">
+                      <div className="w-6 h-6 rounded-md bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-sm">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
                       </div>
                     </div>
-                    
-                    <div className="text-left">
-                      <h3 className="text-sm font-bold text-white mb-0.5">Dashboard Avançado</h3>
-                      <p className="text-green-300 text-xs font-medium">Comissões & Performance Elite</p>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-[11px] font-medium text-white leading-tight">Conteúdo Exclusivo</h3>
+                    </div>
+                  </div>
+                  
+                  {/* Badge 2 - Comunidade Elite */}
+                  <div className="group flex items-center gap-2 bg-slate-800/40 backdrop-blur-sm border border-blue-500/20 rounded-lg px-2.5 py-1.5 hover:border-blue-400/40 hover:bg-slate-800/60 transition-all duration-300 transform hover:scale-[1.02]">
+                    <div className="flex-shrink-0">
+                      <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center shadow-sm">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-[11px] font-medium text-white leading-tight">Comunidade Elite</h3>
+                    </div>
+                  </div>
+                  
+                  {/* Badge 3 - Dashboard Avançado */}
+                  <div className="group flex items-center gap-2 bg-slate-800/40 backdrop-blur-sm border border-green-500/20 rounded-lg px-2.5 py-1.5 hover:border-green-400/40 hover:bg-slate-800/60 transition-all duration-300 transform hover:scale-[1.02]">
+                    <div className="flex-shrink-0">
+                      <div className="w-6 h-6 rounded-md bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-sm">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-[11px] font-medium text-white leading-tight">Dashboard Avançado</h3>
                     </div>
                   </div>
                 </div>
               </div>
               
-              {/* CTAs melhorados */}
-              <div className="flex flex-col gap-5 justify-center lg:justify-start max-w-md mx-auto lg:mx-0 mt-12">
+              {/* CTAs Organizados */}
+              <div className="flex flex-col gap-4 justify-center lg:justify-start w-full max-w-[420px] mx-auto lg:mx-0">
                 {!user ? (
                   <>
                     {/* Primary CTA - Cadastro */}
                     <button 
-                      className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 font-bold py-5 px-8 rounded-2xl shadow-2xl shadow-orange-500/40 hover:shadow-orange-400/50 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-orange-400/40 border-2 border-orange-300/50"
+                      className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 font-bold py-4 px-6 rounded-xl shadow-xl hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-orange-400/40 border-2 border-orange-300/50 w-full"
                       onClick={() => handleAuthAction('signup')}
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <div className="relative flex items-center justify-center gap-3">
-                        <span className="text-lg">🏆</span>
-                        <span className="text-xl">Acessar Área Elite</span>
-                        <div className="bg-yellow-400 text-slate-900 text-xs font-bold px-3 py-1.5 rounded-full animate-pulse border border-yellow-300">
-                          ⚡ PREMIUM
+                      <div className="relative flex items-center justify-center gap-2">
+                        <TrophyIcon className="w-4 h-4" color="#1e293b" />
+                        <span className="text-lg">Acessar Área Elite</span>
+                        <div className="bg-yellow-400 text-slate-900 text-xs font-bold px-2 py-1 rounded-full animate-pulse border border-yellow-300">
+                          PREMIUM
                         </div>
                       </div>
                     </button>
                     
                     {/* Secondary CTA - Login */}
                     <button 
-                      className="group relative bg-slate-800/60 hover:bg-slate-700/60 border-2 border-orange-500/40 hover:border-orange-400/60 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm"
+                      className="group relative bg-slate-800/60 hover:bg-slate-700/60 border-2 border-orange-500/30 hover:border-orange-400/50 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 backdrop-blur-sm w-full"
                       onClick={() => handleAuthAction('login')}
                     >
-                      <div className="flex items-center justify-center gap-3">
-                        <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                         </svg>
-                        <span className="text-lg">Já sou Elite - Entrar</span>
+                        <span className="text-base">Já sou Elite - Entrar</span>
                       </div>
                     </button>
                   </>
                 ) : (
                   <button 
-                    className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 font-bold py-5 px-8 rounded-2xl shadow-2xl shadow-orange-500/40 hover:shadow-orange-400/50 transition-all duration-300 transform hover:scale-105 border-2 border-orange-300/50"
+                    className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 font-bold py-4 px-6 rounded-xl shadow-xl hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-orange-300/50 w-full"
                     onClick={() => navigate('/dashboard')}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative flex items-center justify-center gap-3">
-                      <span className="text-lg">🏆</span>
-                      <span className="text-xl">Acessar Meu Dashboard Elite</span>
+                    <div className="relative flex items-center justify-center gap-2">
+                      <TrophyIcon className="w-4 h-4" color="#1e293b" />
+                      <span className="text-lg">Acessar Meu Dashboard Elite</span>
                     </div>
                   </button>
                 )}
               </div>
-              
-              {/* Trust indicators melhorados */}
-              <div className="flex flex-wrap gap-8 text-sm text-slate-400 justify-center lg:justify-start mt-8">
-                <div className="flex items-center gap-2 scale-hover bg-slate-800/20 px-3 py-2 rounded-lg border border-green-500/20">
-                  <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-green-300 font-medium">Acesso Premium</span>
-                </div>
-                <div className="flex items-center gap-2 scale-hover bg-slate-800/20 px-3 py-2 rounded-lg border border-blue-500/20">
-                  <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                  <span className="text-blue-300 font-medium">🛡️ Seguro & Privado</span>
-                </div>
-                <div className="flex items-center gap-2 scale-hover bg-slate-800/20 px-3 py-2 rounded-lg border border-orange-500/20">
-                  <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  <span className="text-orange-300 font-medium">⚡ Disponível 24/7</span>
-                </div>
-              </div>
             </div>
             
-            {/* Right Side - Laptop Mockup melhorado */}
+            {/* Right Side - Laptop Mockup Alinhado */}
             <div className="lg:flex justify-center hidden slide-in-right">
               <div className="relative">
                 {/* Laptop Frame */}
                 <div className="relative laptop-mockup">
                   {/* Screen */}
                   <div className="bg-slate-800 rounded-t-xl p-1 border-2 border-slate-700 shadow-2xl">
-                    <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 rounded-lg overflow-hidden h-96 w-[540px] relative">
+                    <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 rounded-lg overflow-hidden h-96 w-[520px] relative">
                       {/* Browser Chrome */}
                       <div className="flex items-center gap-2 px-4 py-3 bg-slate-800/50 border-b border-slate-700/50">
                         <div className="flex gap-2">
@@ -295,44 +326,44 @@ const Index = () => {
                         </div>
                       </div>
                       
-                      {/* Dashboard Preview melhorado */}
-                      <div className="p-6 space-y-4 overflow-hidden">
+                      {/* Dashboard Preview Organizado */}
+                      <div className="p-5 space-y-4 overflow-hidden">
                         {/* Header */}
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="text-white font-bold text-lg flex items-center gap-2">
-                              <span className="text-sm">🏆</span>
+                            <h3 className="text-white font-bold text-base flex items-center gap-2">
+                              <TrophyIcon className="w-4 h-4" color="#f97316" />
                               Olá, Afiliado Elite!
                             </h3>
                             <p className="text-orange-400 text-sm">Bem-vindo ao seu dashboard premium</p>
                           </div>
-                          <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                            <span className="text-slate-900 text-base font-bold">🏆</span>
+                          <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                            <TrophyIcon className="w-5 h-5" color="#1e293b" />
                           </div>
                         </div>
                         
-                        {/* Stats Grid melhorado */}
-                        <div className="grid grid-cols-3 gap-3">
-                          <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-lg p-3 border border-orange-500/30">
-                            <div className="text-orange-300 text-xl font-bold">R$ 2.847</div>
+                        {/* Stats Grid Compacto */}
+                        <div className="grid grid-cols-3 gap-2.5">
+                          <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-lg p-2.5 border border-orange-500/30">
+                            <div className="text-orange-300 text-lg font-bold">R$ 2.847</div>
                             <div className="text-orange-400 text-xs font-medium">Comissões</div>
                           </div>
-                          <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg p-3 border border-blue-500/30">
-                            <div className="text-blue-300 text-xl font-bold">1.234</div>
-                            <div className="text-blue-400 text-xs font-medium">👆 Cliques</div>
+                          <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg p-2.5 border border-blue-500/30">
+                            <div className="text-blue-300 text-lg font-bold">1.234</div>
+                            <div className="text-blue-400 text-xs font-medium">Cliques</div>
                           </div>
-                          <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-lg p-3 border border-green-500/30">
-                            <div className="text-green-300 text-xl font-bold">89%</div>
-                            <div className="text-green-400 text-xs font-medium">📈 Conv.</div>
+                          <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-lg p-2.5 border border-green-500/30">
+                            <div className="text-green-300 text-lg font-bold">89%</div>
+                            <div className="text-green-400 text-xs font-medium">Conv.</div>
                           </div>
                         </div>
                         
-                        {/* Content Sections melhoradas */}
-                        <div className="space-y-3">
-                          <div className="bg-gradient-to-r from-orange-500/10 to-orange-600/5 rounded-lg p-3 border border-orange-500/20">
-                            <div className="flex items-center gap-3 mb-2">
-                              <div className="w-8 h-8 bg-orange-400 rounded flex items-center justify-center">
-                                <span className="text-slate-900 font-bold text-xs">🏆</span>
+                        {/* Content Sections Compactas */}
+                        <div className="space-y-2.5">
+                          <div className="bg-gradient-to-r from-orange-500/10 to-orange-600/5 rounded-lg p-2.5 border border-orange-500/20">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-7 h-7 bg-orange-400 rounded flex items-center justify-center">
+                                <TrophyIcon className="w-4 h-4" color="#1e293b" />
                               </div>
                               <div>
                                 <div className="text-white text-sm font-medium">Videoaulas Elite</div>
@@ -341,9 +372,9 @@ const Index = () => {
                             </div>
                           </div>
                           
-                          <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/5 rounded-lg p-3 border border-blue-500/20">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-blue-400 rounded flex items-center justify-center">
+                          <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/5 rounded-lg p-2.5 border border-blue-500/20">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-7 h-7 bg-blue-400 rounded flex items-center justify-center">
                                 <span className="text-slate-900 font-bold text-xs">💬</span>
                               </div>
                               <div>
@@ -354,14 +385,14 @@ const Index = () => {
                           </div>
                         </div>
                         
-                        {/* Performance Chart Preview melhorado */}
-                        <div className="bg-gradient-to-r from-purple-500/10 to-purple-600/5 rounded-lg p-3 border border-purple-500/20">
+                        {/* Performance Chart Compacto */}
+                        <div className="bg-gradient-to-r from-purple-500/10 to-purple-600/5 rounded-lg p-2.5 border border-purple-500/20">
                           <div className="text-white text-sm font-medium mb-2 flex items-center gap-2">
-                            <span className="text-xs">🏆</span>
+                            <TrophyIcon className="w-3 h-3" color="#f97316" />
                             Performance Elite (7 dias)
                           </div>
-                          <div className="h-16 relative">
-                            <svg className="w-full h-full" viewBox="0 0 200 40">
+                          <div className="h-12 relative">
+                            <svg className="w-full h-full" viewBox="0 0 200 30">
                               <defs>
                                 <linearGradient id="chartGradientMockup" x1="0%" y1="0%" x2="0%" y2="100%">
                                   <stop offset="0%" stopColor="#f97316" stopOpacity="0.6"/>
@@ -369,15 +400,15 @@ const Index = () => {
                                 </linearGradient>
                               </defs>
                               <path 
-                                d="M 5 30 Q 25 20 50 15 T 100 10 T 150 8 T 195 5" 
+                                d="M 5 25 Q 25 15 50 10 T 100 8 T 150 6 T 195 3" 
                                 stroke="#f97316" 
-                                strokeWidth="3" 
+                                strokeWidth="2" 
                                 fill="none"
                                 className="animate-pulse"
-                                filter="drop-shadow(0 0 6px rgba(249, 115, 22, 0.4))"
+                                filter="drop-shadow(0 0 4px rgba(249, 115, 22, 0.4))"
                               />
                               <path 
-                                d="M 5 30 Q 25 20 50 15 T 100 10 T 150 8 T 195 5 L 195 40 L 5 40 Z" 
+                                d="M 5 25 Q 25 15 50 10 T 100 8 T 150 6 T 195 3 L 195 30 L 5 30 Z" 
                                 fill="url(#chartGradientMockup)"
                               />
                             </svg>
@@ -393,17 +424,25 @@ const Index = () => {
                   </div>
                 </div>
                 
-                {/* Floating Elements melhorados */}
-                <div className="absolute -top-3 -right-3 bg-gradient-to-r from-orange-400 to-orange-500 text-slate-900 px-4 py-2 rounded-full text-xs font-bold animate-pulse shadow-xl border-2 border-orange-300/40">
-                  <span className="text-xs">🏆</span> ELITE ONLINE
-                </div>
-                <div className="absolute -bottom-3 -left-3 bg-gradient-to-r from-blue-400 to-blue-500 text-slate-900 px-4 py-2 rounded-full text-xs font-bold float-animation shadow-xl border-2 border-blue-300/40">
-                  💬 Chat Elite Ativo
-                </div>
-                <div className="absolute top-1/2 -right-4 bg-gradient-to-r from-orange-400 to-orange-500 text-slate-900 px-4 py-2 rounded-full text-xs font-bold transform -rotate-12 float-delay-2 shadow-xl border-2 border-orange-300/40 animate-pulse">
+                {/* Floating Elements Simplificados */}
+                <div className="absolute -bottom-4 -left-4 bg-gradient-to-r from-blue-400 to-blue-500 text-slate-900 px-4 py-2 rounded-full text-xs font-bold float-animation shadow-xl border-2 border-blue-300/50 transform -rotate-2">
                   <div className="flex items-center gap-1">
-                    <span className="text-xs">🚀</span>
-                    <span>ELITE</span>
+                    <span className="text-sm">💬</span>
+                    <span>CHAT ATIVO</span>
+                  </div>
+                </div>
+                
+                <div className="absolute -top-4 -right-4 bg-gradient-to-r from-green-400 to-green-500 text-slate-900 px-4 py-2 rounded-full text-xs font-bold animate-pulse shadow-xl border-2 border-green-300/50 transform rotate-3">
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm">🎯</span>
+                    <span>ESTRATÉGIAS EXCLUSIVAS</span>
+                  </div>
+                </div>
+                
+                <div className="absolute top-1/2 -right-6 bg-gradient-to-r from-orange-400 to-orange-500 text-slate-900 px-4 py-2 rounded-full text-xs font-bold float-delay-2 shadow-xl border-2 border-orange-300/50 transform rotate-12 animate-bounce">
+                  <div className="flex items-center gap-1">
+                    <TrophyIcon className="w-3 h-3" color="#1e293b" />
+                    <span>PORTAL PREMIUM</span>
                   </div>
                 </div>
               </div>

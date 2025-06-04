@@ -32,17 +32,17 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       }
 
       // Validar tamanho do arquivo
-      const maxSize = (options.maxSizeInMB || 5) * 1024 * 1024;
-      if (file.size > maxSize) {
+        const maxSize = (options.maxSizeInMB || 5) * 1024 * 1024;
+        if (file.size > maxSize) {
         console.error('❌ [validateImage] Arquivo muito grande:', file.size, 'bytes');
-        toast({
-          title: "Arquivo muito grande",
-          description: `O arquivo deve ter no máximo ${options.maxSizeInMB || 5}MB`,
-          variant: "destructive",
-        });
-        resolve(false);
-        return;
-      }
+          toast({
+            title: "Arquivo muito grande",
+            description: `O arquivo deve ter no máximo ${options.maxSizeInMB || 5}MB`,
+            variant: "destructive",
+          });
+          resolve(false);
+          return;
+        }
 
       console.log('⏳ [validateImage] Validando dimensões da imagem...');
 
@@ -155,9 +155,9 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       // Configurações específicas por bucket
       const bucketConfig = {
         avatars: {
-          public: true,
+        public: true,
           fileSizeLimit: 5 * 1024 * 1024, // 5MB
-          allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
+        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/jpg']
         },
         products: {
           public: true,
