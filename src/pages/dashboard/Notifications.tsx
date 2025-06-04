@@ -5,32 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Bell, Check, X, DollarSign, TrendingUp } from 'lucide-react';
 
 const Notifications: React.FC = () => {
-  const notifications = [
-    {
-      id: 1,
-      title: 'Nova comissão recebida',
-      message: 'Você ganhou R$ 25,00 de comissão pela venda do Curso Digital Marketing',
-      type: 'commission',
-      time: '2 horas atrás',
-      read: false
-    },
-    {
-      id: 2,
-      title: 'Meta mensal atingida!',
-      message: 'Parabéns! Você atingiu sua meta de R$ 1.000,00 este mês',
-      type: 'achievement',
-      time: '1 dia atrás',
-      read: false
-    },
-    {
-      id: 3,
-      title: 'Pagamento processado',
-      message: 'Seu saque de R$ 380,50 foi processado e estará disponível em breve',
-      type: 'payment',
-      time: '3 dias atrás',
-      read: true
-    }
-  ];
+  // ✅ DADOS LIMPOS - Sistema começa vazio para ser preenchido com dados reais
+  const notifications: any[] = [];
 
   return (
     <div className="space-y-8">
@@ -92,7 +68,7 @@ const Notifications: React.FC = () => {
               Nenhuma notificação
             </h3>
             <p className="text-slate-400">
-              Suas notificações aparecerão aqui
+              Suas notificações aparecerão aqui quando houver atividade em sua conta
             </p>
           </CardContent>
         </Card>

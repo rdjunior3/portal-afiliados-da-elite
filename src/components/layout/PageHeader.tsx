@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 interface PageHeaderProps {
   title: string;
   description: string;
-  icon: string;
+  icon?: string;
   actions?: React.ReactNode;
   className?: string;
 }
@@ -22,10 +22,12 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       className
     )}>
       <div className="flex items-center gap-4">
-        {/* Icon Container */}
-        <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-          <span className="text-xl">{icon}</span>
-        </div>
+        {/* Icon Container - Renderização condicional */}
+        {icon && (
+          <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+            <span className="text-xl">{icon}</span>
+          </div>
+        )}
         
         {/* Title and Description */}
         <div>

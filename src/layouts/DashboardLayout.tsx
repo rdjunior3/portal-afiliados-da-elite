@@ -34,6 +34,33 @@ import {
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 
+// Componente de ícone troféu pequeno
+const TrophyIcon = ({ className = "w-4 h-4", color = "currentColor" }) => (
+  <svg className={className} fill={color} viewBox="0 0 24 24">
+    {/* Base/Pedestal */}
+    <rect x="7" y="19" width="10" height="2.5" rx="0.5" fill="rgba(0,0,0,0.3)"/>
+    <rect x="8" y="18.5" width="8" height="1" fill="rgba(0,0,0,0.2)"/>
+    
+    {/* Haste */}
+    <rect x="10.5" y="16" width="3" height="3" fill={color}/>
+    
+    {/* Copa Principal */}
+    <path d="M6 4C6 3.45 6.45 3 7 3H17C17.55 3 18 3.45 18 4V9C18 12.31 15.31 15 12 15C8.69 15 6 12.31 6 9V4Z" fill={color}/>
+    
+    {/* Alças Laterais */}
+    <ellipse cx="5" cy="7.5" rx="1.5" ry="2" fill={color}/>
+    <ellipse cx="19" cy="7.5" rx="1.5" ry="2" fill={color}/>
+    <ellipse cx="5" cy="7.5" rx="0.8" ry="1.3" fill="rgba(255,255,255,0.2)"/>
+    <ellipse cx="19" cy="7.5" rx="0.8" ry="1.3" fill="rgba(255,255,255,0.2)"/>
+    
+    {/* Número 1 Central */}
+    <text x="12" y="11" fontFamily="Arial, sans-serif" fontSize="6" fontWeight="bold" textAnchor="middle" fill="rgba(255,255,255,0.95)">1</text>
+    
+    {/* Estrela decorativa central */}
+    <polygon points="12,6 12.1,6.4 12.5,6.4 12.2,6.7 12.3,7.1 12,6.9 11.7,7.1 11.8,6.7 11.5,6.4 11.9,6.4" fill="rgba(255,255,255,0.9)" />
+  </svg>
+);
+
 interface MenuItem {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
@@ -220,7 +247,7 @@ const DashboardLayout: React.FC = () => {
               <div className="flex items-center gap-3 lg:gap-4">
               <div className="relative">
                   <div className="h-10 w-10 lg:h-12 lg:w-12 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center shadow-lg border-2 border-orange-300/20">
-                    <span className="text-xs lg:text-sm font-bold text-slate-900">🏆</span>
+                    <TrophyIcon className="w-5 h-5 lg:w-6 lg:h-6" color="#1e293b" />
                 </div>
                 <div className="absolute -bottom-1 -right-1">
                   {profile?.affiliate_status === 'approved' && (
@@ -264,7 +291,7 @@ const DashboardLayout: React.FC = () => {
             <div className="border-b border-slate-700/50 p-3 lg:p-4 flex justify-center">
               <div className="relative">
                 <div className="h-8 w-8 lg:h-10 lg:w-10 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center shadow-lg border-2 border-orange-300/20">
-                  <span className="text-xs font-bold text-slate-900">🏆</span>
+                  <TrophyIcon className="w-4 h-4 lg:w-5 lg:h-5" color="#1e293b" />
                 </div>
                 {profile?.affiliate_status === 'approved' && (
                   <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 lg:w-3 lg:h-3 bg-green-500 rounded-full border border-slate-900"></div>
@@ -434,7 +461,7 @@ const DashboardLayout: React.FC = () => {
               {/* Breadcrumb apenas no desktop */}
               <div className="hidden lg:flex items-center text-sm">
                 <span className="text-orange-300 font-semibold flex items-center gap-1">
-                  <span className="text-xs">🏆</span> Dashboard
+                  Dashboard
                 </span>
                 {location.pathname !== '/dashboard' && (
                   <>
@@ -462,7 +489,7 @@ const DashboardLayout: React.FC = () => {
                 <Bell className="h-4 w-4" />
                 {/* Notification badge */}
                   <span className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-lg">
-                    <span className="text-xs text-slate-900 font-bold">3</span>
+                    <span className="text-xs text-slate-900 font-bold">0</span>
                 </span>
               </Button>
               
@@ -471,64 +498,34 @@ const DashboardLayout: React.FC = () => {
                   <div className="absolute right-0 top-full mt-3 w-80 lg:w-96 bg-slate-800/95 backdrop-blur-xl border border-slate-600/50 rounded-xl shadow-2xl z-50">
                     <div className="p-4 border-b border-slate-600/50 bg-gradient-to-r from-slate-700/30 to-slate-600/30">
                       <h3 className="text-white font-bold flex items-center gap-2">
-                        <span className="text-sm">🏆</span>
                         Notificações Elite
                       </h3>
                   </div>
                     <div className="max-h-80 overflow-y-auto">
-                      <div className="p-4 border-b border-slate-600/30 hover:bg-slate-700/30 cursor-pointer transition-colors duration-200">
-                        <div className="flex items-start gap-3">
-                          <div className="w-3 h-3 bg-orange-500 rounded-full mt-2 animate-pulse"></div>
-                          <div className="flex-1">
-                            <p className="text-sm text-white font-medium">Nova comissão disponível</p>
-                            <p className="text-xs text-white mt-1">Você ganhou R$ 25,00 em comissões</p>
-                            <p className="text-xs text-slate-300 mt-1">há 2 horas</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="p-4 border-b border-slate-600/30 hover:bg-slate-700/30 cursor-pointer transition-colors duration-200">
-                        <div className="flex items-start gap-3">
-                          <div className="w-3 h-3 bg-blue-500 rounded-full mt-2"></div>
-                          <div className="flex-1">
-                            <p className="text-sm text-white font-medium">📚 Novo produto disponível</p>
-                            <p className="text-xs text-white mt-1">Confira o novo curso lançado</p>
-                            <p className="text-xs text-slate-300 mt-1">há 5 horas</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="p-4 hover:bg-slate-700/30 cursor-pointer transition-colors duration-200">
-                        <div className="flex items-start gap-3">
-                          <div className="w-3 h-3 bg-green-500 rounded-full mt-2"></div>
-                          <div className="flex-1">
-                            <p className="text-sm text-white font-medium">🎯 Meta mensal atingida</p>
-                            <p className="text-xs text-white mt-1">Parabéns! Você bateu sua meta</p>
-                            <p className="text-xs text-slate-300 mt-1">ontem</p>
-                          </div>
-                        </div>
+                      {/* ✅ DADOS LIMPOS - Sistema começa vazio */}
+                      <div className="p-8 text-center">
+                        <Bell className="mx-auto h-8 w-8 text-slate-400 mb-3" />
+                        <p className="text-sm text-slate-400">Nenhuma notificação no momento</p>
+                        <p className="text-xs text-slate-500 mt-1">Suas atualizações aparecerão aqui</p>
                       </div>
                     </div>
-                    <div className="p-4 border-t border-slate-600/50">
+                    <div className="p-4 border-t border-slate-600/50 bg-gradient-to-r from-slate-700/30 to-slate-600/30">
                     <Button 
                       variant="ghost" 
                       size="sm" 
                         className="w-full text-orange-300 hover:text-orange-200 hover:bg-orange-500/20 transition-all duration-200"
-                      onClick={() => {
-                        navigate('/dashboard/notifications');
-                        setNotificationsOpen(false);
-                      }}
                     >
                       Ver todas as notificações
                     </Button>
                   </div>
                 </div>
               )}
-              </div>
             </div>
           </div>
         </header>
 
-        {/* Page Content com padding otimizado para mobile */}
-        <main className="p-4 lg:p-6 xl:p-8">
+        {/* Page Content */}
+        <main className="flex-1">
           <Outlet />
         </main>
       </div>

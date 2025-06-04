@@ -304,7 +304,7 @@ const Products = () => {
                   Cadastrar Produto
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-6xl bg-slate-800/95 backdrop-blur border-slate-700/50">
+              <DialogContent className="max-w-4xl bg-slate-800/95 backdrop-blur border-slate-700/50">
                 <DialogHeader>
                   <DialogTitle className="text-white">
                     {editingProduct ? 'Editar Produto' : 'Cadastrar Novo Produto'}
@@ -314,11 +314,11 @@ const Products = () => {
                   </DialogDescription>
                 </DialogHeader>
                 
-                <div className="space-y-6 py-4 max-h-[80vh] overflow-y-auto">
+                <div className="space-y-6 py-4 max-h-[75vh] overflow-y-auto">
                   {/* Seção Informações Básicas */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Coluna da Imagem */}
-                    <div className="lg:col-span-1">
+                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    {/* Coluna da Imagem - Menor */}
+                    <div className="lg:col-span-2">
                       <ImageUpload
                         value={productForm.thumbnail_url}
                         onChange={(url) => setProductForm({...productForm, thumbnail_url: url})}
@@ -326,13 +326,13 @@ const Products = () => {
                         folder="thumbnails"
                         label="Imagem do Produto"
                         placeholder="Envie uma imagem do produto"
-                        maxWidth={500}
-                        maxHeight={500}
+                        maxWidth={400}
+                        maxHeight={400}
                       />
                     </div>
                     
-                    {/* Coluna dos Campos */}
-                    <div className="lg:col-span-2 space-y-4">
+                    {/* Coluna dos Campos - Maior */}
+                    <div className="lg:col-span-3 space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="name" className="text-slate-200">Nome do Produto</Label>
@@ -376,21 +376,9 @@ const Products = () => {
                         />
                       </div>
                       
-                      <div className="space-y-2">
-                        <Label htmlFor="description" className="text-slate-200">Descrição Completa</Label>
-                        <Textarea
-                          id="description"
-                          value={productForm.description}
-                          onChange={(e) => setProductForm({...productForm, description: e.target.value})}
-                          className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                          placeholder="Descrição completa do produto"
-                          rows={3}
-                        />
-                      </div>
-                      
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="price" className="text-slate-200">Preço Padrão (R$)</Label>
+                          <Label htmlFor="price" className="text-slate-200">Preço (R$)</Label>
                           <Input
                             id="price"
                             type="number"
@@ -402,7 +390,7 @@ const Products = () => {
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor="commission" className="text-slate-200">Comissão Padrão (%)</Label>
+                          <Label htmlFor="commission" className="text-slate-200">Comissão (%)</Label>
                           <Input
                             id="commission"
                             type="number"
@@ -417,7 +405,7 @@ const Products = () => {
                           <Label htmlFor="category" className="text-slate-200">Categoria</Label>
                           <Select value={productForm.category_id} onValueChange={(value) => setProductForm({...productForm, category_id: value})}>
                             <SelectTrigger className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm">
-                              <SelectValue placeholder="Selecione uma categoria" />
+                              <SelectValue placeholder="Selecione" />
                             </SelectTrigger>
                             <SelectContent className="bg-slate-800/95 border-slate-700/50 backdrop-blur z-50">
                               {categories?.map((category) => (
@@ -429,28 +417,44 @@ const Products = () => {
                           </Select>
                         </div>
                       </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="affiliate_link" className="text-slate-200">Link de Afiliado Padrão</Label>
-                        <Input
-                          id="affiliate_link"
-                          value={productForm.affiliate_link}
-                          onChange={(e) => setProductForm({...productForm, affiliate_link: e.target.value})}
-                          className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                          placeholder="https://exemplo.com/produto"
-                        />
-                      </div>
                     </div>
                   </div>
 
-                  {/* Seção de Ofertas Múltiplas */}
+                  {/* Descrição Completa e Link - Layout Horizontal */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="description" className="text-slate-200">Descrição Completa</Label>
+                      <Textarea
+                        id="description"
+                        value={productForm.description}
+                        onChange={(e) => setProductForm({...productForm, description: e.target.value})}
+                        className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                        placeholder="Descrição detalhada do produto"
+                        rows={4}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="affiliate_link" className="text-slate-200">Link de Afiliado</Label>
+                      <Textarea
+                        id="affiliate_link"
+                        value={productForm.affiliate_link}
+                        onChange={(e) => setProductForm({...productForm, affiliate_link: e.target.value})}
+                        className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                        placeholder="https://exemplo.com/produto"
+                        rows={4}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Seção de Ofertas Múltiplas - Mais Compacta */}
                   <div className="border-t border-slate-700/50 pt-6">
-                    <div className="bg-slate-700/20 rounded-xl p-1 mb-4">
-                      <h3 className="text-lg font-semibold text-white mb-2 px-3 py-2">
+                    <div className="bg-gradient-to-r from-orange-500/10 to-orange-600/5 rounded-lg p-4 mb-4 border border-orange-500/20">
+                      <h3 className="text-lg font-semibold text-white mb-1 flex items-center gap-2">
                         💰 Ofertas e Preços do Produto
                       </h3>
-                      <p className="text-sm text-slate-400 px-3 pb-2">
-                        Configure diferentes preços e comissões para o mesmo produto. Útil para ofertas promocionais, versões diferentes, etc.
+                      <p className="text-sm text-slate-400">
+                        Configure diferentes preços e comissões. Útil para ofertas promocionais, versões diferentes, etc.
                       </p>
                     </div>
                     
@@ -462,12 +466,19 @@ const Products = () => {
                   </div>
                 </div>
                 
-                <DialogFooter className="pt-6 border-t border-slate-700/50">
+                <DialogFooter className="pt-4 border-t border-slate-700/50 flex flex-row justify-end gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsProductModalOpen(false)}
+                    className="border-slate-600/50 text-slate-300 hover:border-slate-500 hover:text-white"
+                  >
+                    Cancelar
+                  </Button>
                   <Button
                     type="submit"
                     onClick={() => saveProductMutation.mutate(productForm)}
                     disabled={saveProductMutation.isPending}
-                    className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white px-8"
+                    className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white px-6"
                   >
                     {saveProductMutation.isPending ? (
                       <>
@@ -475,7 +486,7 @@ const Products = () => {
                         Salvando...
                       </>
                     ) : (
-                      editingProduct ? 'Atualizar Produto' : 'Cadastrar Produto'
+                      editingProduct ? 'Atualizar' : 'Cadastrar'
                     )}
                   </Button>
                 </DialogFooter>

@@ -91,10 +91,10 @@ const Index = () => {
             {/* Brand Section melhorada - Design Clean */}
             <div className="slide-in-left">
               <div className="relative group">
-                {/* Logo clean sem container */}
+                {/* Logo clean sem container - Mobile simplificado */}
                 <div className="relative flex items-center gap-3">
-                  {/* Ícone Troféu Elite - Inspirado na Imagem */}
-                  <div className="relative">
+                  {/* Ícone Troféu Elite - Apenas no desktop */}
+                  <div className="relative hidden sm:block">
                     <div className="w-10 h-10 bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-lg">
                       <svg className="w-7 h-7 text-slate-900" fill="currentColor" viewBox="0 0 24 24">
                         {/* Base/Pedestal escuro */}
@@ -155,7 +155,7 @@ const Index = () => {
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="relative flex items-center gap-2">
-                      <TrophyIcon className="w-4 h-4" color="#1e293b" />
+                      <TrophyIcon className="w-4 h-4 hidden sm:inline" color="#1e293b" />
                       <span className="hidden sm:inline">Dashboard Elite</span>
                       <span className="sm:hidden">Dashboard</span>
                     </div>
@@ -169,10 +169,11 @@ const Index = () => {
                     onClick={() => handleAuthAction('login')}
                   >
                     <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 transition-transform group-hover:scale-110 hidden sm:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                       </svg>
                       <span className="hidden sm:inline">Entrar</span>
+                      <span className="sm:hidden">Entrar</span>
                     </div>
                   </button>
                   <button 
@@ -181,7 +182,7 @@ const Index = () => {
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <div className="relative flex items-center gap-2">
-                      <TrophyIcon className="w-4 h-4" color="#1e293b" />
+                      <TrophyIcon className="w-4 h-4 hidden sm:inline" color="#1e293b" />
                       <span className="hidden sm:inline">Cadastrar Elite</span>
                       <span className="sm:hidden">Cadastrar</span>
                     </div>
@@ -194,14 +195,14 @@ const Index = () => {
         </div>
       </nav>
 
-      {/* Hero Section Clean e Alinhada */}
-      <section className="pt-32 pb-16 min-h-screen flex items-center relative" id="home">
+      {/* Hero Section Clean e Alinhada - Espaçamento Mobile Ajustado */}
+      <section className="pt-24 sm:pt-32 pb-16 min-h-screen flex items-center relative" id="home">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content - Organizado e Clean */}
-            <div className="space-y-8 slide-in-left text-center lg:text-left flex flex-col justify-center">
-              {/* Título Principal */}
-              <div className="space-y-4">
+            <div className="space-y-6 sm:space-y-8 slide-in-left text-center lg:text-left flex flex-col justify-center">
+              {/* Título Principal - Espaçamento mobile ajustado */}
+              <div className="space-y-4 mt-5 sm:mt-0">
                 <h1 className="text-3xl lg:text-5xl font-bold leading-tight">
                   Área de Membros <span className="text-orange-400 text-glow">Exclusiva e Premium</span><br />
                   para <span className="text-white">Afiliados Elite</span>
@@ -346,17 +347,17 @@ const Index = () => {
                         {/* Stats Grid Responsivo */}
                         <div className="grid grid-cols-3 gap-1.5 lg:gap-2.5">
                           <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-lg p-1.5 lg:p-2.5 border border-orange-500/30">
-                            <div className="text-orange-300 text-sm lg:text-lg font-bold">R$ 2.8k</div>
+                            <div className="text-orange-300 text-sm lg:text-lg font-bold">R$ ---</div>
                             <div className="text-orange-400 text-xs font-medium hidden lg:block">Comissões</div>
                             <div className="text-orange-400 text-xs font-medium lg:hidden">Com.</div>
                           </div>
                           <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg p-1.5 lg:p-2.5 border border-blue-500/30">
-                            <div className="text-blue-300 text-sm lg:text-lg font-bold">1.2k</div>
+                            <div className="text-blue-300 text-sm lg:text-lg font-bold">---</div>
                             <div className="text-blue-400 text-xs font-medium hidden lg:block">Cliques</div>
                             <div className="text-blue-400 text-xs font-medium lg:hidden">Clicks</div>
                           </div>
                           <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-lg p-1.5 lg:p-2.5 border border-green-500/30">
-                            <div className="text-green-300 text-sm lg:text-lg font-bold">89%</div>
+                            <div className="text-green-300 text-sm lg:text-lg font-bold">---%</div>
                             <div className="text-green-400 text-xs font-medium">Conv.</div>
                           </div>
                         </div>
@@ -437,30 +438,12 @@ const Index = () => {
                   </div>
                 </div>
                 
-                {/* Floating Elements Adaptativos */}
+                {/* Floating Elements - Apenas CHAT mantido */}
                 <div className="absolute -bottom-2 lg:-bottom-4 -left-2 lg:-left-4 bg-gradient-to-r from-blue-400 to-blue-500 text-slate-900 px-2 lg:px-4 py-1 lg:py-2 rounded-full text-xs font-bold float-animation shadow-xl border-2 border-blue-300/50 transform -rotate-2">
                   <div className="flex items-center gap-1">
                     <span className="text-xs lg:text-sm">💬</span>
                     <span className="hidden sm:inline">CHAT ATIVO</span>
                     <span className="sm:hidden">CHAT</span>
-                  </div>
-                </div>
-                
-                <div className="absolute -top-2 lg:-top-4 -right-2 lg:-right-4 bg-gradient-to-r from-green-400 to-green-500 text-slate-900 px-2 lg:px-4 py-1 lg:py-2 rounded-full text-xs font-bold animate-pulse shadow-xl border-2 border-green-300/50 transform rotate-3">
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs lg:text-sm">🎯</span>
-                    <span className="hidden lg:inline">ESTRATÉGIAS EXCLUSIVAS</span>
-                    <span className="lg:hidden hidden sm:inline">ESTRATÉGIAS</span>
-                    <span className="sm:hidden">TIPS</span>
-                  </div>
-                </div>
-                
-                <div className="absolute top-1/2 -right-3 lg:-right-6 bg-gradient-to-r from-orange-400 to-orange-500 text-slate-900 px-2 lg:px-4 py-1 lg:py-2 rounded-full text-xs font-bold float-delay-2 shadow-xl border-2 border-orange-300/50 transform rotate-12 animate-bounce">
-                  <div className="flex items-center gap-1">
-                    <TrophyIcon className="w-2 h-2 lg:w-3 lg:h-3" color="#1e293b" />
-                    <span className="hidden lg:inline">PORTAL PREMIUM</span>
-                    <span className="lg:hidden hidden sm:inline">PREMIUM</span>
-                    <span className="sm:hidden">🏆</span>
                   </div>
                 </div>
               </div>
@@ -568,16 +551,16 @@ const Index = () => {
           
           <div className="grid md:grid-cols-3 gap-8 mb-12 stagger-children">
             <div className="glass-effect card-hover rounded-xl p-6">
-              <div className="text-3xl font-bold mb-2">R$ <span className="counter gradient-text" data-target="2800000">2.8M</span></div>
-              <div className="text-slate-400">Em comissões geradas</div>
+              <div className="text-3xl font-bold mb-2">R$ <span className="counter gradient-text">---</span></div>
+              <div className="text-slate-400">Comissões da plataforma</div>
             </div>
             <div className="glass-effect card-hover rounded-xl p-6">
-              <div className="text-3xl font-bold mb-2"><span className="counter gradient-text" data-target="457">457</span>+</div>
+              <div className="text-3xl font-bold mb-2"><span className="counter gradient-text">---</span>+</div>
               <div className="text-slate-400">Afiliados ativos</div>
             </div>
             <div className="glass-effect card-hover rounded-xl p-6">
-              <div className="text-3xl font-bold mb-2"><span className="counter gradient-text" data-target="89">89</span>%</div>
-              <div className="text-slate-400">Aumento médio de faturamento</div>
+              <div className="text-3xl font-bold mb-2"><span className="counter gradient-text">--</span>%</div>
+              <div className="text-slate-400">Taxa de satisfação</div>
             </div>
           </div>
           

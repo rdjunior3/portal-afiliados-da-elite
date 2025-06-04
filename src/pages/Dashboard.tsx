@@ -24,6 +24,33 @@ import { EliteCard, EliteGrid, EliteText, EliteButton, EliteBadge } from '@/lib/
 import { cn } from '@/lib/utils';
 import EliteTipsEditor from '@/components/EliteTipsEditor';
 
+// Componente de ícone troféu pequeno
+const TrophyIcon = ({ className = "w-4 h-4", color = "currentColor" }) => (
+  <svg className={className} fill={color} viewBox="0 0 24 24">
+    {/* Base/Pedestal */}
+    <rect x="7" y="19" width="10" height="2.5" rx="0.5" fill="rgba(0,0,0,0.3)"/>
+    <rect x="8" y="18.5" width="8" height="1" fill="rgba(0,0,0,0.2)"/>
+    
+    {/* Haste */}
+    <rect x="10.5" y="16" width="3" height="3" fill={color}/>
+    
+    {/* Copa Principal */}
+    <path d="M6 4C6 3.45 6.45 3 7 3H17C17.55 3 18 3.45 18 4V9C18 12.31 15.31 15 12 15C8.69 15 6 12.31 6 9V4Z" fill={color}/>
+    
+    {/* Alças Laterais */}
+    <ellipse cx="5" cy="7.5" rx="1.5" ry="2" fill={color}/>
+    <ellipse cx="19" cy="7.5" rx="1.5" ry="2" fill={color}/>
+    <ellipse cx="5" cy="7.5" rx="0.8" ry="1.3" fill="rgba(255,255,255,0.2)"/>
+    <ellipse cx="19" cy="7.5" rx="0.8" ry="1.3" fill="rgba(255,255,255,0.2)"/>
+    
+    {/* Número 1 Central */}
+    <text x="12" y="11" fontFamily="Arial, sans-serif" fontSize="6" fontWeight="bold" textAnchor="middle" fill="rgba(255,255,255,0.95)">1</text>
+    
+    {/* Estrela decorativa central */}
+    <polygon points="12,6 12.1,6.4 12.5,6.4 12.2,6.7 12.3,7.1 12,6.9 11.7,7.1 11.8,6.7 11.5,6.4 11.9,6.4" fill="rgba(255,255,255,0.9)" />
+  </svg>
+);
+
 type Product = Tables<'products'> & {
   categories?: {
     id: string;
@@ -165,7 +192,7 @@ const Dashboard = () => {
             <Card className="bg-gradient-to-br from-orange-500/15 to-orange-600/10 border-orange-500/30 backdrop-blur-sm shadow-lg shadow-orange-500/10">
               <CardHeader className="pb-3 lg:pb-4">
                 <CardTitle className="text-lg lg:text-xl font-bold text-white flex items-center gap-2 lg:gap-3">
-                  <span className="text-base lg:text-lg">🏆</span>
+                  <TrophyIcon className="w-5 h-5 lg:w-6 lg:h-6" color="#f97316" />
                   Portal Afiliados da Elite
               </CardTitle>
                 <CardDescription className="text-orange-100 text-sm lg:text-base">
@@ -214,7 +241,6 @@ const Dashboard = () => {
               <CardHeader className="pb-3 lg:pb-4">
               <div className="flex items-center justify-between">
                   <CardTitle className="text-lg lg:text-xl font-bold text-white flex items-center gap-1 lg:gap-2">
-                    <span className="text-base lg:text-lg">🏆</span>
                     <span className="hidden sm:inline">Produtos Elite em Destaque</span>
                     <span className="sm:hidden">Produtos Elite</span>
                   </CardTitle>
@@ -251,7 +277,6 @@ const Dashboard = () => {
                     >
                       <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1 lg:gap-2 mb-1 lg:mb-2">
-                            <span className="text-xs lg:text-sm">🏆</span>
                             <h3 className="font-bold text-white text-sm lg:text-base truncate">{product.name}</h3>
                           </div>
                           <div className="flex items-center gap-2 lg:gap-4 text-xs lg:text-sm">
@@ -286,14 +311,13 @@ const Dashboard = () => {
             <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-lg">
               <CardHeader className="pb-3 lg:pb-4">
                 <CardTitle className="text-lg lg:text-xl font-bold text-white flex items-center gap-2">
-                  <span className="text-sm lg:text-base">🏆</span>
                   Seu Perfil Elite
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 lg:space-y-4">
                 <div className="text-center">
                   <div className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-3 lg:mb-4 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg shadow-orange-500/20">
-                    <span className="text-base lg:text-lg">🏆</span>
+                    <TrophyIcon className="w-6 h-6 lg:w-8 lg:h-8" color="#1e293b" />
                   </div>
                   <h3 className="text-white font-bold text-base lg:text-lg">{getDisplayName()}</h3>
                   <p className="text-orange-300 font-medium text-sm lg:text-base">Afiliado Elite</p>
