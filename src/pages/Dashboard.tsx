@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProducts } from '@/hooks/useProducts';
+import { useEliteTips } from '@/hooks/useEliteTips';
 import { LoadingScreen } from '@/components/ui/loading';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -21,6 +22,7 @@ import { Tables } from '@/integrations/supabase/types';
 import { useNavigate } from 'react-router-dom';
 import { EliteCard, EliteGrid, EliteText, EliteButton, EliteBadge } from '@/lib/elite-styles';
 import { cn } from '@/lib/utils';
+import EliteTipsEditor from '@/components/EliteTipsEditor';
 
 type Product = Tables<'products'> & {
   categories?: {
@@ -31,8 +33,9 @@ type Product = Tables<'products'> & {
 };
 
 const Dashboard = () => {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, isAdmin } = useAuth();
   const { featuredProducts, isLoadingProducts } = useProducts();
+  const { tips, loading: tipsLoading } = useEliteTips();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [createLinkModal, setCreateLinkModal] = useState<{
@@ -316,32 +319,37 @@ const Dashboard = () => {
           {/* Tips Card */}
             <Card className="bg-gradient-to-br from-orange-500/15 to-orange-600/10 border-orange-500/30 backdrop-blur-sm shadow-lg shadow-orange-500/10">
               <CardHeader className="pb-4">
-                <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
-                  <span className="text-base">💡</span>
-                Dicas Elite
-              </CardTitle>
-            </CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
+                    <span className="text-base">💡</span>
+                    Dicas Elite
+                  </CardTitle>
+                  {isAdmin() && <EliteTipsEditor />}
+                </div>
+              </CardHeader>
               <CardContent className="space-y-4 text-sm">
-                <div className="flex items-start gap-3 p-3 bg-slate-800/30 border border-slate-700/30 rounded-lg backdrop-blur-sm">
-                  <span className="text-base">🏆</span>
-                  <span className="text-slate-200 leading-relaxed">
-                    Complete seu perfil para desbloquear recursos premium exclusivos
-                  </span>
-              </div>
-                <div className="flex items-start gap-3 p-3 bg-slate-800/30 border border-slate-700/30 rounded-lg backdrop-blur-sm">
-                  <span className="text-base">💰</span>
-                  <span className="text-slate-200 leading-relaxed">
-                    Explore nossos produtos com as maiores comissões do mercado
-                  </span>
-              </div>
-                <div className="flex items-start gap-3 p-3 bg-slate-800/30 border border-slate-700/30 rounded-lg backdrop-blur-sm">
-                  <span className="text-base">📚</span>
-                  <span className="text-slate-200 leading-relaxed">
-                    Participe das aulas de capacitação para aumentar suas vendas
-                  </span>
-              </div>
-            </CardContent>
-          </Card>
+                {tipsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-400"></div>
+                  </div>
+                ) : tips.length > 0 ? (
+                  tips.map((tip) => (
+                    <div key={tip.id} className="flex items-start gap-3 p-3 bg-slate-800/30 border border-slate-700/30 rounded-lg backdrop-blur-sm">
+                      <span className="text-base">{tip.icon}</span>
+                      <div>
+                        <h4 className="text-slate-200 font-medium mb-1">{tip.title}</h4>
+                        <p className="text-slate-200 leading-relaxed">{tip.content}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-slate-400">
+                    <span className="text-2xl">💡</span>
+                    <p className="mt-2">Nenhuma dica disponível no momento</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

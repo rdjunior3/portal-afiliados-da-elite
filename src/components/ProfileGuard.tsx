@@ -56,7 +56,7 @@ const ProfileGuard: React.FC<ProfileGuardProps> = ({ children }) => {
             </div>
             
             <h2 className="text-2xl font-bold text-white mb-4">Acesso Limitado</h2>
-            <p className="text-slate-300 mb-6">
+            <p className="text-white mb-6">
               Complete seu perfil para acessar este recurso premium da Elite.
             </p>
             
@@ -70,7 +70,7 @@ const ProfileGuard: React.FC<ProfileGuardProps> = ({ children }) => {
               
               <button
                 onClick={() => window.location.href = '/dashboard'}
-                className="w-full bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 hover:text-white font-medium py-3 px-6 rounded-xl border border-slate-600 hover:border-slate-500 transition-all duration-300"
+                className="w-full bg-slate-700/50 hover:bg-slate-600/50 text-white hover:text-white font-medium py-3 px-6 rounded-xl border border-slate-600 hover:border-slate-500 transition-all duration-300"
               >
                 Voltar ao Dashboard
               </button>

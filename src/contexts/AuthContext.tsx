@@ -122,7 +122,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Set timeout to prevent infinite loading
     const loadingTimeout = setTimeout(() => {
       console.warn('Auth initialization timeout - setting loading to false');
-      setLoading(false);
+      // Se não conseguiu carregar auth em 5 segundos, força usuário para login
+      if (!session && !user) {
+        console.log('Timeout sem sessão válida - redirecionando para login');
+        setLoading(false);
+      }
     }, 5000); // 5 seconds timeout
 
     // Set up auth state listener
@@ -131,14 +135,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('Auth state change:', event, session?.user?.email);
         
         clearTimeout(loadingTimeout);
+        
+        // Log detalhado para debug
+        if (event === 'SIGNED_OUT' || !session) {
+          console.log('Usuário deslogado ou sem sessão válida');
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+        
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('Token refresh - verificando validade');
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          console.log('Usuário autenticado, buscando perfil...');
           // Fetch or create profile
           let userProfile = await fetchProfile(session.user.id);
           
-          if (!userProfile && event === 'SIGNED_IN') {
+          if (!userProfile && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+            console.log('Criando perfil para novo usuário...');
             // Create profile for new users
             userProfile = await createProfile(
               session.user, 
@@ -147,6 +168,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
           
           setProfile(userProfile);
+          console.log('Perfil carregado:', userProfile?.email);
         } else {
           setProfile(null);
         }
@@ -155,13 +177,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Get initial session with timeout handling
+    // Get initial session with better error handling
     const initializeAuth = async () => {
       try {
+        console.log('Inicializando autenticação...');
+        
         const { data: { session }, error } = await Promise.race([
           supabase.auth.getSession(),
           new Promise<{ data: { session: Session | null }, error: any }>((_, reject) => 
-            setTimeout(() => reject(new Error('Session check timeout')), 3000)
+            setTimeout(() => reject(new Error('Session check timeout')), 4000)
           )
         ]);
 
@@ -171,18 +195,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
 
+        if (!session) {
+          console.log('Nenhuma sessão ativa encontrada');
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+
+        console.log('Sessão ativa encontrada:', session.user.email);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
           const userProfile = await fetchProfile(session.user.id);
           setProfile(userProfile);
+          console.log('Perfil inicial carregado:', userProfile?.email);
         }
         
         clearTimeout(loadingTimeout);
         setLoading(false);
       } catch (error) {
         console.error('Auth initialization error:', error);
+        // Em caso de erro, limpar tudo e direcionar para login
+        setSession(null);
+        setUser(null);
+        setProfile(null);
         clearTimeout(loadingTimeout);
         setLoading(false);
       }
