@@ -16,18 +16,30 @@ CREATE TABLE IF NOT EXISTS elite_tips (
     updated_by UUID REFERENCES profiles(id)
 );
 
--- Índices para performance
-CREATE INDEX idx_elite_tips_active ON elite_tips(is_active);
-CREATE INDEX idx_elite_tips_order ON elite_tips(order_index);
+-- Índices para performance (usar IF NOT EXISTS para evitar conflitos)
+CREATE INDEX IF NOT EXISTS idx_elite_tips_active ON elite_tips(is_active);
+CREATE INDEX IF NOT EXISTS idx_elite_tips_order ON elite_tips(order_index);
 
--- Trigger para atualizar updated_at
-CREATE TRIGGER update_elite_tips_updated_at
-    BEFORE UPDATE ON elite_tips
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+-- Trigger para atualizar updated_at (verificar se já existe)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger 
+        WHERE tgname = 'update_elite_tips_updated_at'
+    ) THEN
+        CREATE TRIGGER update_elite_tips_updated_at
+            BEFORE UPDATE ON elite_tips
+            FOR EACH ROW
+            EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+END $$;
 
 -- RLS Policies
 ALTER TABLE elite_tips ENABLE ROW LEVEL SECURITY;
+
+-- Remover políticas existentes se existirem
+DROP POLICY IF EXISTS "Usuários autenticados podem ver dicas ativas" ON elite_tips;
+DROP POLICY IF EXISTS "Admin tem acesso total a dicas" ON elite_tips;
 
 -- Política para visualização (todos usuários autenticados podem ver dicas ativas)
 CREATE POLICY "Usuários autenticados podem ver dicas ativas" ON elite_tips
@@ -48,27 +60,15 @@ CREATE POLICY "Admin tem acesso total a dicas" ON elite_tips
         )
     );
 
--- Inserir dicas padrão
-INSERT INTO elite_tips (title, content, icon, order_index, is_active) VALUES
-(
-    'Complete seu perfil', 
-    'Complete seu perfil para desbloquear recursos premium exclusivos', 
-    '🏆', 
-    1, 
-    true
-),
-(
-    'Explore produtos premium', 
-    'Explore nossos produtos com as maiores comissões do mercado', 
-    '💰', 
-    2, 
-    true
-),
-(
-    'Participe das capacitações', 
-    'Participe das aulas de capacitação para aumentar suas vendas', 
-    '📚', 
-    3, 
-    true
-)
-ON CONFLICT DO NOTHING; 
+-- Inserir dicas padrão (apenas se a tabela estiver vazia)
+INSERT INTO elite_tips (title, content, icon, order_index, is_active) 
+SELECT 'Complete seu perfil', 'Complete seu perfil para desbloquear recursos premium exclusivos', '🏆', 1, true
+WHERE NOT EXISTS (SELECT 1 FROM elite_tips WHERE title = 'Complete seu perfil');
+
+INSERT INTO elite_tips (title, content, icon, order_index, is_active) 
+SELECT 'Explore produtos premium', 'Explore nossos produtos com as maiores comissões do mercado', '💰', 2, true
+WHERE NOT EXISTS (SELECT 1 FROM elite_tips WHERE title = 'Explore produtos premium');
+
+INSERT INTO elite_tips (title, content, icon, order_index, is_active) 
+SELECT 'Participe das capacitações', 'Participe das aulas de capacitação para aumentar suas vendas', '📚', 3, true
+WHERE NOT EXISTS (SELECT 1 FROM elite_tips WHERE title = 'Participe das capacitações'); 
