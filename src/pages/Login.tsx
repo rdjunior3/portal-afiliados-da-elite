@@ -101,9 +101,15 @@ const Login = () => {
           description: 'Bem-vindo de volta à sua área de membros.'
         });
         
-        // Redirecionar para a página de origem ou dashboard
-        console.log('Login: Redirecionando para:', from);
-        navigate(from, { replace: true });
+        // Sempre redirecionar para dashboard - forçar redirecionamento
+        console.log('Login: Redirecionando para dashboard');
+        setTimeout(() => {
+          navigate('/dashboard', { replace: true });
+          // Backup para garantir redirecionamento
+          if (window.location.pathname !== '/dashboard') {
+            window.location.href = '/dashboard';
+          }
+        }, 100);
       }
     } catch (error) {
       toast({

@@ -82,11 +82,10 @@ const DashboardLayout: React.FC = () => {
 
   // Admin navigation items
   const adminNavigation = [
-    { name: 'Gerenciar Afiliados', href: '/dashboard/admin/affiliates', icon: Users },
-    { name: 'Gerenciar Produtos', href: '/dashboard/admin/products', icon: Package },
-    { name: 'Gerenciar Conteúdo', href: '/dashboard/admin/content', icon: BookOpen },
-    { name: 'Gerenciar Comissões', href: '/dashboard/admin/commissions', icon: DollarSign },
-    { name: 'Gerenciar Pagamentos', href: '/dashboard/admin/payments', icon: CreditCard },
+    { name: 'Gerenciar Afiliados', href: '/dashboard/admin/affiliates', icon: Users, disabled: true },
+    { name: 'Gerenciar Produtos', href: '/dashboard/admin/products', icon: Package, disabled: true },
+    { name: 'Gerenciar Conteúdo', href: '/dashboard/admin/content', icon: BookOpen, disabled: true },
+    { name: 'Integrações', href: '/dashboard/admin/integrations', icon: Settings, disabled: true },
   ];
 
   const handleSignOut = async () => {
@@ -315,29 +314,32 @@ const DashboardLayout: React.FC = () => {
                   const isActive = isActivePath(item.href);
                   
                   return (
-                    <button
-                      key={item.name}
-                      onClick={() => {
-                        navigate(item.href);
-                        setSidebarOpen(false);
-                      }}
-                      className={cn(
-                        "w-full flex items-center rounded-xl transition-all duration-200 group relative overflow-hidden",
-                        sidebarCollapsed ? "justify-center p-3" : "gap-4 px-4 py-3",
-                        isActive
-                          ? "bg-gradient-to-r from-purple-500/30 to-purple-600/20 text-purple-200 shadow-lg border border-purple-400/20"
-                          : "text-slate-300 hover:bg-gradient-to-r hover:from-slate-700/40 hover:to-slate-600/30 hover:text-white"
+                    <div key={item.name}>
+                      {sidebarCollapsed ? (
+                        <div
+                          className={cn(
+                            "flex items-center justify-center p-3 rounded-lg transition-all duration-200 mb-2 cursor-not-allowed opacity-50",
+                            "bg-slate-700/30 text-slate-500"
+                          )}
+                          title={`${item.name} (Em breve)`}
+                        >
+                          <item.icon className="h-5 w-5" />
+                        </div>
+                      ) : (
+                        <div
+                          className={cn(
+                            "flex items-center gap-3 p-3 rounded-lg transition-all duration-200 mb-2 cursor-not-allowed opacity-50",
+                            "bg-slate-700/30 text-slate-500 hover:bg-slate-700/40"
+                          )}
+                        >
+                          <item.icon className="h-5 w-5" />
+                          <span className="font-medium">{item.name}</span>
+                          <Badge variant="outline" className="ml-auto text-xs bg-slate-600/50 text-slate-400 border-slate-600">
+                            Em breve
+                          </Badge>
+                        </div>
                       )}
-                      title={sidebarCollapsed ? item.name : undefined}
-                    >
-                      <item.icon className={cn(
-                        "h-5 w-5 flex-shrink-0 transition-colors duration-200",
-                        isActive ? "text-purple-300" : "text-slate-400 group-hover:text-slate-200"
-                      )} />
-                      {!sidebarCollapsed && (
-                        <span className="flex-1 text-left text-sm font-medium">{item.name}</span>
-                      )}
-                    </button>
+                    </div>
                   );
                 })}
               </div>
@@ -454,32 +456,32 @@ const DashboardLayout: React.FC = () => {
                   </div>
                     <div className="max-h-80 overflow-y-auto">
                       <div className="p-4 border-b border-slate-600/30 hover:bg-slate-700/30 cursor-pointer transition-colors duration-200">
-                      <div className="flex items-start gap-3">
+                        <div className="flex items-start gap-3">
                           <div className="w-3 h-3 bg-orange-500 rounded-full mt-2 animate-pulse"></div>
-                        <div className="flex-1">
+                          <div className="flex-1">
                             <p className="text-sm text-white font-medium">Nova comissão disponível</p>
-                            <p className="text-xs text-orange-200 mt-1">Você ganhou R$ 25,00 em comissões</p>
-                            <p className="text-xs text-slate-400 mt-1">há 2 horas</p>
+                            <p className="text-xs text-white mt-1">Você ganhou R$ 25,00 em comissões</p>
+                            <p className="text-xs text-slate-300 mt-1">há 2 horas</p>
                           </div>
                         </div>
                       </div>
                       <div className="p-4 border-b border-slate-600/30 hover:bg-slate-700/30 cursor-pointer transition-colors duration-200">
-                      <div className="flex items-start gap-3">
+                        <div className="flex items-start gap-3">
                           <div className="w-3 h-3 bg-blue-500 rounded-full mt-2"></div>
-                        <div className="flex-1">
+                          <div className="flex-1">
                             <p className="text-sm text-white font-medium">📚 Novo produto disponível</p>
-                            <p className="text-xs text-slate-300 mt-1">Confira o novo curso lançado</p>
-                            <p className="text-xs text-slate-400 mt-1">há 5 horas</p>
+                            <p className="text-xs text-white mt-1">Confira o novo curso lançado</p>
+                            <p className="text-xs text-slate-300 mt-1">há 5 horas</p>
                           </div>
                         </div>
                       </div>
                       <div className="p-4 hover:bg-slate-700/30 cursor-pointer transition-colors duration-200">
-                      <div className="flex items-start gap-3">
+                        <div className="flex items-start gap-3">
                           <div className="w-3 h-3 bg-green-500 rounded-full mt-2"></div>
-                        <div className="flex-1">
+                          <div className="flex-1">
                             <p className="text-sm text-white font-medium">🎯 Meta mensal atingida</p>
-                            <p className="text-xs text-slate-300 mt-1">Parabéns! Você bateu sua meta</p>
-                            <p className="text-xs text-slate-400 mt-1">ontem</p>
+                            <p className="text-xs text-white mt-1">Parabéns! Você bateu sua meta</p>
+                            <p className="text-xs text-slate-300 mt-1">ontem</p>
                           </div>
                         </div>
                       </div>
