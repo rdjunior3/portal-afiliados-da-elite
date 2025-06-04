@@ -306,92 +306,105 @@ const Index = () => {
               </div>
             </div>
             
-            {/* Right Side - Laptop Mockup Alinhado */}
-            <div className="lg:flex justify-center hidden slide-in-right">
+            {/* Right Side - Laptop Mockup Responsivo */}
+            <div className="flex justify-center slide-in-right">
               <div className="relative">
-                {/* Laptop Frame */}
+                {/* Laptop Frame - Adaptativo */}
                 <div className="relative laptop-mockup">
                   {/* Screen */}
                   <div className="bg-slate-800 rounded-t-xl p-1 border-2 border-slate-700 shadow-2xl">
-                    <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 rounded-lg overflow-hidden h-96 w-[520px] relative">
+                    <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 rounded-lg overflow-hidden h-48 w-80 sm:h-64 sm:w-96 lg:h-96 lg:w-[520px] relative">
                       {/* Browser Chrome */}
-                      <div className="flex items-center gap-2 px-4 py-3 bg-slate-800/50 border-b border-slate-700/50">
-                        <div className="flex gap-2">
-                          <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                          <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                          <div className="w-3 h-3 rounded-full bg-orange-400"></div>
+                      <div className="flex items-center gap-2 px-3 lg:px-4 py-2 lg:py-3 bg-slate-800/50 border-b border-slate-700/50">
+                        <div className="flex gap-1 lg:gap-2">
+                          <div className="w-2 h-2 lg:w-3 lg:h-3 rounded-full bg-red-400"></div>
+                          <div className="w-2 h-2 lg:w-3 lg:h-3 rounded-full bg-yellow-400"></div>
+                          <div className="w-2 h-2 lg:w-3 lg:h-3 rounded-full bg-orange-400"></div>
                         </div>
-                        <div className="flex-1 bg-slate-700/50 rounded px-3 py-1 mx-4">
+                        <div className="flex-1 bg-slate-700/50 rounded px-2 lg:px-3 py-0.5 lg:py-1 mx-2 lg:mx-4">
                           <span className="text-xs text-slate-400">app.afiliadoselite.com/dashboard</span>
                         </div>
                       </div>
                       
-                      {/* Dashboard Preview Organizado */}
-                      <div className="p-5 space-y-4 overflow-hidden">
+                      {/* Dashboard Preview Responsivo */}
+                      <div className="p-3 lg:p-5 space-y-2 lg:space-y-4 overflow-hidden">
                         {/* Header */}
                         <div className="flex items-center justify-between">
                           <div>
-                            <h3 className="text-white font-bold text-base flex items-center gap-2">
-                              <TrophyIcon className="w-4 h-4" color="#f97316" />
-                              Olá, Afiliado Elite!
+                            <h3 className="text-white font-bold text-xs lg:text-base flex items-center gap-1 lg:gap-2">
+                              <TrophyIcon className="w-3 h-3 lg:w-4 lg:h-4" color="#f97316" />
+                              <span className="hidden sm:inline">Olá, Afiliado Elite!</span>
+                              <span className="sm:hidden">Elite Dashboard</span>
                             </h3>
-                            <p className="text-orange-400 text-sm">Bem-vindo ao seu dashboard premium</p>
+                            <p className="text-orange-400 text-xs lg:text-sm hidden sm:block">Bem-vindo ao seu dashboard premium</p>
                           </div>
-                          <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                            <TrophyIcon className="w-5 h-5" color="#1e293b" />
+                          <div className="w-6 h-6 lg:w-10 lg:h-10 bg-gradient-to-br from-orange-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                            <TrophyIcon className="w-3 h-3 lg:w-5 lg:h-5" color="#1e293b" />
                           </div>
                         </div>
                         
-                        {/* Stats Grid Compacto */}
-                        <div className="grid grid-cols-3 gap-2.5">
-                          <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-lg p-2.5 border border-orange-500/30">
-                            <div className="text-orange-300 text-lg font-bold">R$ 2.847</div>
-                            <div className="text-orange-400 text-xs font-medium">Comissões</div>
+                        {/* Stats Grid Responsivo */}
+                        <div className="grid grid-cols-3 gap-1.5 lg:gap-2.5">
+                          <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-lg p-1.5 lg:p-2.5 border border-orange-500/30">
+                            <div className="text-orange-300 text-sm lg:text-lg font-bold">R$ 2.8k</div>
+                            <div className="text-orange-400 text-xs font-medium hidden lg:block">Comissões</div>
+                            <div className="text-orange-400 text-xs font-medium lg:hidden">Com.</div>
                           </div>
-                          <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg p-2.5 border border-blue-500/30">
-                            <div className="text-blue-300 text-lg font-bold">1.234</div>
-                            <div className="text-blue-400 text-xs font-medium">Cliques</div>
+                          <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg p-1.5 lg:p-2.5 border border-blue-500/30">
+                            <div className="text-blue-300 text-sm lg:text-lg font-bold">1.2k</div>
+                            <div className="text-blue-400 text-xs font-medium hidden lg:block">Cliques</div>
+                            <div className="text-blue-400 text-xs font-medium lg:hidden">Clicks</div>
                           </div>
-                          <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-lg p-2.5 border border-green-500/30">
-                            <div className="text-green-300 text-lg font-bold">89%</div>
+                          <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-lg p-1.5 lg:p-2.5 border border-green-500/30">
+                            <div className="text-green-300 text-sm lg:text-lg font-bold">89%</div>
                             <div className="text-green-400 text-xs font-medium">Conv.</div>
                           </div>
                         </div>
                         
                         {/* Content Sections Compactas */}
-                        <div className="space-y-2.5">
-                          <div className="bg-gradient-to-r from-orange-500/10 to-orange-600/5 rounded-lg p-2.5 border border-orange-500/20">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-7 h-7 bg-orange-400 rounded flex items-center justify-center">
-                                <TrophyIcon className="w-4 h-4" color="#1e293b" />
+                        <div className="space-y-1.5 lg:space-y-2.5">
+                          <div className="bg-gradient-to-r from-orange-500/10 to-orange-600/5 rounded-lg p-1.5 lg:p-2.5 border border-orange-500/20">
+                            <div className="flex items-center gap-1.5 lg:gap-2.5">
+                              <div className="w-5 h-5 lg:w-7 lg:h-7 bg-orange-400 rounded flex items-center justify-center">
+                                <TrophyIcon className="w-3 h-3 lg:w-4 lg:h-4" color="#1e293b" />
                               </div>
                               <div>
-                                <div className="text-white text-sm font-medium">Videoaulas Elite</div>
-                                <div className="text-orange-400 text-xs">12 novos conteúdos premium</div>
+                                <div className="text-white text-xs lg:text-sm font-medium">
+                                  <span className="hidden sm:inline">Videoaulas Elite</span>
+                                  <span className="sm:hidden">Aulas Elite</span>
+                                </div>
+                                <div className="text-orange-400 text-xs">
+                                  <span className="hidden lg:inline">12 novos conteúdos premium</span>
+                                  <span className="lg:hidden">12 novos</span>
+                                </div>
                               </div>
                             </div>
                           </div>
                           
-                          <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/5 rounded-lg p-2.5 border border-blue-500/20">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-7 h-7 bg-blue-400 rounded flex items-center justify-center">
+                          <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/5 rounded-lg p-1.5 lg:p-2.5 border border-blue-500/20">
+                            <div className="flex items-center gap-1.5 lg:gap-2.5">
+                              <div className="w-5 h-5 lg:w-7 lg:h-7 bg-blue-400 rounded flex items-center justify-center">
                                 <span className="text-slate-900 font-bold text-xs">💬</span>
                               </div>
                               <div>
-                                <div className="text-white text-sm font-medium">Chat Elite</div>
-                                <div className="text-blue-400 text-xs">5 mensagens premium</div>
+                                <div className="text-white text-xs lg:text-sm font-medium">Chat Elite</div>
+                                <div className="text-blue-400 text-xs">
+                                  <span className="hidden lg:inline">5 mensagens premium</span>
+                                  <span className="lg:hidden">5 novas</span>
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
                         
                         {/* Performance Chart Compacto */}
-                        <div className="bg-gradient-to-r from-purple-500/10 to-purple-600/5 rounded-lg p-2.5 border border-purple-500/20">
-                          <div className="text-white text-sm font-medium mb-2 flex items-center gap-2">
-                            <TrophyIcon className="w-3 h-3" color="#f97316" />
-                            Performance Elite (7 dias)
+                        <div className="bg-gradient-to-r from-purple-500/10 to-purple-600/5 rounded-lg p-1.5 lg:p-2.5 border border-purple-500/20">
+                          <div className="text-white text-xs lg:text-sm font-medium mb-1 lg:mb-2 flex items-center gap-1 lg:gap-2">
+                            <TrophyIcon className="w-2 h-2 lg:w-3 lg:h-3" color="#f97316" />
+                            <span className="hidden sm:inline">Performance Elite (7 dias)</span>
+                            <span className="sm:hidden">Performance</span>
                           </div>
-                          <div className="h-12 relative">
+                          <div className="h-8 lg:h-12 relative">
                             <svg className="w-full h-full" viewBox="0 0 200 30">
                               <defs>
                                 <linearGradient id="chartGradientMockup" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -419,30 +432,35 @@ const Index = () => {
                   </div>
                   
                   {/* Laptop Base */}
-                  <div className="h-4 bg-gradient-to-b from-slate-700 to-slate-800 rounded-b-xl border-2 border-t-0 border-slate-700 relative">
-                    <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-slate-600 rounded-full"></div>
+                  <div className="h-3 lg:h-4 bg-gradient-to-b from-slate-700 to-slate-800 rounded-b-xl border-2 border-t-0 border-slate-700 relative">
+                    <div className="absolute top-0.5 lg:top-1 left-1/2 transform -translate-x-1/2 w-12 lg:w-16 h-0.5 lg:h-1 bg-slate-600 rounded-full"></div>
                   </div>
                 </div>
                 
-                {/* Floating Elements Simplificados */}
-                <div className="absolute -bottom-4 -left-4 bg-gradient-to-r from-blue-400 to-blue-500 text-slate-900 px-4 py-2 rounded-full text-xs font-bold float-animation shadow-xl border-2 border-blue-300/50 transform -rotate-2">
+                {/* Floating Elements Adaptativos */}
+                <div className="absolute -bottom-2 lg:-bottom-4 -left-2 lg:-left-4 bg-gradient-to-r from-blue-400 to-blue-500 text-slate-900 px-2 lg:px-4 py-1 lg:py-2 rounded-full text-xs font-bold float-animation shadow-xl border-2 border-blue-300/50 transform -rotate-2">
                   <div className="flex items-center gap-1">
-                    <span className="text-sm">💬</span>
-                    <span>CHAT ATIVO</span>
+                    <span className="text-xs lg:text-sm">💬</span>
+                    <span className="hidden sm:inline">CHAT ATIVO</span>
+                    <span className="sm:hidden">CHAT</span>
                   </div>
                 </div>
                 
-                <div className="absolute -top-4 -right-4 bg-gradient-to-r from-green-400 to-green-500 text-slate-900 px-4 py-2 rounded-full text-xs font-bold animate-pulse shadow-xl border-2 border-green-300/50 transform rotate-3">
+                <div className="absolute -top-2 lg:-top-4 -right-2 lg:-right-4 bg-gradient-to-r from-green-400 to-green-500 text-slate-900 px-2 lg:px-4 py-1 lg:py-2 rounded-full text-xs font-bold animate-pulse shadow-xl border-2 border-green-300/50 transform rotate-3">
                   <div className="flex items-center gap-1">
-                    <span className="text-sm">🎯</span>
-                    <span>ESTRATÉGIAS EXCLUSIVAS</span>
+                    <span className="text-xs lg:text-sm">🎯</span>
+                    <span className="hidden lg:inline">ESTRATÉGIAS EXCLUSIVAS</span>
+                    <span className="lg:hidden hidden sm:inline">ESTRATÉGIAS</span>
+                    <span className="sm:hidden">TIPS</span>
                   </div>
                 </div>
                 
-                <div className="absolute top-1/2 -right-6 bg-gradient-to-r from-orange-400 to-orange-500 text-slate-900 px-4 py-2 rounded-full text-xs font-bold float-delay-2 shadow-xl border-2 border-orange-300/50 transform rotate-12 animate-bounce">
+                <div className="absolute top-1/2 -right-3 lg:-right-6 bg-gradient-to-r from-orange-400 to-orange-500 text-slate-900 px-2 lg:px-4 py-1 lg:py-2 rounded-full text-xs font-bold float-delay-2 shadow-xl border-2 border-orange-300/50 transform rotate-12 animate-bounce">
                   <div className="flex items-center gap-1">
-                    <TrophyIcon className="w-3 h-3" color="#1e293b" />
-                    <span>PORTAL PREMIUM</span>
+                    <TrophyIcon className="w-2 h-2 lg:w-3 lg:h-3" color="#1e293b" />
+                    <span className="hidden lg:inline">PORTAL PREMIUM</span>
+                    <span className="lg:hidden hidden sm:inline">PREMIUM</span>
+                    <span className="sm:hidden">🏆</span>
                   </div>
                 </div>
               </div>

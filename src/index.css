@@ -516,15 +516,60 @@ body {
   transform: scale(1.1);
 }
 
-/* Laptop Mockup Enhanced */
+/* Laptop Mockup Enhanced - Responsivo */
 .laptop-mockup {
   position: relative;
   transition: transform 0.3s ease;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 .laptop-mockup:hover {
-  transform: translateY(-8px) scale(1.02);
-  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
+  transform: translateY(-4px) scale(1.01);
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .laptop-mockup {
+    max-width: 320px;
+  }
+  
+  .laptop-mockup:hover {
+    transform: translateY(-2px) scale(1.005);
+    filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.2));
+  }
+  
+  .card-hover:hover {
+    transform: none;
+  }
+  
+  .btn-primary:hover {
+    transform: none;
+  }
+  
+  .scale-hover:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .laptop-mockup {
+    max-width: 280px;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1024px) {
+  .laptop-mockup {
+    max-width: 400px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .laptop-mockup:hover {
+    transform: translateY(-8px) scale(1.02);
+    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
+  }
 }
 
 /* Free Badge Animation */
@@ -569,31 +614,6 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgb(234 88 12);
-}
-
-@media (max-width: 768px) {
-  .card-hover:hover {
-    transform: none;
-  }
-  
-  .btn-primary:hover {
-    transform: none;
-  }
-  
-  .scale-hover:hover {
-    transform: none;
-  }
-  
-  .laptop-mockup {
-    transform: none !important;
-  }
-}
-
-@media (max-width: 1024px) {
-  .laptop-mockup {
-    max-width: 400px;
-    margin: 0 auto;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
