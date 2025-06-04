@@ -6,8 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInitialSetup } from '@/hooks/useInitialSetup';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { EliteLogo } from '@/components/ui/elite-logo';
+import ThemeToggle from '@/components/ThemeToggle';
+import EliteLogo from '@/components/ui/EliteLogo';
 
 import {
   Home,
