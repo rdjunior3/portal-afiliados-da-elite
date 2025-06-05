@@ -134,13 +134,25 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
   const checkBucketExists = async (bucketName: string): Promise<boolean> => {
     try {
-      console.log('🪣 [checkBucketExists] Verificando bucket:', bucketName);
-      const { data, error } = await supabase.storage.getBucket(bucketName);
+      console.log('🪣 [checkBucketExists] Verificação rápida de bucket:', bucketName);
+      
+      // Timeout reduzido para 3 segundos
+      const checkPromise = supabase.storage.getBucket(bucketName);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Bucket check timeout')), 3000)
+      );
+      
+      const { data, error } = await Promise.race([
+        checkPromise,
+        timeoutPromise
+      ]) as any;
+      
       if (error) {
-        console.warn(`❌ [checkBucketExists] Bucket ${bucketName} não encontrado:`, error);
+        console.warn(`⚠️ [checkBucketExists] Bucket ${bucketName} não encontrado:`, error);
         return false;
       }
-      console.log('✅ [checkBucketExists] Bucket existe:', data.id);
+      
+      console.log(`✅ [checkBucketExists] Bucket ${bucketName} existe:`, data.id);
       return !!data;
     } catch (error) {
       console.warn(`💥 [checkBucketExists] Erro ao verificar bucket ${bucketName}:`, error);
@@ -213,22 +225,16 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         return null;
       }
 
-      // Verificar se bucket existe, senão tentar criar
-      console.log('🪣 [uploadImage] Verificando bucket...');
-      const bucketExists = await checkBucketExists(options.bucket);
-      if (!bucketExists) {
-        console.log(`🔨 [uploadImage] Tentando criar bucket ${options.bucket}...`);
+      // Verificação rápida de bucket (skip se demorar)
+      console.log('🪣 [uploadImage] Verificação rápida de bucket...');
+      try {
+        const bucketExists = await checkBucketExists(options.bucket);
         
-        toast({
-          title: "Configurando storage...",
-          description: "Preparando o sistema de upload pela primeira vez.",
-        });
-
-        const bucketCreated = await createBucketIfNotExists(options.bucket);
-        if (!bucketCreated) {
-          // Para buckets específicos como 'products', vamos tentar upload mesmo sem criar bucket
-          console.warn(`⚠️ [uploadImage] Bucket '${options.bucket}' não pôde ser criado, tentando upload direto...`);
+        if (!bucketExists) {
+          console.warn(`⚠️ [uploadImage] Bucket ${options.bucket} não encontrado, mas continuando upload...`);
         }
+      } catch (error) {
+        console.warn(`⚠️ [uploadImage] Falha na verificação de bucket, continuando upload...`);
       }
 
       // Gerar nome único para o arquivo
@@ -240,7 +246,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
       console.log(`📤 [uploadImage] Fazendo upload para: ${options.bucket}/${filePath}`);
 
-      // Upload para o Supabase com timeout aumentado para 60 segundos
+      // Upload para o Supabase com timeout otimizado para 30 segundos
       const uploadPromise = supabase.storage
         .from(options.bucket)
         .upload(filePath, file, {
@@ -248,9 +254,9 @@ export const useImageUpload = (options: ImageUploadOptions) => {
           upsert: false
         });
 
-      // Timeout de 60 segundos para upload (aumentado)
+      // Timeout otimizado para 30 segundos
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Upload timeout - operação cancelada após 60 segundos')), 60000)
+        setTimeout(() => reject(new Error('Upload timeout - operação cancelada após 30 segundos')), 30000)
       );
 
       console.log('⏳ [uploadImage] Upload em progresso...');

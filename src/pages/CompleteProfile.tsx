@@ -125,13 +125,9 @@ const CompleteProfile: React.FC = () => {
         onboarding_completed_at: new Date().toISOString()
       };
 
-      // Adicionar timeout de 15 segundos para o updateProfile
-      const updatePromise = updateProfile(updateData);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Operação demorou muito para responder (timeout)')), 15000)
-      );
-
-      const result = await Promise.race([updatePromise, timeoutPromise]) as any;
+      // Usar apenas o timeout interno do updateProfile
+      console.log('🚀 [CompleteProfile] Chamando updateProfile...');
+      const result = await updateProfile(updateData);
 
       if (result?.error) {
         throw result.error;

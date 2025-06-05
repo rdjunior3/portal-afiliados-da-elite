@@ -119,12 +119,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Set timeout to prevent infinite loading - aumentado para 10 segundos
+    // Set timeout to prevent infinite loading - reduzido para 5 segundos
     const loadingTimeout = setTimeout(() => {
       console.warn('Auth initialization timeout - setting loading to false');
       // Não forçar logout em caso de timeout, apenas parar loading
       setLoading(false);
-    }, 10000); // Aumentado para 10 segundos
+    }, 5000); // Reduzido para 5 segundos
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -210,7 +210,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { data: { session }, error } = await Promise.race([
           supabase.auth.getSession(),
           new Promise<{ data: { session: Session | null }, error: any }>((_, reject) => 
-            setTimeout(() => reject(new Error('Session check timeout')), 8000) // Aumentado para 8 segundos
+            setTimeout(() => reject(new Error('Session check timeout')), 5000) // Otimizado para 5 segundos
           )
         ]);
 
@@ -486,73 +486,74 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error };
     }
     
-    try {
-      console.log('🔄 [updateProfile] Tentando atualizar perfil do usuário:', user.id);
-      
-      // Preparar dados para atualização
-      const updateData = {
-        ...updates,
-        updated_at: new Date().toISOString()
-      };
-      
-      console.log('📤 [updateProfile] Dados para envio:', updateData);
-      
-      // Tentar atualização com timeout de 30 segundos
-      const updatePromise = supabase
-        .from('profiles')
-        .update(updateData)
-        .eq('id', user.id)
-        .select()
-        .single();
-
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout: Operação demorou mais de 30 segundos')), 30000)
-      );
-
-      console.log('⏳ [updateProfile] Executando query no Supabase...');
-      
-      const { data, error } = await Promise.race([
-        updatePromise,
-        timeoutPromise
-      ]) as any;
-
-      console.log('📊 [updateProfile] Resposta do Supabase recebida');
-      console.log('📊 [updateProfile] Data:', data);
-      console.log('📊 [updateProfile] Error:', error);
-
-      if (error) {
-        console.error('❌ [updateProfile] Erro do Supabase:', error);
-        console.error('❌ [updateProfile] Código do erro:', error.code);
-        console.error('❌ [updateProfile] Mensagem do erro:', error.message);
-        console.error('❌ [updateProfile] Detalhes completos:', JSON.stringify(error, null, 2));
+    // Função para tentar atualização com retry
+    const attemptUpdate = async (attempt: number = 1): Promise<any> => {
+      try {
+        console.log(`🔄 [updateProfile] Tentativa ${attempt}/3 - usuário:`, user.id);
         
-        // Mensagens de erro específicas
-        let errorMessage = 'Não foi possível atualizar o perfil. Tente novamente.';
+        // Preparar dados para atualização
+        const updateData = {
+          ...updates,
+          updated_at: new Date().toISOString()
+        };
         
-        if (error.code === 'PGRST301' || error.message?.includes('permission')) {
-          errorMessage = 'Sem permissão para atualizar o perfil. Verifique suas credenciais.';
-        } else if (error.code === '23505' || error.message?.includes('duplicate')) {
-          errorMessage = 'Este nome de usuário ou email já está em uso. Tente outro.';
-        } else if (error.message?.includes('timeout')) {
-          errorMessage = 'A operação demorou muito. Verifique sua conexão.';
-        } else if (error.message?.includes('network')) {
-          errorMessage = 'Erro de conexão. Verifique sua internet.';
-        } else if (error.message?.includes('constraint')) {
-          errorMessage = 'Dados inválidos. Verifique as informações preenchidas.';
-        } else if (error.message) {
-          errorMessage = `Erro: ${error.message}`;
+        console.log('📤 [updateProfile] Dados para envio:', updateData);
+        
+        // Timeout reduzido para 15 segundos
+        const updatePromise = supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('id', user.id)
+          .select()
+          .single();
+
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout: Operação demorou mais de 15 segundos')), 15000)
+        );
+
+        console.log('⏳ [updateProfile] Executando query no Supabase...');
+        
+        const { data, error } = await Promise.race([
+          updatePromise,
+          timeoutPromise
+        ]) as any;
+
+        if (error) {
+          console.error(`❌ [updateProfile] Erro na tentativa ${attempt}:`, error);
+          
+          // Se for timeout e ainda temos tentativas, retry
+          if (error.message?.includes('Timeout') && attempt < 3) {
+            console.log(`🔄 [updateProfile] Timeout na tentativa ${attempt}, tentando novamente...`);
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Aguarda 2 segundos
+            return attemptUpdate(attempt + 1);
+          }
+          
+          throw error;
+        }
+
+        console.log('✅ [updateProfile] Sucesso na tentativa', attempt);
+        return { data, error: null };
+        
+      } catch (error: any) {
+        // Se for timeout e ainda temos tentativas, retry
+        if (error.message?.includes('Timeout') && attempt < 3) {
+          console.log(`🔄 [updateProfile] Timeout na tentativa ${attempt}, tentando novamente...`);
+          await new Promise(resolve => setTimeout(resolve, 2000)); // Aguarda 2 segundos
+          return attemptUpdate(attempt + 1);
         }
         
-        toast({
-          title: "Erro ao Atualizar Perfil",
-          description: errorMessage,
-          variant: "destructive",
-        });
-        
-        return { error };
+        throw error;
       }
-
-      if (!data) {
+    };
+    
+    try {
+      const result = await attemptUpdate();
+      
+      if (result.data) {
+        // Atualizar o estado local do perfil
+        setProfile(result.data);
+        console.log('🎉 [updateProfile] Estado local atualizado com sucesso');
+      } else {
         console.warn('⚠️ [updateProfile] Nenhum dado retornado, mas sem erro');
         
         // Tentar buscar o perfil atualizado
@@ -569,36 +570,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         console.log('✅ [updateProfile] Perfil buscado após update:', fetchedProfile);
         setProfile(fetchedProfile);
-        
-        return { error: null };
       }
-
-      // Sucesso!
-      console.log('✅ [updateProfile] Atualização bem-sucedida!');
-      console.log('📊 [updateProfile] Perfil atualizado:', data);
-
-      // Atualizar o estado local do perfil
-      setProfile(data);
-      
-      console.log('🎉 [updateProfile] Estado local atualizado com sucesso');
       
       return { error: null };
+      
     } catch (error: any) {
-      console.error('💥 [updateProfile] Erro inesperado:', error);
+      console.error('💥 [updateProfile] Erro após todas as tentativas:', error);
       console.error('💥 [updateProfile] Stack trace:', error.stack);
       
-      let errorMessage = 'Erro inesperado ao atualizar perfil.';
+      let errorMessage = 'Erro ao atualizar perfil após múltiplas tentativas.';
       
       if (error.message?.includes('Timeout')) {
-        errorMessage = 'A operação demorou muito. Verifique sua conexão e tente novamente.';
+        errorMessage = 'A operação está demorando muito. Verifique sua conexão e tente novamente em alguns minutos.';
       } else if (error.message?.includes('network')) {
         errorMessage = 'Erro de rede. Verifique sua conexão com a internet.';
+      } else if (error.code === 'PGRST301' || error.message?.includes('permission')) {
+        errorMessage = 'Sem permissão para atualizar o perfil. Faça login novamente.';
+      } else if (error.code === '23505' || error.message?.includes('duplicate')) {
+        errorMessage = 'Este nome de usuário já está em uso. Tente outro.';
+      } else if (error.message?.includes('constraint')) {
+        errorMessage = 'Dados inválidos. Verifique as informações preenchidas.';
       } else if (error.message) {
         errorMessage = error.message;
       }
       
       toast({
-        title: "Erro Inesperado",
+        title: "Erro ao Atualizar Perfil",
         description: errorMessage,
         variant: "destructive",
       });
