@@ -723,7 +723,7 @@ const Profile: React.FC = () => {
               </div>
               <p className="text-white font-semibold">Data de Cadastro</p>
               <p className="text-sm text-slate-400">
-                {user?.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : 'N/A'}
+                  {user?.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : 'N/A'}
               </p>
             </div>
 
@@ -733,16 +733,16 @@ const Profile: React.FC = () => {
               </div>
               <p className="text-white font-semibold">Perfil Completo</p>
               <p className="text-sm text-slate-400">
-                {profile?.onboarding_completed_at ? (
-                  <Badge className="bg-green-500/20 text-green-400 text-xs">Sim</Badge>
-                ) : (
-                  <Badge className="bg-yellow-500/20 text-yellow-400 text-xs">Pendente</Badge>
-                )}
+                  {profile?.onboarding_completed_at ? (
+                    <Badge className="bg-green-500/20 text-green-400 text-xs">Sim</Badge>
+                  ) : (
+                    <Badge className="bg-yellow-500/20 text-yellow-400 text-xs">Pendente</Badge>
+                  )}
               </p>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+      </div>
+          </CardContent>
+        </Card>
     </div>
   );
 };

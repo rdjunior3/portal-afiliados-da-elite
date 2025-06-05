@@ -113,6 +113,7 @@ DO $$
 DECLARE
     profiles_exists boolean;
     avatars_exists boolean;
+    rec RECORD;
 BEGIN
     SELECT EXISTS (SELECT FROM storage.buckets WHERE id = 'profiles') INTO profiles_exists;
     SELECT EXISTS (SELECT FROM storage.buckets WHERE id = 'avatars') INTO avatars_exists;
@@ -127,7 +128,7 @@ BEGIN
         SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual
         FROM pg_policies 
         WHERE schemaname = 'storage' AND tablename = 'objects'
-        AND policyname LIKE '%profiles%' OR policyname LIKE '%avatars%'
+        AND (policyname LIKE '%profiles%' OR policyname LIKE '%avatars%')
     LOOP
         RAISE NOTICE 'Policy: % - %', rec.policyname, rec.cmd;
     END LOOP;

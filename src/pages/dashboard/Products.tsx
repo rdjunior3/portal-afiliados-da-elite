@@ -21,6 +21,7 @@ import { Tables } from '@/integrations/supabase/types';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ProductOffer } from '@/types/product-offers.types';
+import TrophyIcon from '@/components/ui/TrophyIcon';
 
 type Product = Tables<'products'> & {
   categories?: {
@@ -279,7 +280,7 @@ const Products = () => {
           <PageHeader
             title="Produtos para Afiliação"
             description={canManageContent ? 'Gerencie produtos e ganhe comissões' : 'Escolha produtos para promover e ganhar comissões'}
-            icon="🏆"
+            customIcon={<TrophyIcon className="w-6 h-6" color="#f97316" />}
           />
         </div>
       }

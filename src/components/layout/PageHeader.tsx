@@ -5,6 +5,7 @@ interface PageHeaderProps {
   title: string;
   description: string;
   icon?: string;
+  customIcon?: React.ReactNode;
   actions?: React.ReactNode;
   className?: string;
 }
@@ -13,6 +14,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   title, 
   description, 
   icon, 
+  customIcon,
   actions,
   className 
 }) => {
@@ -23,9 +25,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     )}>
       <div className="flex items-center gap-4">
         {/* Icon Container - Renderização condicional */}
-        {icon && (
+        {(icon || customIcon) && (
           <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-            <span className="text-xl">{icon}</span>
+            {customIcon ? customIcon : <span className="text-xl">{icon}</span>}
           </div>
         )}
         

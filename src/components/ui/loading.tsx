@@ -2,6 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 import { Sparkles } from 'lucide-react';
 import EliteLogo from './EliteLogo';
+import TrophyIcon from './TrophyIcon';
 
 interface LoadingProps {
   message?: string;
@@ -97,7 +98,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
             {/* Logo com efeito mais sutil */}
             <div className="relative">
               <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-xl">
-                <span className="text-slate-900 text-2xl font-bold">🏆</span>
+                <TrophyIcon className="w-8 h-8" color="#1e293b" />
               </div>
               
               {/* Indicador de status online - mais discreto */}

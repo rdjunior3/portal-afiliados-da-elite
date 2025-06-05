@@ -101,12 +101,12 @@ const Courses: React.FC = () => {
           title: courseData.title,
           description: courseData.description,
           thumbnail_url: courseData.thumbnail_url,
-          is_active: true
+        is_active: true
         }])
         .select()
         .single();
 
-      if (error) throw error;
+        if (error) throw error;
       return data;
     },
     onSuccess: () => {
@@ -202,7 +202,7 @@ const Courses: React.FC = () => {
     <PageLayout
       fullWidth={true}
       headerContent={
-        <div className="max-w-7xl mx-auto">
+          <div className="max-w-7xl mx-auto">
           <PageHeader
             title="Aulas Elite"
             description="Acesse conteúdos exclusivos e treinamentos premium para afiliados"
@@ -222,36 +222,36 @@ const Courses: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
             />
-          </div>
-
+              </div>
+              
           {isAdmin() && (
             <div className="flex gap-3">
               <Dialog open={showAddCourse} onOpenChange={setShowAddCourse}>
-                <DialogTrigger asChild>
+                  <DialogTrigger asChild>
                   <Button className="bg-orange-600 hover:bg-orange-700 text-white">
-                    <Plus className="h-4 w-4 mr-2" />
+                      <Plus className="h-4 w-4 mr-2" />
                     Novo Curso
-                  </Button>
-                </DialogTrigger>
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent className="max-w-xl bg-slate-800 border-slate-700">
-                  <DialogHeader>
+                    <DialogHeader>
                     <DialogTitle className="text-white">Criar Novo Curso</DialogTitle>
-                  </DialogHeader>
+                    </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="title" className="text-slate-200">Título do Curso</Label>
-                      <Input
-                        id="title"
+                          <Label htmlFor="title" className="text-slate-200">Título do Curso</Label>
+                          <Input
+                            id="title"
                         value={newCourse.title}
                         onChange={(e) => setNewCourse({...newCourse, title: e.target.value})}
                         className="bg-slate-700 border-slate-600 text-white"
                         placeholder="Ex: Marketing Digital para Afiliados"
-                      />
-                    </div>
+                          />
+                        </div>
                     <div>
                       <Label htmlFor="description" className="text-slate-200">Descrição</Label>
-                      <Textarea
-                        id="description"
+                          <Textarea
+                            id="description"
                         value={newCourse.description}
                         onChange={(e) => setNewCourse({...newCourse, description: e.target.value})}
                         className="bg-slate-700 border-slate-600 text-white"
@@ -320,8 +320,8 @@ const Courses: React.FC = () => {
                         onChange={(e) => setNewLesson({...newLesson, title: e.target.value})}
                         className="bg-slate-700 border-slate-600 text-white"
                         placeholder="Ex: Introdução ao Tráfego Pago"
-                      />
-                    </div>
+                          />
+                        </div>
                     <div>
                       <Label htmlFor="videoUrl" className="text-slate-200">URL do Vídeo</Label>
                       <Input
@@ -362,7 +362,7 @@ const Courses: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex gap-3 pt-4">
-                      <Button 
+                      <Button
                         onClick={() => createLessonMutation.mutate(newLesson)}
                         disabled={createLessonMutation.isPending}
                         className="bg-green-600 hover:bg-green-700"
@@ -374,11 +374,11 @@ const Courses: React.FC = () => {
                       </Button>
                     </div>
                   </div>
-                </DialogContent>
-              </Dialog>
+                  </DialogContent>
+                </Dialog>
             </div>
           )}
-        </div>
+      </div>
 
         {/* Lista de Cursos */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -387,11 +387,11 @@ const Courses: React.FC = () => {
             [...Array(6)].map((_, i) => (
               <Card key={i} className="bg-slate-800/60 border-slate-700/50 animate-pulse">
                 <div className="w-full h-48 bg-slate-700 rounded-t-lg"></div>
-                <CardHeader>
+                  <CardHeader>
                   <div className="h-6 bg-slate-700 rounded w-3/4"></div>
                   <div className="h-4 bg-slate-700 rounded w-full"></div>
-                </CardHeader>
-              </Card>
+                  </CardHeader>
+                </Card>
             ))
           ) : filteredCourses.length > 0 ? (
             filteredCourses.map((course) => (
@@ -400,25 +400,25 @@ const Courses: React.FC = () => {
                   className="relative"
                   onClick={() => navigate(`/dashboard/content/${course.id}`)}
                 >
-                  {course.thumbnail_url ? (
-                    <img 
-                      src={course.thumbnail_url} 
-                      alt={course.title}
+                      {course.thumbnail_url ? (
+                        <img
+                          src={course.thumbnail_url}
+                          alt={course.title}
                       className="w-full h-48 object-cover rounded-t-lg"
-                    />
-                  ) : (
+                        />
+                      ) : (
                     <div className="w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 rounded-t-lg flex items-center justify-center">
                       <GraduationCap className="h-16 w-16 text-slate-500" />
-                    </div>
-                  )}
-                  
+                        </div>
+                      )}
+
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-t-lg flex items-center justify-center">
                     <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
                       <Play className="h-4 w-4 mr-2" />
                       Assistir
                     </Button>
-                  </div>
-                  
+                      </div>
+
                   {course.lessons && (
                     <Badge className="absolute top-3 right-3 bg-orange-500 text-white">
                       {course.lessons.length} aulas
@@ -428,13 +428,13 @@ const Courses: React.FC = () => {
                   {isAdmin() && (
                     <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                       <Button size="sm" variant="ghost" className="h-8 w-8 p-0 bg-slate-800/80 text-blue-400 hover:text-blue-300">
-                        <Edit className="h-4 w-4" />
-                      </Button>
+                            <Edit className="h-4 w-4" />
+                          </Button>
                       <Button size="sm" variant="ghost" className="h-8 w-8 p-0 bg-slate-800/80 text-red-400 hover:text-red-300">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                 </div>
                 
                 <CardHeader className="pb-3">
@@ -481,14 +481,14 @@ const Courses: React.FC = () => {
                     </div>
                   )}
                   
-                  <Button 
+                        <Button 
                     className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white"
                     onClick={() => navigate(`/dashboard/content/${course.id}`)}
-                  >
+                        >
                     Acessar Curso
-                  </Button>
+                        </Button>
                 </CardContent>
-              </Card>
+                  </Card>
             ))
           ) : (
             <div className="col-span-full text-center py-12">

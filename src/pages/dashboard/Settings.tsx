@@ -177,67 +177,67 @@ const SettingsPage: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Notification Settings */}
-        <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-lg">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
+          {/* Notification Settings */}
+          <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
               <div className="w-8 h-8 bg-blue-500/80 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-md">
-                <Bell className="h-4 w-4 text-white" />
+                  <Bell className="h-4 w-4 text-white" />
+                </div>
+                Notificações
+              </CardTitle>
+              <CardDescription className="text-slate-300">
+                Configure como você quer receber notificações
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg backdrop-blur-sm">
+                <div>
+                  <p className="text-white font-medium">Email de comissões</p>
+                  <p className="text-sm text-slate-400 mt-1">Receber email quando ganhar comissões</p>
+                </div>
+                <Switch defaultChecked />
               </div>
-              Notificações
-            </CardTitle>
-            <CardDescription className="text-slate-300">
-              Configure como você quer receber notificações
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg backdrop-blur-sm">
-              <div>
-                <p className="text-white font-medium">Email de comissões</p>
-                <p className="text-sm text-slate-400 mt-1">Receber email quando ganhar comissões</p>
-              </div>
-              <Switch defaultChecked />
-            </div>
-            <div className="flex items-center justify-between p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg backdrop-blur-sm">
-              <div>
+              <div className="flex items-center justify-between p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg backdrop-blur-sm">
+                <div>
                 <p className="text-white font-medium">Notificações no navegador</p>
                 <p className="text-sm text-slate-400 mt-1">Alertas em tempo real</p>
+                </div>
+                <Switch defaultChecked />
               </div>
-              <Switch defaultChecked />
-            </div>
-            <div className="flex items-center justify-between p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg backdrop-blur-sm">
-              <div>
+              <div className="flex items-center justify-between p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg backdrop-blur-sm">
+                <div>
                 <p className="text-white font-medium">Relatórios semanais</p>
                 <p className="text-sm text-slate-400 mt-1">Resumo semanal por email</p>
+                </div>
+                <Switch />
               </div>
-              <Switch />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Security Settings */}
-        <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-lg">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
+          {/* Security Settings */}
+          <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
               <div className="w-8 h-8 bg-red-500/80 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-md">
-                <Shield className="h-4 w-4 text-white" />
-              </div>
-              Segurança
-            </CardTitle>
-            <CardDescription className="text-slate-300">
+                  <Shield className="h-4 w-4 text-white" />
+                </div>
+                Segurança
+              </CardTitle>
+              <CardDescription className="text-slate-300">
               Mantenha sua conta segura
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button 
-              variant="outline" 
-              className="w-full justify-start border-slate-600/50 text-slate-300 hover:border-blue-500 hover:text-blue-300 backdrop-blur-sm"
-            >
-              Alterar Senha
-            </Button>
-            <Button 
-              variant="outline" 
-              className="w-full justify-start border-red-600/50 text-red-400 hover:bg-red-500/20 hover:border-red-500 backdrop-blur-sm"
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start border-slate-600/50 text-slate-300 hover:border-blue-500 hover:text-blue-300 backdrop-blur-sm"
+              >
+                Alterar Senha
+              </Button>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start border-red-600/50 text-red-400 hover:bg-red-500/20 hover:border-red-500 backdrop-blur-sm"
             >
               Sair de Todas as Sessões
             </Button>

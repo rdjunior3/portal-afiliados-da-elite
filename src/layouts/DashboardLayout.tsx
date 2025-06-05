@@ -12,7 +12,7 @@ import EliteLogo from '@/components/ui/EliteLogo';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-import {
+import { 
   Home,
   Package,
   BookOpen,
@@ -55,7 +55,7 @@ const DashboardLayout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
-  
+
   // Hook de notificações
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
@@ -108,15 +108,15 @@ const DashboardLayout: React.FC = () => {
 
   const handleSignOut = async () => {
     try {
-      const { error } = await signOut();
+    const { error } = await signOut();
       
-      if (error) {
-        toast({
-          title: "Erro ao sair",
-          description: "Não foi possível fazer logout. Tente novamente.",
-          variant: "destructive",
-        });
-      } else {
+    if (error) {
+      toast({
+        title: "Erro ao sair",
+        description: "Não foi possível fazer logout. Tente novamente.",
+        variant: "destructive",
+      });
+    } else {
         toast({
           title: "Logout realizado",
           description: "Até a próxima!",
@@ -227,60 +227,60 @@ const DashboardLayout: React.FC = () => {
               >
                 <ChevronLeft className={cn("h-4 w-4 transition-transform duration-200", sidebarCollapsed && "rotate-180")} />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
+            <Button
+              variant="ghost"
+              size="sm"
                 className="lg:hidden text-slate-400 hover:text-white hover:bg-slate-700/50 h-8 w-8 p-0"
-                onClick={() => setSidebarOpen(false)}
-              >
+              onClick={() => setSidebarOpen(false)}
+            >
                 <X className="h-4 w-4" />
-              </Button>
+            </Button>
             </div>
           </div>
 
           {!sidebarCollapsed && (
             <div className="border-b border-slate-700/50 bg-gradient-to-r from-slate-800/30 to-slate-700/30 p-4 lg:p-6">
               <div className="flex items-center gap-3 lg:gap-4">
-                <div className="relative">
+              <div className="relative">
                   <div className="h-10 w-10 lg:h-12 lg:w-12 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center shadow-lg border-2 border-orange-300/20">
                     <TrophyIcon className="w-5 h-5 lg:w-6 lg:h-6" color="#1e293b" />
-                  </div>
-                  <div className="absolute -bottom-1 -right-1">
-                    {profile?.affiliate_status === 'approved' && (
+                </div>
+                <div className="absolute -bottom-1 -right-1">
+                  {profile?.affiliate_status === 'approved' && (
                       <div className="w-3 h-3 lg:w-4 lg:h-4 bg-green-500 rounded-full flex items-center justify-center border-2 border-slate-900">
                         <Sparkles className="w-1.5 h-1.5 lg:w-2.5 lg:h-2.5 text-white" />
-                      </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
-                <div className="flex-1 min-w-0">
+              </div>
+              <div className="flex-1 min-w-0">
                   <p className="text-xs lg:text-sm font-bold text-white truncate">
-                    {getDisplayName()}
-                  </p>
+                  {getDisplayName()}
+                </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <p className="text-xs text-slate-400 truncate">
+                  <p className="text-xs text-slate-400 truncate">
                       ID: {profile?.affiliate_id || 'Pendente'}
-                    </p>
-                    {profile?.affiliate_status && (
-                      <Badge 
-                        variant="outline"
-                        className={cn(
+                  </p>
+                  {profile?.affiliate_status && (
+                    <Badge 
+                      variant="outline"
+                      className={cn(
                           "text-xs px-1.5 py-0.5 h-4 lg:h-5 font-bold border",
-                          profile.affiliate_status === 'approved' 
+                        profile.affiliate_status === 'approved' 
                             ? 'border-orange-400/60 text-orange-200 bg-orange-500/20' 
-                            : profile.affiliate_status === 'pending'
+                          : profile.affiliate_status === 'pending'
                             ? 'border-yellow-400/60 text-yellow-200 bg-yellow-500/20'
                             : 'border-red-400/60 text-red-200 bg-red-500/20'
-                        )}
-                      >
+                      )}
+                    >
                         {profile.affiliate_status === 'approved' ? 'ELITE' : 
                          profile.affiliate_status === 'pending' ? 'PENDENTE' : 'INATIVO'}
-                      </Badge>
-                    )}
-                  </div>
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
+          </div>
           )}
 
           {sidebarCollapsed && (
@@ -342,7 +342,7 @@ const DashboardLayout: React.FC = () => {
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                       <Shield className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
                       Admin
-                    </h3>
+                </h3>
                     <div className="h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent flex-1" />
                   </div>
                 )}
@@ -361,7 +361,7 @@ const DashboardLayout: React.FC = () => {
                         </div>
                       ) : (
                         <div
-                          className={cn(
+                      className={cn(
                             "flex items-center gap-2 lg:gap-3 p-2.5 lg:p-3 rounded-lg transition-all duration-200 mb-2 cursor-not-allowed opacity-50",
                             "bg-slate-700/30 text-slate-500 hover:bg-slate-700/40"
                           )}
@@ -383,21 +383,21 @@ const DashboardLayout: React.FC = () => {
           <div className="border-t border-slate-700/50 bg-gradient-to-r from-slate-800/30 to-slate-700/30 p-3 lg:p-4 space-y-1 lg:space-y-2">
             {!sidebarCollapsed ? (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/')}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
                   className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-700/40 transition-all duration-200 h-8 lg:h-9 text-xs lg:text-sm"
-                >
+            >
                   <Home className="h-3 w-3 lg:h-4 lg:w-4 mr-2 lg:mr-3" />
-                  Voltar ao Site
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSignOut}
+              Voltar ao Site
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
                   className="w-full justify-start text-red-300 hover:text-red-200 hover:bg-red-500/20 transition-all duration-200 h-8 lg:h-9 text-xs lg:text-sm"
-                >
+            >
                   <LogOut className="h-3 w-3 lg:h-4 lg:w-4 mr-2 lg:mr-3" />
                   Sair da Conta
                 </Button>
@@ -421,7 +421,7 @@ const DashboardLayout: React.FC = () => {
                   title="Sair da Conta"
                 >
                   <LogOut className="h-3 w-3 lg:h-4 lg:w-4" />
-                </Button>
+            </Button>
               </>
             )}
           </div>
@@ -464,10 +464,10 @@ const DashboardLayout: React.FC = () => {
               <ThemeToggle />
               
               <div className="relative hidden lg:block" ref={notificationsRef}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setNotificationsOpen(!notificationsOpen)}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setNotificationsOpen(!notificationsOpen)}
                   className="text-slate-300 hover:text-white relative hover:bg-slate-700/50 transition-all duration-200 h-8 w-8 p-0"
                 >
                   <Bell className="h-4 w-4" />
@@ -476,22 +476,22 @@ const DashboardLayout: React.FC = () => {
                       <span className="text-xs text-slate-900 font-bold">
                         {unreadCount > 9 ? '9+' : unreadCount}
                       </span>
-                    </span>
+                </span>
                   )}
-                </Button>
-                
-                {notificationsOpen && (
+              </Button>
+              
+              {notificationsOpen && (
                   <div className="absolute right-0 top-full mt-3 w-80 lg:w-96 bg-slate-800/95 backdrop-blur-xl border border-slate-600/50 rounded-xl shadow-2xl z-50">
                     <div className="p-4 border-b border-slate-600/50 bg-gradient-to-r from-slate-700/30 to-slate-600/30">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-white font-bold flex items-center gap-2">
-                          Notificações Elite
+                      <h3 className="text-white font-bold flex items-center gap-2">
+                        Notificações Elite
                           {unreadCount > 0 && (
                             <Badge className="bg-orange-500/20 text-orange-400 text-xs">
                               {unreadCount} nova{unreadCount !== 1 ? 's' : ''}
                             </Badge>
                           )}
-                        </h3>
+                      </h3>
                         {unreadCount > 0 && (
                           <Button
                             variant="ghost"
@@ -504,7 +504,7 @@ const DashboardLayout: React.FC = () => {
                           </Button>
                         )}
                       </div>
-                    </div>
+                  </div>
                     <div className="max-h-80 overflow-y-auto">
                       {notifications.length > 0 ? (
                         <div className="space-y-1">
@@ -526,7 +526,7 @@ const DashboardLayout: React.FC = () => {
                                 }
                               }}
                             >
-                              <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3">
                                 <div className="p-1.5 bg-slate-600/30 rounded-lg">
                                   {getNotificationIcon(notification.type)}
                                 </div>
@@ -545,9 +545,9 @@ const DashboardLayout: React.FC = () => {
                                   <p className="text-xs text-slate-500">
                                     {formatNotificationTime(notification.created_at)}
                                   </p>
-                                </div>
-                              </div>
-                            </div>
+                          </div>
+                        </div>
+                      </div>
                           ))}
                         </div>
                       ) : (
@@ -559,20 +559,20 @@ const DashboardLayout: React.FC = () => {
                       )}
                     </div>
                     <div className="p-4 border-t border-slate-600/50 bg-gradient-to-r from-slate-700/30 to-slate-600/30">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
                         className="w-full text-orange-300 hover:text-orange-200 hover:bg-orange-500/20 transition-all duration-200"
-                        onClick={() => {
-                          navigate('/dashboard/notifications');
-                          setNotificationsOpen(false);
-                        }}
-                      >
-                        Ver todas as notificações
-                      </Button>
-                    </div>
+                      onClick={() => {
+                        navigate('/dashboard/notifications');
+                        setNotificationsOpen(false);
+                      }}
+                    >
+                      Ver todas as notificações
+                    </Button>
                   </div>
-                )}
+                </div>
+              )}
               </div>
             </div>
           </div>

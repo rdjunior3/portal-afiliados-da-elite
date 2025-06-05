@@ -95,9 +95,9 @@ const Notifications: React.FC = () => {
             className="border-slate-600 text-slate-300 hover:bg-slate-700"
             onClick={markAllAsRead}
           >
-            <Check className="mr-2 h-4 w-4" />
-            Marcar todas como lidas
-          </Button>
+          <Check className="mr-2 h-4 w-4" />
+          Marcar todas como lidas
+        </Button>
         )}
       </div>
 
@@ -157,7 +157,7 @@ const Notifications: React.FC = () => {
                     }}
                   >
                     <Check className="h-4 w-4" />
-                  </Button>
+                </Button>
                 )}
               </div>
             </CardContent>
