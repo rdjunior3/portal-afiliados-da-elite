@@ -507,9 +507,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .select()
           .single();
 
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Timeout: Operação demorou mais de 15 segundos')), 15000)
-        );
+              const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout: Operação demorou mais de 10 segundos')), 10000)
+      );
 
         console.log('⏳ [updateProfile] Executando query no Supabase...');
         

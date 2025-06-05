@@ -82,9 +82,9 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         resolve(false);
       };
 
-      // Timeout aumentado para 30 segundos
+      // Timeout otimizado para 10 segundos
       const timeoutId = setTimeout(() => {
-        console.error('⏰ [validateImage] Timeout na validação (30s)');
+        console.error('⏰ [validateImage] Timeout na validação (10s)');
         URL.revokeObjectURL(url);
         toast({
           title: "Timeout na validação",
@@ -92,7 +92,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
           variant: "destructive",
         });
         resolve(false);
-      }, 30000); // 30 segundos
+      }, 10000); // 10 segundos
 
       img.onload = () => {
         clearTimeout(timeoutId);
@@ -132,33 +132,8 @@ export const useImageUpload = (options: ImageUploadOptions) => {
     });
   };
 
-  const checkBucketExists = async (bucketName: string): Promise<boolean> => {
-    try {
-      console.log('🪣 [checkBucketExists] Verificação rápida de bucket:', bucketName);
-      
-      // Timeout reduzido para 3 segundos
-      const checkPromise = supabase.storage.getBucket(bucketName);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Bucket check timeout')), 3000)
-      );
-      
-      const { data, error } = await Promise.race([
-        checkPromise,
-        timeoutPromise
-      ]) as any;
-      
-      if (error) {
-        console.warn(`⚠️ [checkBucketExists] Bucket ${bucketName} não encontrado:`, error);
-        return false;
-      }
-      
-      console.log(`✅ [checkBucketExists] Bucket ${bucketName} existe:`, data.id);
-      return !!data;
-    } catch (error) {
-      console.warn(`💥 [checkBucketExists] Erro ao verificar bucket ${bucketName}:`, error);
-      return false;
-    }
-  };
+  // Função checkBucketExists REMOVIDA para melhor performance
+  // Upload direto sem verificação prévia de bucket
 
   const createBucketIfNotExists = async (bucketName: string): Promise<boolean> => {
     try {
@@ -225,26 +200,17 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         return null;
       }
 
-      // Verificação rápida de bucket (skip se demorar)
-      console.log('🪣 [uploadImage] Verificação rápida de bucket...');
-      try {
-        const bucketExists = await checkBucketExists(options.bucket);
-        
-        if (!bucketExists) {
-          console.warn(`⚠️ [uploadImage] Bucket ${options.bucket} não encontrado, mas continuando upload...`);
-        }
-      } catch (error) {
-        console.warn(`⚠️ [uploadImage] Falha na verificação de bucket, continuando upload...`);
-      }
+      // Upload direto para máxima performance - SEM verificação de bucket
+      console.log('⚡ [uploadImage] UPLOAD DIRETO OTIMIZADO');
 
       // Gerar nome único para o arquivo
       const timestamp = Date.now();
       const random = Math.random().toString(36).substring(7);
       const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${timestamp}-${random}.${fileExt}`;
-      const filePath = `${options.folder}/${fileName}`;
+      const filePath = `${fileName}`; // Path simplificado - apenas o nome do arquivo
 
-      console.log(`📤 [uploadImage] Fazendo upload para: ${options.bucket}/${filePath}`);
+      console.log(`📤 [UPLOAD_OTIMIZADO] Enviando para: ${options.bucket}/${filePath}`);
 
       // Upload para o Supabase com timeout otimizado para 30 segundos
       const uploadPromise = supabase.storage
