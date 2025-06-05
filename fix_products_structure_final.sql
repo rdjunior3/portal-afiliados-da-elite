@@ -232,7 +232,7 @@ CREATE INDEX IF NOT EXISTS idx_products_commission_rate ON products(commission_r
 -- Habilitar RLS
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 
--- Política para admins
+-- Política para admins (verificação por role)
 DROP POLICY IF EXISTS "Admins can manage products" ON products;
 CREATE POLICY "Admins can manage products" ON products
 FOR ALL TO authenticated
@@ -240,7 +240,7 @@ USING (
     EXISTS (
         SELECT 1 FROM profiles 
         WHERE profiles.id = auth.uid() 
-        AND (profiles.role IN ('admin', 'super_admin') OR profiles.is_admin = true)
+        AND profiles.role IN ('admin', 'super_admin')
     )
 );
 
