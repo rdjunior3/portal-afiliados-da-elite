@@ -11,6 +11,18 @@ const ProfileGuard: React.FC<ProfileGuardProps> = ({ children }) => {
   const { user, profile, loading } = useAuth();
   const location = useLocation();
 
+  // 🔍 LOG DE DEBUG - ProfileGuard
+  console.log('🎯 ProfileGuard: Verificando acesso...', {
+    user: user ? { id: user.id, email: user.email } : null,
+    profile: profile ? { 
+      id: profile.id, 
+      role: profile.role,
+      first_name: profile.first_name,
+      onboarding_completed: !!profile.onboarding_completed_at 
+    } : null,
+    path: location.pathname
+  });
+
   // Se ainda está carregando, mostra tela de loading
   if (loading) {
     return <LoadingScreen message="Verificando seu perfil..." />;
@@ -26,11 +38,28 @@ const ProfileGuard: React.FC<ProfileGuardProps> = ({ children }) => {
     return <>{children}</>;
   }
 
-  // Verificar se o perfil está incompleto
+  // 🔐 NOVA LÓGICA: Verificar se é admin principal
+  const isAdminPrincipal = profile?.role === 'super_admin' || profile?.role === 'admin';
+  
+  if (isAdminPrincipal) {
+    console.log('🎯 ProfileGuard: Admin principal detectado - liberando acesso total');
+    // Admins principais têm acesso total, independente do perfil estar completo
+    return <>{children}</>;
+  }
+
+  // Verificar se o perfil está incompleto (apenas para não-admins)
   const isProfileIncomplete = !profile?.first_name || 
                               !profile?.last_name || 
                               !profile?.phone || 
                               !profile?.onboarding_completed_at;
+
+  console.log('🎯 ProfileGuard: Verificação de perfil incompleto:', {
+    isProfileIncomplete,
+    hasFirstName: !!profile?.first_name,
+    hasLastName: !!profile?.last_name,
+    hasPhone: !!profile?.phone,
+    hasOnboardingCompleted: !!profile?.onboarding_completed_at
+  });
 
   // NOVA LÓGICA: Permitir acesso limitado ao dashboard mesmo com perfil incompleto
   // Só redireciona para complete-profile se explicitamente solicitado ou se é primeira vez
@@ -39,6 +68,7 @@ const ProfileGuard: React.FC<ProfileGuardProps> = ({ children }) => {
      (!sessionStorage.getItem('profile_skip_allowed') && !profile?.first_name));
 
   if (shouldRedirectToCompleteProfile) {
+    console.log('🎯 ProfileGuard: Redirecionando para completar perfil');
     return <Navigate to="/complete-profile" replace />;
   }
 

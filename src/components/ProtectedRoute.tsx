@@ -12,6 +12,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, loading, session } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
   const [timeoutReached, setTimeoutReached] = useState(false);
   const [showEscapeButton, setShowEscapeButton] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
@@ -21,12 +22,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     if (loading) {
       // Timeout principal - após 6 segundos, força redirecionamento
       const mainTimeout = setTimeout(() => {
-        console.warn('ProtectedRoute: Timeout de verificação de autenticação atingido');
         setTimeoutReached(true);
         
         // Se não há usuário E não há sessão após timeout, redireciona para LOGIN
         if (!user && !session) {
-          console.log('ProtectedRoute: Redirecionando usuário não autenticado para login');
           navigate('/login', { 
             replace: true,
             state: { 
@@ -58,7 +57,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     if (!loading && authChecked) {
       // Se auth foi checado e não há usuário nem sessão, redireciona
       if (!user && !session) {
-        console.log('ProtectedRoute: Usuário não autenticado detectado após verificação');
         navigate('/login', { 
           replace: true,
           state: { 
@@ -71,11 +69,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
       // Se há sessão mas não há usuário, algo está inconsistente
       if (session && !user) {
-        console.warn('ProtectedRoute: Sessão encontrada mas usuário não carregado');
-        // Dar uma chance para o usuário carregar
         setTimeout(() => {
           if (!user) {
-            console.log('ProtectedRoute: Usuário não carregou - redirecionando');
             navigate('/login', { 
               replace: true,
               state: { 
@@ -90,7 +85,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }, [loading, authChecked, user, session, navigate, location.pathname]);
 
   const handleEscapeToLogin = () => {
-    console.log('ProtectedRoute: Usuário escapou para login');
     navigate('/login', { 
       replace: true,
       state: { 

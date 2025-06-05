@@ -321,11 +321,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Aguardar um momento para o perfil ser carregado
         setTimeout(() => {
-          // Verificar se o perfil está completo após o login
+          // 🔐 Verificar se é admin principal - admins têm acesso direto
+          const isAdminPrincipal = profile?.role === 'super_admin' || profile?.role === 'admin';
+          
+          if (isAdminPrincipal) {
+            console.log('🎯 AuthContext: Admin principal detectado - redirecionando para dashboard');
+            // Admins principais vão direto para dashboard
+            window.location.href = '/dashboard';
+            return;
+          }
+          
+          // Verificar se o perfil está completo após o login (apenas para não-admins)
           if (profile && (!profile.first_name || !profile.last_name || !profile.phone || !profile.onboarding_completed_at)) {
+            console.log('🎯 AuthContext: Perfil incompleto detectado - redirecionando para completar perfil');
             // Perfil incompleto - redirecionar para completar perfil
             window.location.href = '/complete-profile';
           } else {
+            console.log('🎯 AuthContext: Perfil completo - redirecionando para dashboard');
             // Perfil completo - redirecionar para dashboard
             window.location.href = '/dashboard';
           }

@@ -28,13 +28,14 @@ const CompleteProfile: React.FC = () => {
   // Atualizar formData quando profile mudar
   useEffect(() => {
     if (profile) {
-      setFormData({
+      const newFormData = {
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
         phone: profile.phone || '',
         profile_username: profile.affiliate_code || '',
         avatar_url: profile.avatar_url || ''
-      });
+      };
+      setFormData(newFormData);
     }
   }, [profile]);
 
@@ -84,8 +85,6 @@ const CompleteProfile: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('🚀 Iniciando processo de completar perfil...');
-    
     // Limpar erros anteriores
     setErrors([]);
     
@@ -104,8 +103,6 @@ const CompleteProfile: React.FC = () => {
     setLoading(true);
 
     try {
-      console.log('📝 Dados do formulário:', formData);
-      
       // Verificar se o usuário existe
       if (!user?.id) {
         throw new Error('Usuário não encontrado. Faça login novamente.');
@@ -128,8 +125,6 @@ const CompleteProfile: React.FC = () => {
         onboarding_completed_at: new Date().toISOString()
       };
 
-      console.log('📤 Enviando dados para atualização:', updateData);
-
       // Adicionar timeout de 15 segundos para o updateProfile
       const updatePromise = updateProfile(updateData);
       const timeoutPromise = new Promise((_, reject) => 
@@ -138,14 +133,9 @@ const CompleteProfile: React.FC = () => {
 
       const result = await Promise.race([updatePromise, timeoutPromise]) as any;
 
-      console.log('📥 Resultado da atualização:', result);
-
       if (result?.error) {
-        console.error('❌ Erro na atualização:', result.error);
         throw result.error;
       }
-
-      console.log('✅ Perfil atualizado com sucesso!');
 
       // Remover flag de skip do sessionStorage
       sessionStorage.removeItem('profile_skip_allowed');
@@ -157,13 +147,10 @@ const CompleteProfile: React.FC = () => {
 
       // Aguardar um pouco antes de redirecionar para garantir que o estado foi atualizado
       setTimeout(() => {
-        console.log('🔄 Redirecionando para dashboard...');
         navigate('/dashboard');
       }, 2000);
       
     } catch (error: any) {
-      console.error('💥 Erro ao completar perfil:', error);
-      
       let errorMessage = "Não foi possível completar seu perfil. Tente novamente.";
       
       // Mensagens de erro mais específicas
@@ -212,7 +199,6 @@ const CompleteProfile: React.FC = () => {
   // Verificar se usuário já tem perfil completo
   useEffect(() => {
     if (profile && profile.onboarding_completed_at) {
-      console.log('👤 Usuário já tem perfil completo, redirecionando...');
       navigate('/dashboard');
     }
   }, [profile, navigate]);
