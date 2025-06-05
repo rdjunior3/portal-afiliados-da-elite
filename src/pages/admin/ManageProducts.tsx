@@ -37,6 +37,7 @@ interface Product {
   category_id: string | null;
   thumbnail_url: string | null;
   affiliate_link: string;
+  sales_page_url?: string | null;
   status: 'active' | 'inactive' | 'pending' | 'archived';
   is_featured: boolean;
   is_exclusive: boolean;
@@ -73,6 +74,7 @@ const ManageProducts = () => {
     category_id: '',
     thumbnail_url: '',
     affiliate_link: '',
+    sales_page_url: '',
     status: 'active',
     is_featured: false,
     is_exclusive: false,
@@ -135,20 +137,28 @@ const ManageProducts = () => {
   const saveMutation = useMutation({
     mutationFn: async (data: Partial<Product>) => {
       try {
+        console.log('🚀 [saveMutation] Iniciando salvamento de produto:', data);
+        
         // Validação de campos obrigatórios
         if (!data.name?.trim()) {
+          console.error('❌ [saveMutation] Nome obrigatório ausente');
           throw new Error('Nome do produto é obrigatório');
         }
         if (!data.affiliate_link?.trim()) {
+          console.error('❌ [saveMutation] Link de afiliado ausente');
           throw new Error('Link de afiliado é obrigatório');
         }
         if (!data.price || data.price <= 0) {
+          console.error('❌ [saveMutation] Preço inválido:', data.price);
           throw new Error('Preço deve ser maior que zero');
         }
+
+        console.log('✅ [saveMutation] Validação básica passou');
 
         // Garantir que o slug seja gerado se não fornecido
         if (!data.slug && data.name) {
           data.slug = generateSlug(data.name);
+          console.log('🔄 [saveMutation] Slug gerado:', data.slug);
         }
 
         // Campos obrigatórios com valores padrão mais seguros
@@ -161,6 +171,7 @@ const ManageProducts = () => {
           category_id: data.category_id || null,
           thumbnail_url: data.thumbnail_url?.trim() || null,
           affiliate_link: data.affiliate_link.trim(),
+          sales_page_url: data.sales_page_url?.trim() || null,
           status: data.status || 'active',
           is_featured: Boolean(data.is_featured),
           is_exclusive: Boolean(data.is_exclusive),
@@ -175,8 +186,11 @@ const ManageProducts = () => {
           updated_at: new Date().toISOString()
         };
 
+        console.log('📋 [saveMutation] Dados preparados para salvamento:', productData);
+
         let result;
         if (editingProduct?.id) {
+          console.log('🔄 [saveMutation] Atualizando produto existente:', editingProduct.id);
           // Atualizar
           result = await supabase
             .from('products')
@@ -185,6 +199,7 @@ const ManageProducts = () => {
             .select()
             .single();
         } else {
+          console.log('➕ [saveMutation] Criando novo produto');
           // Criar novo
           result = await supabase
             .from('products')
@@ -196,14 +211,33 @@ const ManageProducts = () => {
             .single();
         }
         
+        console.log('📡 [saveMutation] Resposta do Supabase:', result);
+        
         if (result.error) {
-          console.error('Erro do Supabase:', result.error);
+          console.error('❌ [saveMutation] Erro do Supabase detalhado:', result.error);
+          
+          // Log específico do erro para análise
+          if (result.error.code) {
+            console.error('❌ [saveMutation] Código do erro:', result.error.code);
+          }
+          if (result.error.message) {
+            console.error('❌ [saveMutation] Mensagem do erro:', result.error.message);
+          }
+          if (result.error.details) {
+            console.error('❌ [saveMutation] Detalhes do erro:', result.error.details);
+          }
+          if (result.error.hint) {
+            console.error('❌ [saveMutation] Dica do erro:', result.error.hint);
+          }
+          
           throw new Error(result.error.message || 'Erro ao salvar produto');
         }
 
+        console.log('✅ [saveMutation] Produto salvo com sucesso:', result.data);
         return result.data;
       } catch (error: any) {
-        console.error('Erro na mutation:', error);
+        console.error('💥 [saveMutation] Erro completo na mutation:', error);
+        console.error('💥 [saveMutation] Stack trace:', error.stack);
         throw error;
       }
     },
@@ -228,12 +262,36 @@ const ManageProducts = () => {
   // Mutation para deletar produto
   const deleteMutation = useMutation({
     mutationFn: async (productId: string) => {
-      const { error } = await supabase
-        .from('products')
-        .update({ status: 'archived' })
-        .eq('id', productId);
-      
-      if (error) throw error;
+      try {
+        console.log('🗑️ [deleteMutation] Iniciando exclusão do produto:', productId);
+        
+        const { error } = await supabase
+          .from('products')
+          .update({ status: 'archived' })
+          .eq('id', productId);
+        
+        console.log('📡 [deleteMutation] Resposta do Supabase:', { error });
+        
+        if (error) {
+          console.error('❌ [deleteMutation] Erro detalhado do Supabase:', error);
+          if (error.code) {
+            console.error('❌ [deleteMutation] Código do erro:', error.code);
+          }
+          if (error.message) {
+            console.error('❌ [deleteMutation] Mensagem do erro:', error.message);
+          }
+          if (error.details) {
+            console.error('❌ [deleteMutation] Detalhes do erro:', error.details);
+          }
+          throw error;
+        }
+        
+        console.log('✅ [deleteMutation] Produto arquivado com sucesso');
+      } catch (error: any) {
+        console.error('💥 [deleteMutation] Erro completo na exclusão:', error);
+        console.error('💥 [deleteMutation] Stack trace:', error.stack);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
@@ -295,7 +353,8 @@ const ManageProducts = () => {
         gravity_score: product.gravity_score,
         earnings_per_click: product.earnings_per_click,
         conversion_rate_avg: product.conversion_rate_avg,
-        refund_rate: product.refund_rate
+        refund_rate: product.refund_rate,
+        sales_page_url: product.sales_page_url
       });
     } else {
       setEditingProduct(null);
@@ -308,6 +367,7 @@ const ManageProducts = () => {
         category_id: '',
         thumbnail_url: '',
         affiliate_link: '',
+        sales_page_url: '',
         status: 'active',
         is_featured: false,
         is_exclusive: false,
@@ -332,6 +392,7 @@ const ManageProducts = () => {
       category_id: '',
       thumbnail_url: '',
       affiliate_link: '',
+      sales_page_url: '',
       status: 'active',
       is_featured: false,
       is_exclusive: false,
@@ -734,7 +795,7 @@ const ManageProducts = () => {
               
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="affiliate_link" className="text-slate-200">Link de Afiliado *</Label>
+                  <Label htmlFor="affiliate_link" className="text-slate-200">Link de Afiliação (Plataforma Externa) *</Label>
                   <div className="relative">
                     <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
                     <Input
@@ -742,10 +803,31 @@ const ManageProducts = () => {
                       type="url"
                       value={formData.affiliate_link || ''}
                       onChange={(e) => setFormData({ ...formData, affiliate_link: e.target.value })}
-                      placeholder="https://exemplo.com/produto"
+                      placeholder="https://plataforma.com/produto/seu-id-afiliado"
                       className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder-slate-400"
                     />
                   </div>
+                  <p className="text-xs text-slate-400">
+                    Link de afiliação da plataforma externa (ex: Hotmart, Monetizze, etc.)
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sales_page_url" className="text-slate-200">Link da Página de Vendas</Label>
+                  <div className="relative">
+                    <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+                    <Input
+                      id="sales_page_url"
+                      type="url"
+                      value={formData.sales_page_url || ''}
+                      onChange={(e) => setFormData({ ...formData, sales_page_url: e.target.value })}
+                      placeholder="https://paginavendas.com/produto"
+                      className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder-slate-400"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Link para visualizar a página de vendas do produto
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -764,6 +846,80 @@ const ManageProducts = () => {
                   <p className="text-xs text-slate-400">
                     Tamanho recomendado: 800x600px. Formatos: JPG, PNG, WEBP
                   </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Informações de Comissão e Performance */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <span className="w-6 h-6 rounded bg-green-500/20 flex items-center justify-center">
+                  <DollarSign className="h-3 w-3 text-green-400" />
+                </span>
+                Performance e Ganhos
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="earnings_per_click" className="text-slate-200">Ganho por Clique (EPC)</Label>
+                  <Input
+                    id="earnings_per_click"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.earnings_per_click}
+                    onChange={(e) => setFormData({ ...formData, earnings_per_click: parseFloat(e.target.value) || 0 })}
+                    placeholder="0.00"
+                    className="bg-slate-700/50 border-slate-600/50 text-white placeholder-slate-400"
+                  />
+                  <p className="text-xs text-slate-400">
+                    Estimativa de ganho por clique no link de afiliação
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="conversion_rate" className="text-slate-200">Taxa de Conversão (%)</Label>
+                  <Input
+                    id="conversion_rate"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    value={formData.conversion_rate_avg}
+                    onChange={(e) => setFormData({ ...formData, conversion_rate_avg: parseFloat(e.target.value) || 0 })}
+                    placeholder="0.00"
+                    className="bg-slate-700/50 border-slate-600/50 text-white placeholder-slate-400"
+                  />
+                  <p className="text-xs text-slate-400">
+                    Taxa média de conversão do produto
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
+                <div className="flex items-center gap-3 mb-3">
+                  <DollarSign className="h-5 w-5 text-green-400" />
+                  <h4 className="text-white font-medium">Calculadora de Ganhos</h4>
+                </div>
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="text-center">
+                    <p className="text-slate-400">Comissão por Venda</p>
+                    <p className="text-lg font-bold text-green-400">
+                      {formatCurrency((formData.price || 0) * (formData.commission_rate || 0) / 100)}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-slate-400">Ganho por Clique</p>
+                    <p className="text-lg font-bold text-orange-400">
+                      R$ {(formData.earnings_per_click || 0).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-slate-400">Conv. Esperada</p>
+                    <p className="text-lg font-bold text-blue-400">
+                      {(formData.conversion_rate_avg || 0).toFixed(1)}%
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

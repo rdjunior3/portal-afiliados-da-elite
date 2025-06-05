@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bell, Shield, User, Camera, Save, Edit, Upload, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Bell, Shield, User, Camera, Save, Edit, Upload, Trash2, X, Plus } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -22,6 +23,7 @@ const SettingsPage: React.FC = () => {
   const [phone, setPhone] = useState(profile?.phone || '');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   // Estados para configurações de notificação
   const [notificationSettings, setNotificationSettings] = useState({
@@ -135,59 +137,56 @@ const SettingsPage: React.FC = () => {
               <div className="space-y-4">
                 <Label className="text-slate-200 text-sm font-medium">Foto de Perfil</Label>
                 
-                  {isEditing ? (
-                  <div className="space-y-3">
-                    <ImageUpload
-                      value={profileImage}
-                      onChange={setProfileImage}
-                      bucket="avatars"
-                      folder="profiles"
-                      label=""
-                      placeholder="Clique para enviar sua foto"
-                      maxWidth={400}
-                      maxHeight={400}
-                      className="w-full h-48"
-                    />
-                    
-                    {profileImage && (
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={handleRemoveImage}
-                          className="flex-1 border-red-600 text-red-400 hover:bg-red-500/20"
-                        >
-                          <Trash2 className="h-3 w-3 mr-1" />
-                          Remover
-                        </Button>
-                      </div>
-                    )}
-                    
-                    <p className="text-xs text-slate-400">
-                      📸 Tamanho recomendado: 400x400px. Formatos: JPG, PNG
-                    </p>
-                  </div>
-                ) : (
-                  <div className="w-full h-48 rounded-lg border-2 border-dashed border-slate-600 flex items-center justify-center bg-slate-700/30 relative group">
+                {/* Preview do Avatar Atual */}
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="relative group">
+                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-slate-600/50 bg-slate-700/50 flex items-center justify-center">
                       {profileImage ? (
-                      <>
                         <img
                           src={profileImage}
                           alt="Foto de perfil"
-                          className="w-full h-full object-cover rounded-lg"
+                          className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                          <Camera className="h-8 w-8 text-white" />
-                        </div>
-                      </>
                       ) : (
-                        <div className="text-center">
-                          <Camera className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                          <p className="text-xs text-slate-400">Sem foto</p>
-                        </div>
+                        <User className="w-12 h-12 text-slate-400" />
                       )}
                     </div>
-                  )}
+                    
+                    {/* Overlay no hover */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-full flex items-center justify-center">
+                      <Camera className="w-6 h-6 text-white" />
+                    </div>
+                  </div>
+
+                  {/* Botões de Ação */}
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setShowAvatarModal(true)}
+                      disabled={!isEditing}
+                      className="border-slate-600/50 text-slate-300 hover:border-orange-500 hover:text-orange-300"
+                    >
+                      <Upload className="h-3 w-3 mr-1" />
+                      {profileImage ? 'Alterar' : 'Adicionar'}
+                    </Button>
+                    
+                    {profileImage && isEditing && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleRemoveImage}
+                        className="border-red-600/50 text-red-400 hover:bg-red-500/20"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <p className="text-xs text-slate-400 text-center">
+                    📸 Tamanho recomendado: 400x400px
+                  </p>
+                </div>
               </div>
               
               <div className="md:col-span-2 space-y-4">
@@ -428,6 +427,67 @@ const SettingsPage: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal de Upload de Avatar */}
+      <Dialog open={showAvatarModal} onOpenChange={setShowAvatarModal}>
+        <DialogContent className="max-w-md bg-slate-800 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
+              <Camera className="h-5 w-5 text-orange-400" />
+              Atualizar Foto de Perfil
+            </DialogTitle>
+            <DialogDescription className="text-slate-300">
+              Selecione uma nova imagem para seu perfil. A imagem será recortada automaticamente.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <ImageUpload
+              value={profileImage}
+              onChange={(url) => {
+                setProfileImage(url);
+                if (url) {
+                  toast({
+                    title: "Imagem carregada! ✅",
+                    description: "Clique em 'Aplicar' para confirmar a alteração.",
+                  });
+                }
+              }}
+              bucket="avatars"
+              folder="profiles"
+              label=""
+              placeholder="Clique para selecionar ou arraste uma imagem"
+              maxWidth={400}
+              maxHeight={400}
+              enableCrop={true}
+              cropAspect={1}
+              className="w-full"
+            />
+          </div>
+          
+          <DialogFooter className="gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowAvatarModal(false)}
+              className="border-slate-600 text-slate-300 hover:bg-slate-700"
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={() => {
+                setShowAvatarModal(false);
+                toast({
+                  title: "Foto atualizada! 📸",
+                  description: "Não esqueça de salvar as alterações do perfil.",
+                });
+              }}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              Aplicar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageLayout>
   );
 };
