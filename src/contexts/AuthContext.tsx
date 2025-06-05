@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { env } from '@/config/env';
 
@@ -119,15 +119,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Set timeout to prevent infinite loading
+    // Set timeout to prevent infinite loading - aumentado para 10 segundos
     const loadingTimeout = setTimeout(() => {
       console.warn('Auth initialization timeout - setting loading to false');
-      // Se não conseguiu carregar auth em 5 segundos, força usuário para login
-      if (!session && !user) {
-        console.log('Timeout sem sessão válida - redirecionando para login');
-        setLoading(false);
-      }
-    }, 5000); // 5 seconds timeout
+      // Não forçar logout em caso de timeout, apenas parar loading
+      setLoading(false);
+    }, 10000); // Aumentado para 10 segundos
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -170,8 +167,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setProfile(userProfile);
           console.log('Perfil carregado:', userProfile?.email);
 
-          // 🔄 REDIRECIONAMENTO APÓS LOGIN
-          if (event === 'SIGNED_IN' && userProfile) {
+          // 🔄 REDIRECIONAMENTO APÓS LOGIN - Apenas no evento SIGNED_IN
+          if (event === 'SIGNED_IN' && userProfile && window.location.pathname !== '/dashboard') {
             console.log('🎯 AuthContext: Login detectado, verificando redirecionamento...');
             
             // Verificar se é admin principal - admins têm acesso direto
@@ -179,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             
             if (isAdminPrincipal) {
               console.log('🎯 AuthContext: Admin principal detectado - redirecionando para dashboard');
-              setTimeout(() => window.location.href = '/dashboard', 100);
+              setTimeout(() => window.location.href = '/dashboard', 200);
               return;
             }
             
@@ -191,10 +188,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             
             if (isProfileIncomplete) {
               console.log('🎯 AuthContext: Perfil incompleto detectado - redirecionando para completar perfil');
-              setTimeout(() => window.location.href = '/complete-profile', 100);
+              setTimeout(() => window.location.href = '/complete-profile', 200);
             } else {
               console.log('🎯 AuthContext: Perfil completo - redirecionando para dashboard');
-              setTimeout(() => window.location.href = '/dashboard', 100);
+              setTimeout(() => window.location.href = '/dashboard', 200);
             }
           }
         } else {
@@ -213,7 +210,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const { data: { session }, error } = await Promise.race([
           supabase.auth.getSession(),
           new Promise<{ data: { session: Session | null }, error: any }>((_, reject) => 
-            setTimeout(() => reject(new Error('Session check timeout')), 4000)
+            setTimeout(() => reject(new Error('Session check timeout')), 8000) // Aumentado para 8 segundos
           )
         ]);
 
@@ -246,10 +243,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
       } catch (error) {
         console.error('Auth initialization error:', error);
-        // Em caso de erro, limpar tudo e direcionar para login
-        setSession(null);
-        setUser(null);
-        setProfile(null);
+        // Em caso de timeout, não limpar sessão se não for necessário
+        console.warn('Timeout na inicialização - mantendo estados atuais');
         clearTimeout(loadingTimeout);
         setLoading(false);
       }

@@ -6,7 +6,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useToast } from '../hooks/use-toast';
 import { Eye, EyeOff, Lock, ArrowLeft, CheckCircle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 // Componente de ícone troféu para logomarca
 const TrophyIcon = ({ className = "w-7 h-7", color = "currentColor" }) => (
