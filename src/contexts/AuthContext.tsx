@@ -169,6 +169,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           setProfile(userProfile);
           console.log('Perfil carregado:', userProfile?.email);
+
+          // 🔄 REDIRECIONAMENTO APÓS LOGIN
+          if (event === 'SIGNED_IN' && userProfile) {
+            console.log('🎯 AuthContext: Login detectado, verificando redirecionamento...');
+            
+            // Verificar se é admin principal - admins têm acesso direto
+            const isAdminPrincipal = userProfile.role === 'super_admin' || userProfile.role === 'admin';
+            
+            if (isAdminPrincipal) {
+              console.log('🎯 AuthContext: Admin principal detectado - redirecionando para dashboard');
+              setTimeout(() => window.location.href = '/dashboard', 100);
+              return;
+            }
+            
+            // Verificar se o perfil está completo (apenas para não-admins)
+            const isProfileIncomplete = !userProfile.first_name || 
+                                       !userProfile.last_name || 
+                                       !userProfile.phone || 
+                                       !userProfile.onboarding_completed_at;
+            
+            if (isProfileIncomplete) {
+              console.log('🎯 AuthContext: Perfil incompleto detectado - redirecionando para completar perfil');
+              setTimeout(() => window.location.href = '/complete-profile', 100);
+            } else {
+              console.log('🎯 AuthContext: Perfil completo - redirecionando para dashboard');
+              setTimeout(() => window.location.href = '/dashboard', 100);
+            }
+          }
         } else {
           setProfile(null);
         }
@@ -319,29 +347,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: "Bem-vindo de volta à Elite!",
         });
 
-        // Aguardar um momento para o perfil ser carregado
-        setTimeout(() => {
-          // 🔐 Verificar se é admin principal - admins têm acesso direto
-          const isAdminPrincipal = profile?.role === 'super_admin' || profile?.role === 'admin';
-          
-          if (isAdminPrincipal) {
-            console.log('🎯 AuthContext: Admin principal detectado - redirecionando para dashboard');
-            // Admins principais vão direto para dashboard
-            window.location.href = '/dashboard';
-            return;
-          }
-          
-          // Verificar se o perfil está completo após o login (apenas para não-admins)
-          if (profile && (!profile.first_name || !profile.last_name || !profile.phone || !profile.onboarding_completed_at)) {
-            console.log('🎯 AuthContext: Perfil incompleto detectado - redirecionando para completar perfil');
-            // Perfil incompleto - redirecionar para completar perfil
-            window.location.href = '/complete-profile';
-          } else {
-            console.log('🎯 AuthContext: Perfil completo - redirecionando para dashboard');
-            // Perfil completo - redirecionar para dashboard
-            window.location.href = '/dashboard';
-          }
-        }, 1000);
+        // Não fazer redirecionamento aqui - deixar o onAuthStateChange controlar
+        // O redirecionamento será feito automaticamente quando o perfil for carregado
       }
 
       return { error };

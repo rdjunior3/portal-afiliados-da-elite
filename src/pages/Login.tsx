@@ -101,15 +101,8 @@ const Login = () => {
           description: 'Bem-vindo de volta à sua área de membros.'
         });
         
-        // Sempre redirecionar para dashboard - forçar redirecionamento
-        console.log('Login: Redirecionando para dashboard');
-        setTimeout(() => {
-          navigate('/dashboard', { replace: true });
-          // Backup para garantir redirecionamento
-          if (window.location.pathname !== '/dashboard') {
-            window.location.href = '/dashboard';
-          }
-        }, 100);
+        // Deixar o AuthContext controlar o redirecionamento
+        // O redirecionamento será feito automaticamente pelo AuthContext.signIn
       }
     } catch (error) {
       toast({

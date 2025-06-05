@@ -188,6 +188,19 @@ const ManageProducts = () => {
 
         console.log('📋 [saveMutation] Dados preparados para salvamento:', productData);
 
+        // 🔍 DEBUG: Verificar estrutura da tabela
+        console.log('🔍 [DEBUG] Testando estrutura da tabela products...');
+        const { data: tableInfo, error: tableError } = await supabase
+          .from('products')
+          .select('*')
+          .limit(0);
+        
+        if (tableError) {
+          console.error('❌ [DEBUG] Erro ao acessar tabela products:', tableError);
+          throw new Error(`Erro de estrutura da tabela: ${tableError.message}`);
+        }
+        console.log('✅ [DEBUG] Tabela products acessível');
+
         let result;
         if (editingProduct?.id) {
           console.log('🔄 [saveMutation] Atualizando produto existente:', editingProduct.id);
