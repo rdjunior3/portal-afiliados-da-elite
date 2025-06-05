@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Search, ExternalLink, Link, DollarSign, Package, Filter, Plus, Edit, Trash2 } from 'lucide-react';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Search, ExternalLink, Link, DollarSign, Package, Filter, Plus, Edit, Trash2, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import CreateLinkModal from '@/components/CreateLinkModal';
@@ -22,6 +25,8 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ProductOffer } from '@/types/product-offers.types';
 import TrophyIcon from '@/components/ui/TrophyIcon';
+import { productSchema, ProductFormData } from '@/schemas/productSchema';
+import { useSlugValidation } from '@/hooks/useSlugValidation';
 
 type Product = Tables<'products'> & {
   categories?: {
@@ -30,17 +35,6 @@ type Product = Tables<'products'> & {
     color: string;
   } | null;
 };
-
-interface ProductForm {
-  name: string;
-  slug: string;
-  description: string;
-  price: number;
-  commission_rate: number;
-  category_id: string;
-  affiliate_link: string;
-  thumbnail_url: string;
-}
 
 const Products = () => {
   const { user, canManageContent } = useAuth();
@@ -54,15 +48,25 @@ const Products = () => {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productOffers, setProductOffers] = useState<ProductOffer[]>([]);
-  const [productForm, setProductForm] = useState<ProductForm>({
-    name: '',
-    slug: '',
-    description: '',
-    price: 0,
-    commission_rate: 0,
-    category_id: '',
-    affiliate_link: '',
-    thumbnail_url: ''
+
+  // React Hook Form com Zod
+  const form = useForm<ProductFormData>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: '',
+      slug: '',
+      description: '',
+      price: 0,
+      commission_rate: 10,
+      category_id: '',
+      affiliate_link: '',
+      thumbnail_url: ''
+    }
+  });
+
+  // Hook para validação de slug
+  const { validateSlugUnique, generateSlugFromName, isValidating } = useSlugValidation({
+    currentProductId: editingProduct?.id
   });
 
   // Buscar categorias
@@ -124,9 +128,29 @@ const Products = () => {
     enabled: !!user
   });
 
+  // Função para submeter o formulário com validações
+  const onSubmit = async (data: ProductFormData) => {
+    try {
+      // 1. Validar slug único antes de submeter
+      const isSlugValid = await validateSlugUnique(data.slug);
+      if (!isSlugValid) {
+        form.setError('slug', { 
+          type: 'manual', 
+          message: 'Este slug já está em uso' 
+        });
+        return;
+      }
+
+      // 2. Executar mutation
+      await saveProductMutation.mutateAsync(data);
+    } catch (error) {
+      console.error('Erro na submissão:', error);
+    }
+  };
+
   // Mutation para criar/editar produto
   const saveProductMutation = useMutation({
-    mutationFn: async (data: ProductForm) => {
+    mutationFn: async (data: ProductFormData) => {
       const productData = {
         ...data,
         status: 'active' as const,
@@ -159,25 +183,41 @@ const Products = () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       setIsProductModalOpen(false);
       setEditingProduct(null);
-      setProductForm({
+      
+      // Reset do formulário
+      form.reset({
         name: '',
         slug: '',
         description: '',
         price: 0,
-        commission_rate: 0,
+        commission_rate: 10,
         category_id: '',
         affiliate_link: '',
         thumbnail_url: ''
       });
+
       toast({
-        title: editingProduct ? "Produto atualizado!" : "Produto criado!",
+        title: editingProduct ? "Produto atualizado! ✅" : "Produto criado! ✅",
         description: editingProduct ? "O produto foi atualizado com sucesso." : "O produto foi criado com sucesso.",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Erro ao salvar produto:', error);
+      
+      let errorMessage = "Não foi possível salvar o produto. Tente novamente.";
+      
+      // Tratamento de erros específicos
+      if (error?.message?.includes('duplicate key')) {
+        errorMessage = "Já existe um produto com este slug. Use um slug diferente.";
+        form.setError('slug', { type: 'manual', message: 'Slug já existe' });
+      } else if (error?.message?.includes('violates foreign key')) {
+        errorMessage = "Categoria selecionada é inválida. Selecione uma categoria válida.";
+        form.setError('category_id', { type: 'manual', message: 'Categoria inválida' });
+      }
+
       toast({
-        title: "Erro",
-        description: "Não foi possível salvar o produto. Tente novamente.",
+        title: "Erro ao salvar",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -215,7 +255,9 @@ const Products = () => {
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
-    setProductForm({
+    
+    // Preencher o formulário com os dados do produto
+    form.reset({
       name: product.name,
       slug: product.slug,
       description: product.description || '',
@@ -225,30 +267,37 @@ const Products = () => {
       affiliate_link: product.affiliate_link,
       thumbnail_url: product.thumbnail_url || ''
     });
+    
     setIsProductModalOpen(true);
   };
 
   const handleCreateProduct = () => {
     setEditingProduct(null);
-    setProductForm({
+    
+    // Reset do formulário para criação
+    form.reset({
       name: '',
       slug: '',
       description: '',
       price: 0,
-      commission_rate: 0,
+      commission_rate: 10,
       category_id: '',
       affiliate_link: '',
       thumbnail_url: ''
     });
+    
     setIsProductModalOpen(true);
   };
 
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .substring(0, 50);
+  // Função para gerar slug automaticamente a partir do nome
+  const handleNameChange = (name: string) => {
+    form.setValue('name', name);
+    
+    // Gerar slug automaticamente apenas se não estiver editando
+    if (!editingProduct) {
+      const generatedSlug = generateSlugFromName(name);
+      form.setValue('slug', generatedSlug);
+    }
   };
 
   const getAffiliateLink = (productId: string) => {
@@ -310,156 +359,229 @@ const Products = () => {
                   </DialogDescription>
                 </DialogHeader>
                 
-                <div className="space-y-6 py-4 max-h-[75vh] overflow-y-auto">
-                  {/* Seção Informações Básicas */}
-                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    {/* Coluna da Imagem - Menor */}
-                    <div className="lg:col-span-2">
-                      <ImageUpload
-                        value={productForm.thumbnail_url}
-                        onChange={(url) => setProductForm({...productForm, thumbnail_url: url})}
-                        bucket="products"
-                        folder="thumbnails"
-                        label="Imagem do Produto"
-                        placeholder="Envie uma imagem do produto"
-                        maxWidth={400}
-                        maxHeight={400}
-                      />
-                    </div>
-                    
-                    {/* Coluna dos Campos - Maior */}
-                    <div className="lg:col-span-3 space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="name" className="text-slate-200">Nome do Produto</Label>
-                          <Input
-                            id="name"
-                            value={productForm.name}
-                            onChange={(e) => {
-                              const name = e.target.value;
-                              setProductForm({
-                                ...productForm, 
-                                name,
-                                slug: generateSlug(name)
-                              });
-                            }}
-                            className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                            placeholder="Nome do produto"
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="slug" className="text-slate-200">Slug (URL)</Label>
-                          <Input
-                            id="slug"
-                            value={productForm.slug}
-                            onChange={(e) => setProductForm({...productForm, slug: e.target.value})}
-                            className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                            placeholder="slug-do-produto"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="description" className="text-slate-200">Descrição</Label>
-                        <Textarea
-                          id="description"
-                          value={productForm.description}
-                          onChange={(e) => setProductForm({...productForm, description: e.target.value})}
-                          className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                          placeholder="Descrição do produto"
-                          rows={3}
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4 max-h-[75vh] overflow-y-auto">
+                    {/* Seção Informações Básicas */}
+                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                      {/* Coluna da Imagem - Menor */}
+                      <div className="lg:col-span-2">
+                        <FormField
+                          control={form.control}
+                          name="thumbnail_url"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200">Imagem do Produto</FormLabel>
+                              <FormControl>
+                                <ImageUpload
+                                  value={field.value || ''}
+                                  onChange={field.onChange}
+                                  bucket="products"
+                                  folder="thumbnails"
+                                  placeholder="Envie uma imagem do produto"
+                                  maxWidth={400}
+                                  maxHeight={400}
+                                />
+                              </FormControl>
+                              <FormMessage className="text-red-400" />
+                            </FormItem>
+                          )}
                         />
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="price" className="text-slate-200">Preço (R$)</Label>
-                          <Input
-                            id="price"
-                            type="number"
-                            value={productForm.price}
-                            onChange={(e) => setProductForm({...productForm, price: Number(e.target.value)})}
-                            className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                            placeholder="0.00"
+                      {/* Coluna dos Campos - Maior */}
+                      <div className="lg:col-span-3 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200">Nome do Produto *</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    onChange={(e) => handleNameChange(e.target.value)}
+                                    className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                                    placeholder="Nome do produto"
+                                  />
+                                </FormControl>
+                                <FormMessage className="text-red-400" />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="slug"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200 flex items-center gap-2">
+                                  Slug (URL) *
+                                  {isValidating && (
+                                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-orange-500" />
+                                  )}
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                                    placeholder="slug-do-produto"
+                                  />
+                                </FormControl>
+                                <FormDescription className="text-slate-400 text-xs">
+                                  URL amigável para o produto (apenas letras, números e hífens)
+                                </FormDescription>
+                                <FormMessage className="text-red-400" />
+                              </FormItem>
+                            )}
                           />
                         </div>
                         
-                        <div className="space-y-2">
-                          <Label htmlFor="commission" className="text-slate-200">Comissão (%)</Label>
-                          <Input
-                            id="commission"
-                            type="number"
-                            value={productForm.commission_rate}
-                            onChange={(e) => setProductForm({...productForm, commission_rate: Number(e.target.value)})}
-                            className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                            placeholder="0"
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-slate-200">Descrição</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  {...field}
+                                  className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                                  placeholder="Descrição do produto"
+                                  rows={3}
+                                />
+                              </FormControl>
+                              <FormMessage className="text-red-400" />
+                            </FormItem>
+                          )}
+                        />
+                      
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="price"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200">Preço (R$) *</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    step="0.01"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                    className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                                    placeholder="0.00"
+                                  />
+                                </FormControl>
+                                <FormMessage className="text-red-400" />
+                              </FormItem>
+                            )}
                           />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor="category" className="text-slate-200">Categoria</Label>
-                          <Select value={productForm.category_id} onValueChange={(value) => setProductForm({...productForm, category_id: value})}>
-                            <SelectTrigger className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm">
-                              <SelectValue placeholder="Selecione" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-slate-800/95 border-slate-700/50 backdrop-blur z-50">
-                              {categories?.map((category) => (
-                                <SelectItem key={category.id} value={category.id} className="text-white hover:bg-slate-700/50">
-                                  {category.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          
+                          <FormField
+                            control={form.control}
+                            name="commission_rate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200">Comissão (%) *</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="number"
+                                    step="0.01"
+                                    onChange={(e) => field.onChange(Number(e.target.value))}
+                                    className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                                    placeholder="10"
+                                  />
+                                </FormControl>
+                                <FormMessage className="text-red-400" />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="category_id"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-slate-200">Categoria *</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm">
+                                      <SelectValue placeholder="Selecione uma categoria" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent className="bg-slate-800/95 border-slate-700/50 backdrop-blur z-50">
+                                    {categories?.map((category) => (
+                                      <SelectItem key={category.id} value={category.id} className="text-white hover:bg-slate-700/50">
+                                        {category.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage className="text-red-400" />
+                              </FormItem>
+                            )}
+                          />
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Descrição Completa e Link - Layout Horizontal */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="affiliate_link" className="text-slate-200">Link de Afiliado</Label>
-                      <Textarea
-                        id="affiliate_link"
-                        value={productForm.affiliate_link}
-                        onChange={(e) => setProductForm({...productForm, affiliate_link: e.target.value})}
-                        className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                        placeholder="https://exemplo.com/produto"
-                        rows={4}
+                    {/* Descrição Completa e Link - Layout Horizontal */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="affiliate_link"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200">Link de Afiliado *</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                {...field}
+                                className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
+                                placeholder="https://exemplo.com/produto"
+                                rows={4}
+                              />
+                            </FormControl>
+                            <FormDescription className="text-slate-400 text-xs">
+                              URL completa da página de vendas do produto
+                            </FormDescription>
+                            <FormMessage className="text-red-400" />
+                          </FormItem>
+                        )}
                       />
-                    </div>
                     
-                    <div className="space-y-2">
-                      <Label className="text-slate-200">Observações Adicionais</Label>
-                      <div className="p-3 bg-slate-700/40 border border-slate-600/50 rounded-lg">
-                        <p className="text-xs text-slate-400">
-                          • Certifique-se de que o link de afiliado está correto<br/>
-                          • Teste o link antes de publicar<br/>
-                          • Mantenha as informações atualizadas
+                      <div className="space-y-2">
+                        <Label className="text-slate-200">Observações Adicionais</Label>
+                        <div className="p-3 bg-slate-700/40 border border-slate-600/50 rounded-lg">
+                          <p className="text-xs text-slate-400">
+                            • Certifique-se de que o link de afiliado está correto<br/>
+                            • Teste o link antes de publicar<br/>
+                            • Mantenha as informações atualizadas
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Seção de Ofertas Múltiplas - Mais Compacta */}
+                    <div className="border-t border-slate-700/50 pt-6">
+                      <div className="bg-gradient-to-r from-orange-500/10 to-orange-600/5 rounded-lg p-4 mb-4 border border-orange-500/20">
+                        <h3 className="text-lg font-semibold text-white mb-1 flex items-center gap-2">
+                          💰 Ofertas e Preços do Produto
+                        </h3>
+                        <p className="text-sm text-slate-400">
+                          Configure diferentes preços e comissões. Útil para ofertas promocionais, versões diferentes, etc.
                         </p>
                       </div>
+                      
+                      <ProductOffersManager
+                        offers={productOffers}
+                        onChange={setProductOffers}
+                        productId={editingProduct?.id}
+                      />
                     </div>
-                  </div>
-
-                  {/* Seção de Ofertas Múltiplas - Mais Compacta */}
-                  <div className="border-t border-slate-700/50 pt-6">
-                    <div className="bg-gradient-to-r from-orange-500/10 to-orange-600/5 rounded-lg p-4 mb-4 border border-orange-500/20">
-                      <h3 className="text-lg font-semibold text-white mb-1 flex items-center gap-2">
-                        💰 Ofertas e Preços do Produto
-                      </h3>
-                      <p className="text-sm text-slate-400">
-                        Configure diferentes preços e comissões. Útil para ofertas promocionais, versões diferentes, etc.
-                      </p>
-                    </div>
-                    
-                    <ProductOffersManager
-                      offers={productOffers}
-                      onChange={setProductOffers}
-                      productId={editingProduct?.id}
-                    />
-                  </div>
-                </div>
+                  </form>
+                </Form>
                 
                 <DialogFooter className="pt-4 border-t border-slate-700/50 flex flex-row justify-end gap-3">
                   <Button
@@ -471,14 +593,19 @@ const Products = () => {
                   </Button>
                   <Button
                     type="submit"
-                    onClick={() => saveProductMutation.mutate(productForm)}
-                    disabled={saveProductMutation.isPending}
+                    onClick={form.handleSubmit(onSubmit)}
+                    disabled={saveProductMutation.isPending || isValidating}
                     className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white px-6"
                   >
                     {saveProductMutation.isPending ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                         Salvando...
+                      </>
+                    ) : isValidating ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                        Validando...
                       </>
                     ) : (
                       editingProduct ? 'Atualizar' : 'Cadastrar'

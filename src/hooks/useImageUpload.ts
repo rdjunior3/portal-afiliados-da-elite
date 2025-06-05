@@ -181,6 +181,17 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       return null;
     }
 
+    // Validação de configuração de bucket
+    if (!options.bucket) {
+      console.error('❌ [uploadImage] Bucket não configurado');
+      toast({
+        title: "Erro de configuração",
+        description: "Bucket de storage não configurado. Entre em contato com o administrador.",
+        variant: "destructive",
+      });
+      return null;
+    }
+
     try {
       setUploading(true);
 
