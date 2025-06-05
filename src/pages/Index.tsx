@@ -347,17 +347,17 @@ const Index = () => {
                         {/* Stats Grid Responsivo */}
                         <div className="grid grid-cols-3 gap-1.5 lg:gap-2.5">
                           <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-lg p-1.5 lg:p-2.5 border border-orange-500/30">
-                            <div className="text-orange-300 text-sm lg:text-lg font-bold">R$ ---</div>
+                            <div className="text-orange-300 text-sm lg:text-lg font-bold">R$ 2.487</div>
                             <div className="text-orange-400 text-xs font-medium hidden lg:block">Comissões</div>
                             <div className="text-orange-400 text-xs font-medium lg:hidden">Com.</div>
                           </div>
                           <div className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 rounded-lg p-1.5 lg:p-2.5 border border-blue-500/30">
-                            <div className="text-blue-300 text-sm lg:text-lg font-bold">---</div>
+                            <div className="text-blue-300 text-sm lg:text-lg font-bold">1.842</div>
                             <div className="text-blue-400 text-xs font-medium hidden lg:block">Cliques</div>
                             <div className="text-blue-400 text-xs font-medium lg:hidden">Clicks</div>
                           </div>
                           <div className="bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-lg p-1.5 lg:p-2.5 border border-green-500/30">
-                            <div className="text-green-300 text-sm lg:text-lg font-bold">---%</div>
+                            <div className="text-green-300 text-sm lg:text-lg font-bold">8.2%</div>
                             <div className="text-green-400 text-xs font-medium">Conv.</div>
                           </div>
                         </div>
@@ -551,15 +551,15 @@ const Index = () => {
           
           <div className="grid md:grid-cols-3 gap-8 mb-12 stagger-children">
             <div className="glass-effect card-hover rounded-xl p-6">
-              <div className="text-3xl font-bold mb-2">R$ <span className="counter gradient-text">---</span></div>
+              <div className="text-3xl font-bold mb-2">R$ <span className="counter gradient-text">47.892</span></div>
               <div className="text-slate-400">Comissões da plataforma</div>
             </div>
             <div className="glass-effect card-hover rounded-xl p-6">
-              <div className="text-3xl font-bold mb-2"><span className="counter gradient-text">---</span>+</div>
+              <div className="text-3xl font-bold mb-2"><span className="counter gradient-text">237</span>+</div>
               <div className="text-slate-400">Afiliados ativos</div>
             </div>
             <div className="glass-effect card-hover rounded-xl p-6">
-              <div className="text-3xl font-bold mb-2"><span className="counter gradient-text">--</span>%</div>
+              <div className="text-3xl font-bold mb-2"><span className="counter gradient-text">96</span>%</div>
               <div className="text-slate-400">Taxa de satisfação</div>
             </div>
           </div>

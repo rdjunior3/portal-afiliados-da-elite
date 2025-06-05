@@ -318,6 +318,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           title: "Login realizado! 🎉",
           description: "Bem-vindo de volta à Elite!",
         });
+
+        // Aguardar um momento para o perfil ser carregado
+        setTimeout(() => {
+          // Verificar se o perfil está completo após o login
+          if (profile && (!profile.first_name || !profile.last_name || !profile.phone || !profile.onboarding_completed_at)) {
+            // Perfil incompleto - redirecionar para completar perfil
+            window.location.href = '/complete-profile';
+          } else {
+            // Perfil completo - redirecionar para dashboard
+            window.location.href = '/dashboard';
+          }
+        }, 1000);
       }
 
       return { error };

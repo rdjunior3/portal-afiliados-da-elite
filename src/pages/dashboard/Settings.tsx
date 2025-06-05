@@ -6,43 +6,87 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Bell, Shield, User, Camera, Save, Edit } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Bell, Shield, User, Camera, Save, Edit, Upload, Trash2 } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 
 const SettingsPage: React.FC = () => {
-  const { profile, user } = useAuth();
+  const { profile, user, updateProfile } = useAuth();
   const { toast } = useToast();
   const [profileImage, setProfileImage] = useState(profile?.avatar_url || '');
   const [displayName, setDisplayName] = useState(profile?.first_name || '');
+  const [lastName, setLastName] = useState(profile?.last_name || '');
+  const [phone, setPhone] = useState(profile?.phone || '');
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Estados para configurações de notificação
+  const [notificationSettings, setNotificationSettings] = useState({
+    email_commissions: true,
+    email_reports: true,
+    browser_notifications: true,
+    marketing_emails: false,
+    product_updates: true
+  });
+
+  // Estados para configurações de privacidade
+  const [privacySettings, setPrivacySettings] = useState({
+    show_earnings: false,
+    show_profile_public: true,
+    allow_contact: true
+  });
   
   const handleSaveProfile = async () => {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          avatar_url: profileImage,
-          first_name: displayName
-        })
-        .eq('id', user?.id);
+    if (!displayName.trim()) {
+      toast({
+        title: "Campo obrigatório",
+        description: "Nome é obrigatório.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-      if (error) throw error;
+    setIsSaving(true);
+    
+    try {
+      const updateData = {
+          avatar_url: profileImage,
+        first_name: displayName.trim(),
+        last_name: lastName.trim(),
+        phone: phone.trim()
+      };
+
+      const { error } = await updateProfile(updateData);
+
+      if (error) {
+        throw error;
+      }
 
       toast({
-        title: "Perfil atualizado!",
+        title: "Perfil atualizado! ✅",
         description: "Suas informações foram salvas com sucesso.",
       });
       setIsEditing(false);
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Erro ao salvar",
-        description: "Não foi possível atualizar o perfil.",
+        description: error.message || "Não foi possível atualizar o perfil.",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setProfileImage('');
+    toast({
+      title: "Imagem removida",
+      description: "A imagem de perfil foi removida. Clique em salvar para confirmar.",
+    });
   };
 
   return (
@@ -59,7 +103,7 @@ const SettingsPage: React.FC = () => {
       }
     >
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Profile Settings */}
+        {/* Profile Settings - Melhorado */}
         <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-lg">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
@@ -86,31 +130,56 @@ const SettingsPage: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Profile Image Section */}
-            <div className="flex flex-col md:flex-row gap-6">
-              <div className="flex-shrink-0">
+            {/* Profile Image Section - Redesignado */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-4">
                 <Label className="text-slate-200 text-sm font-medium">Foto de Perfil</Label>
-                <div className="mt-2">
+                
                   {isEditing ? (
+                  <div className="space-y-3">
                     <ImageUpload
                       value={profileImage}
                       onChange={setProfileImage}
                       bucket="avatars"
                       folder="profiles"
                       label=""
-                      placeholder="Envie sua foto de perfil"
-                      maxWidth={200}
-                      maxHeight={200}
-                      className="w-32 h-32"
+                      placeholder="Clique para enviar sua foto"
+                      maxWidth={400}
+                      maxHeight={400}
+                      className="w-full h-48"
                     />
-                  ) : (
-                    <div className="w-32 h-32 rounded-lg border-2 border-dashed border-slate-600 flex items-center justify-center bg-slate-700/30">
+                    
+                    {profileImage && (
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleRemoveImage}
+                          className="flex-1 border-red-600 text-red-400 hover:bg-red-500/20"
+                        >
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Remover
+                        </Button>
+                      </div>
+                    )}
+                    
+                    <p className="text-xs text-slate-400">
+                      📸 Tamanho recomendado: 400x400px. Formatos: JPG, PNG
+                    </p>
+                  </div>
+                ) : (
+                  <div className="w-full h-48 rounded-lg border-2 border-dashed border-slate-600 flex items-center justify-center bg-slate-700/30 relative group">
                       {profileImage ? (
+                      <>
                         <img
                           src={profileImage}
                           alt="Foto de perfil"
                           className="w-full h-full object-cover rounded-lg"
                         />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                          <Camera className="h-8 w-8 text-white" />
+                        </div>
+                      </>
                       ) : (
                         <div className="text-center">
                           <Camera className="h-8 w-8 text-slate-400 mx-auto mb-2" />
@@ -119,18 +188,43 @@ const SettingsPage: React.FC = () => {
                       )}
                     </div>
                   )}
-                </div>
               </div>
               
-              <div className="flex-1 space-y-4">
+              <div className="md:col-span-2 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="displayName" className="text-slate-200">Nome de Exibição</Label>
+                    <Label htmlFor="displayName" className="text-slate-200">Nome *</Label>
                   <Input
                     id="displayName"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
+                      className="bg-slate-700/60 border-slate-600/50 text-white"
+                      placeholder="Seu primeiro nome"
+                      disabled={!isEditing}
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="lastName" className="text-slate-200">Sobrenome</Label>
+                    <Input
+                      id="lastName"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="bg-slate-700/60 border-slate-600/50 text-white"
+                      placeholder="Seu sobrenome"
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="phone" className="text-slate-200">Telefone</Label>
+                  <Input
+                    id="phone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     className="bg-slate-700/60 border-slate-600/50 text-white"
-                    placeholder="Seu nome"
+                    placeholder="(11) 99999-9999"
                     disabled={!isEditing}
                   />
                 </div>
@@ -160,10 +254,20 @@ const SettingsPage: React.FC = () => {
               <div className="flex gap-3 pt-4 border-t border-slate-700/50">
                 <Button
                   onClick={handleSaveProfile}
+                  disabled={isSaving}
                   className="bg-green-600 hover:bg-green-700 text-white"
                 >
+                  {isSaving ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
                   <Save className="h-4 w-4 mr-2" />
                   Salvar Alterações
+                    </>
+                  )}
                 </Button>
                 <Button
                   variant="outline"
@@ -177,7 +281,7 @@ const SettingsPage: React.FC = () => {
           </CardContent>
         </Card>
 
-          {/* Notification Settings */}
+        {/* Notification Settings - Melhorado */}
           <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
@@ -191,27 +295,101 @@ const SettingsPage: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg backdrop-blur-sm">
+            {[
+              {
+                key: 'email_commissions',
+                title: 'Email de comissões',
+                description: 'Receber email quando ganhar comissões',
+                value: notificationSettings.email_commissions
+              },
+              {
+                key: 'browser_notifications',
+                title: 'Notificações no navegador',
+                description: 'Alertas em tempo real no seu navegador',
+                value: notificationSettings.browser_notifications
+              },
+              {
+                key: 'email_reports',
+                title: 'Relatórios semanais',
+                description: 'Resumo semanal de performance por email',
+                value: notificationSettings.email_reports
+              },
+              {
+                key: 'product_updates',
+                title: 'Atualizações de produtos',
+                description: 'Novos produtos e recursos da plataforma',
+                value: notificationSettings.product_updates
+              },
+              {
+                key: 'marketing_emails',
+                title: 'Emails promocionais',
+                description: 'Ofertas especiais e campanhas de marketing',
+                value: notificationSettings.marketing_emails
+              }
+            ].map((setting) => (
+              <div key={setting.key} className="flex items-center justify-between p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg backdrop-blur-sm">
                 <div>
-                  <p className="text-white font-medium">Email de comissões</p>
-                  <p className="text-sm text-slate-400 mt-1">Receber email quando ganhar comissões</p>
+                  <p className="text-white font-medium">{setting.title}</p>
+                  <p className="text-sm text-slate-400 mt-1">{setting.description}</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch 
+                  checked={setting.value}
+                  onCheckedChange={(checked) => 
+                    setNotificationSettings(prev => ({ ...prev, [setting.key]: checked }))
+                  }
+                />
               </div>
-              <div className="flex items-center justify-between p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg backdrop-blur-sm">
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Privacy Settings - Nova seção */}
+        <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-lg">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
+              <div className="w-8 h-8 bg-purple-500/80 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-md">
+                <Shield className="h-4 w-4 text-white" />
+              </div>
+              Privacidade
+            </CardTitle>
+            <CardDescription className="text-slate-300">
+              Controle a visibilidade das suas informações
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {[
+              {
+                key: 'show_profile_public',
+                title: 'Perfil público',
+                description: 'Permitir que outros afiliados vejam seu perfil',
+                value: privacySettings.show_profile_public
+              },
+              {
+                key: 'show_earnings',
+                title: 'Mostrar ganhos',
+                description: 'Exibir suas estatísticas de ganhos publicamente',
+                value: privacySettings.show_earnings
+              },
+              {
+                key: 'allow_contact',
+                title: 'Permitir contato',
+                description: 'Outros usuários podem te enviar mensagens',
+                value: privacySettings.allow_contact
+              }
+            ].map((setting) => (
+              <div key={setting.key} className="flex items-center justify-between p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg backdrop-blur-sm">
                 <div>
-                <p className="text-white font-medium">Notificações no navegador</p>
-                <p className="text-sm text-slate-400 mt-1">Alertas em tempo real</p>
+                  <p className="text-white font-medium">{setting.title}</p>
+                  <p className="text-sm text-slate-400 mt-1">{setting.description}</p>
                 </div>
-                <Switch defaultChecked />
+                <Switch 
+                  checked={setting.value}
+                  onCheckedChange={(checked) => 
+                    setPrivacySettings(prev => ({ ...prev, [setting.key]: checked }))
+                  }
+                />
               </div>
-              <div className="flex items-center justify-between p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg backdrop-blur-sm">
-                <div>
-                <p className="text-white font-medium">Relatórios semanais</p>
-                <p className="text-sm text-slate-400 mt-1">Resumo semanal por email</p>
-                </div>
-                <Switch />
-              </div>
+            ))}
             </CardContent>
           </Card>
 
@@ -233,13 +411,19 @@ const SettingsPage: React.FC = () => {
                 variant="outline" 
                 className="w-full justify-start border-slate-600/50 text-slate-300 hover:border-blue-500 hover:text-blue-300 backdrop-blur-sm"
               >
-                Alterar Senha
+              🔐 Alterar Senha
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full justify-start border-yellow-600/50 text-yellow-400 hover:bg-yellow-500/20 hover:border-yellow-500 backdrop-blur-sm"
+            >
+              📱 Configurar 2FA
               </Button>
               <Button 
                 variant="outline" 
                 className="w-full justify-start border-red-600/50 text-red-400 hover:bg-red-500/20 hover:border-red-500 backdrop-blur-sm"
             >
-              Sair de Todas as Sessões
+              🚪 Sair de Todas as Sessões
             </Button>
           </CardContent>
         </Card>
