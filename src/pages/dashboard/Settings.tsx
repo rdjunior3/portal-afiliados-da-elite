@@ -95,8 +95,8 @@ const SettingsPage: React.FC = () => {
                     <ImageUpload
                       value={profileImage}
                       onChange={setProfileImage}
-                      bucket="profiles"
-                      folder="avatars"
+                      bucket="avatars"
+                      folder="profiles"
                       label=""
                       placeholder="Envie sua foto de perfil"
                       maxWidth={200}
