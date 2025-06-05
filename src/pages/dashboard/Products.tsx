@@ -33,7 +33,6 @@ type Product = Tables<'products'> & {
 interface ProductForm {
   name: string;
   slug: string;
-  short_description: string;
   description: string;
   price: number;
   commission_rate: number;
@@ -57,7 +56,6 @@ const Products = () => {
   const [productForm, setProductForm] = useState<ProductForm>({
     name: '',
     slug: '',
-    short_description: '',
     description: '',
     price: 0,
     commission_rate: 0,
@@ -163,7 +161,6 @@ const Products = () => {
       setProductForm({
         name: '',
         slug: '',
-        short_description: '',
         description: '',
         price: 0,
         commission_rate: 0,
@@ -220,7 +217,6 @@ const Products = () => {
     setProductForm({
       name: product.name,
       slug: product.slug,
-      short_description: product.short_description || '',
       description: product.description || '',
       price: product.price || 0,
       commission_rate: product.commission_rate,
@@ -236,7 +232,6 @@ const Products = () => {
     setProductForm({
       name: '',
       slug: '',
-      short_description: '',
       description: '',
       price: 0,
       commission_rate: 0,
@@ -365,14 +360,14 @@ const Products = () => {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="short_description" className="text-slate-200">Descrição Curta</Label>
+                        <Label htmlFor="description" className="text-slate-200">Descrição</Label>
                         <Textarea
-                          id="short_description"
-                          value={productForm.short_description}
-                          onChange={(e) => setProductForm({...productForm, short_description: e.target.value})}
+                          id="description"
+                          value={productForm.description}
+                          onChange={(e) => setProductForm({...productForm, description: e.target.value})}
                           className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                          placeholder="Descrição curta do produto"
-                          rows={2}
+                          placeholder="Descrição do produto"
+                          rows={3}
                         />
                       </div>
                       
@@ -423,18 +418,6 @@ const Products = () => {
                   {/* Descrição Completa e Link - Layout Horizontal */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="description" className="text-slate-200">Descrição Completa</Label>
-                      <Textarea
-                        id="description"
-                        value={productForm.description}
-                        onChange={(e) => setProductForm({...productForm, description: e.target.value})}
-                        className="bg-slate-700/60 border-slate-600/50 text-white backdrop-blur-sm"
-                        placeholder="Descrição detalhada do produto"
-                        rows={4}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
                       <Label htmlFor="affiliate_link" className="text-slate-200">Link de Afiliado</Label>
                       <Textarea
                         id="affiliate_link"
@@ -444,6 +427,17 @@ const Products = () => {
                         placeholder="https://exemplo.com/produto"
                         rows={4}
                       />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label className="text-slate-200">Observações Adicionais</Label>
+                      <div className="p-3 bg-slate-700/40 border border-slate-600/50 rounded-lg">
+                        <p className="text-xs text-slate-400">
+                          • Certifique-se de que o link de afiliado está correto<br/>
+                          • Teste o link antes de publicar<br/>
+                          • Mantenha as informações atualizadas
+                        </p>
+                      </div>
                     </div>
                   </div>
 
@@ -619,7 +613,7 @@ const Products = () => {
 
                   <CardContent className="space-y-4 pb-4">
                   <p className="text-sm text-slate-300 line-clamp-3">
-                    {product.short_description || product.description || 'Sem descrição disponível'}
+                    {product.description || 'Sem descrição disponível'}
                   </p>
                   
                   <div className="flex items-center justify-between">

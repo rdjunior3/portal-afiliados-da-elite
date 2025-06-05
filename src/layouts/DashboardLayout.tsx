@@ -6,8 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInitialSetup } from '@/hooks/useInitialSetup';
+import { useNotifications } from '@/hooks/useNotifications';
 import ThemeToggle from '@/components/ThemeToggle';
 import EliteLogo from '@/components/ui/EliteLogo';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 import {
   Home,
@@ -22,7 +25,10 @@ import {
   Menu,
   Bell,
   LogOut,
-  Sparkles
+  Sparkles,
+  DollarSign,
+  Trophy,
+  Check
 } from 'lucide-react';
 
 const TrophyIcon = ({ className = "w-4 h-4", color = "currentColor" }) => (
@@ -49,6 +55,9 @@ const DashboardLayout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
+  
+  // Hook de notificações
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
   useInitialSetup();
 
@@ -156,6 +165,34 @@ const DashboardLayout: React.FC = () => {
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'commission':
+        return <DollarSign className="h-4 w-4 text-orange-400" />;
+      case 'payment':
+        return <DollarSign className="h-4 w-4 text-green-400" />;
+      case 'product':
+        return <Package className="h-4 w-4 text-blue-400" />;
+      case 'achievement':
+        return <Trophy className="h-4 w-4 text-yellow-400" />;
+      case 'system':
+        return <Settings className="h-4 w-4 text-slate-400" />;
+      default:
+        return <Bell className="h-4 w-4 text-orange-400" />;
+    }
+  };
+
+  const formatNotificationTime = (dateString: string) => {
+    try {
+      return formatDistanceToNow(new Date(dateString), {
+        addSuffix: true,
+        locale: ptBR
+      });
+    } catch {
+      return 'Agora mesmo';
+    }
   };
 
   return (
@@ -434,30 +471,102 @@ const DashboardLayout: React.FC = () => {
                   className="text-slate-300 hover:text-white relative hover:bg-slate-700/50 transition-all duration-200 h-8 w-8 p-0"
                 >
                   <Bell className="h-4 w-4" />
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-lg">
-                    <span className="text-xs text-slate-900 font-bold">0</span>
-                  </span>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-lg">
+                      <span className="text-xs text-slate-900 font-bold">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    </span>
+                  )}
                 </Button>
                 
                 {notificationsOpen && (
                   <div className="absolute right-0 top-full mt-3 w-80 lg:w-96 bg-slate-800/95 backdrop-blur-xl border border-slate-600/50 rounded-xl shadow-2xl z-50">
                     <div className="p-4 border-b border-slate-600/50 bg-gradient-to-r from-slate-700/30 to-slate-600/30">
-                      <h3 className="text-white font-bold flex items-center gap-2">
-                        Notificações Elite
-                      </h3>
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-white font-bold flex items-center gap-2">
+                          Notificações Elite
+                          {unreadCount > 0 && (
+                            <Badge className="bg-orange-500/20 text-orange-400 text-xs">
+                              {unreadCount} nova{unreadCount !== 1 ? 's' : ''}
+                            </Badge>
+                          )}
+                        </h3>
+                        {unreadCount > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={markAllAsRead}
+                            className="text-xs text-orange-300 hover:text-orange-200 hover:bg-orange-500/20 h-6 px-2"
+                          >
+                            <Check className="h-3 w-3 mr-1" />
+                            Marcar todas
+                          </Button>
+                        )}
+                      </div>
                     </div>
                     <div className="max-h-80 overflow-y-auto">
-                      <div className="p-8 text-center">
-                        <Bell className="mx-auto h-8 w-8 text-slate-400 mb-3" />
-                        <p className="text-sm text-slate-400">Nenhuma notificação no momento</p>
-                        <p className="text-xs text-slate-500 mt-1">Suas atualizações aparecerão aqui</p>
-                      </div>
+                      {notifications.length > 0 ? (
+                        <div className="space-y-1">
+                          {notifications.slice(0, 5).map((notification) => (
+                            <div
+                              key={notification.id}
+                              className={cn(
+                                "p-3 hover:bg-slate-700/30 transition-colors cursor-pointer border-l-2",
+                                !notification.is_read 
+                                  ? "border-l-orange-500 bg-slate-700/20" 
+                                  : "border-l-transparent"
+                              )}
+                              onClick={() => {
+                                if (!notification.is_read) {
+                                  markAsRead(notification.id);
+                                }
+                                if (notification.action_url) {
+                                  window.open(notification.action_url, '_blank');
+                                }
+                              }}
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="p-1.5 bg-slate-600/30 rounded-lg">
+                                  {getNotificationIcon(notification.type)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <p className="text-sm font-medium text-white truncate">
+                                      {notification.title}
+                                    </p>
+                                    {!notification.is_read && (
+                                      <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0" />
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-slate-400 line-clamp-2 mb-1">
+                                    {notification.message}
+                                  </p>
+                                  <p className="text-xs text-slate-500">
+                                    {formatNotificationTime(notification.created_at)}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-8 text-center">
+                          <Bell className="mx-auto h-8 w-8 text-slate-400 mb-3" />
+                          <p className="text-sm text-slate-400">Nenhuma notificação no momento</p>
+                          <p className="text-xs text-slate-500 mt-1">Suas atualizações aparecerão aqui</p>
+                        </div>
+                      )}
                     </div>
                     <div className="p-4 border-t border-slate-600/50 bg-gradient-to-r from-slate-700/30 to-slate-600/30">
                       <Button 
                         variant="ghost" 
                         size="sm" 
                         className="w-full text-orange-300 hover:text-orange-200 hover:bg-orange-500/20 transition-all duration-200"
+                        onClick={() => {
+                          navigate('/dashboard/notifications');
+                          setNotificationsOpen(false);
+                        }}
                       >
                         Ver todas as notificações
                       </Button>

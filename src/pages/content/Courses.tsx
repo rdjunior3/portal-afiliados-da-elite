@@ -24,6 +24,7 @@ import {
   GraduationCap
 } from 'lucide-react';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -199,10 +200,18 @@ const Courses: React.FC = () => {
 
   return (
     <PageLayout
-      title="🎓 Área de Aulas Elite"
-      description="Acesse conteúdos exclusivos e treinamentos premium para afiliados"
+      fullWidth={true}
+      headerContent={
+        <div className="max-w-7xl mx-auto">
+          <PageHeader
+            title="Aulas Elite"
+            description="Acesse conteúdos exclusivos e treinamentos premium para afiliados"
+            icon="🎓"
+          />
+        </div>
+      }
     >
-      <div className="space-y-8">
+      <div className="max-w-7xl mx-auto space-y-8">
         {/* Header com busca e ações */}
         <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
           <div className="relative flex-1 max-w-md">

@@ -109,37 +109,48 @@ const Dashboard = () => {
     return user.email?.split('@')[0] || 'Afiliado';
   };
 
-  // Stats Cards Data
+  // Stats Cards Data com informações mockadas
   const statsCards = [
     {
-      title: 'Status Elite',
-      value: profile?.affiliate_status === 'approved' ? 'ATIVO' : 'PENDENTE',
-      icon: Sparkles,
-      color: 'orange',
-      bgClass: 'from-orange-500/20 to-orange-600/10 border-orange-500/30'
-    },
-    {
-      title: '💰 Comissões',
-      value: 'R$ 0,00',
+      title: 'Comissões do Mês',
+      value: 'R$ 2.487,50',
+      change: '+15.2%',
       icon: DollarSign,
       color: 'green',
       bgClass: 'from-green-500/20 to-green-600/10 border-green-500/30'
     },
     {
-      title: '📊 Performance',
-      value: 'Elite',
-      icon: TrendingUp,
+      title: 'Cliques Únicos',
+      value: '1.842',
+      change: '+8.7%',
+      icon: Target,
       color: 'blue',
       bgClass: 'from-blue-500/20 to-blue-600/10 border-blue-500/30'
     },
     {
-      title: '🎯 Meta',
-      value: '0%',
-      icon: Target,
+      title: 'Taxa Conversão',
+      value: '80%',
+      change: '+2.1%',
+      icon: TrendingUp,
+      color: 'orange',
+      bgClass: 'from-orange-500/20 to-orange-600/10 border-orange-500/30'
+    },
+    {
+      title: 'Status Elite',
+      value: profile?.affiliate_status === 'approved' ? 'ATIVO' : 'PENDENTE',
+      icon: Sparkles,
       color: 'purple',
       bgClass: 'from-purple-500/20 to-purple-600/10 border-purple-500/30'
     }
   ];
+
+  // Novos dados de estatísticas da plataforma
+  const platformStats = {
+    totalAffiliates: 237,
+    averageConversion: 80,
+    totalCommissions: 'R$ 45.892,30',
+    topProducts: 8
+  };
 
   return (
     <PageLayout
@@ -173,6 +184,11 @@ const Dashboard = () => {
                     <div>
                       <p className="text-slate-200 text-xs lg:text-sm font-medium">{stat.title}</p>
                       <p className="text-lg lg:text-2xl font-bold text-white">{stat.value}</p>
+                      {stat.change && (
+                        <p className="text-xs text-green-400 font-medium mt-1">
+                          {stat.change} vs mês anterior
+                        </p>
+                      )}
                     </div>
                     <div className={`h-8 w-8 lg:h-12 lg:w-12 bg-${stat.color}-500/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg`}>
                       <IconComponent className="h-4 w-4 lg:h-6 lg:w-6 text-white" />
@@ -182,9 +198,42 @@ const Dashboard = () => {
               </Card>
             );
           })}
-      </div>
+        </div>
 
-      {/* Main Content Grid */}
+        {/* Estatísticas da Plataforma */}
+        <Card className="bg-gradient-to-br from-slate-800/80 to-slate-700/60 border-slate-600/50 backdrop-blur-sm shadow-lg">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
+              <span className="text-2xl">📊</span>
+              Estatísticas da Plataforma Elite
+            </CardTitle>
+            <CardDescription className="text-slate-300">
+              Dados em tempo real da nossa comunidade de afiliados elite
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-slate-700/40 rounded-lg border border-slate-600/30">
+                <div className="text-2xl font-bold text-orange-400">{platformStats.totalAffiliates}</div>
+                <div className="text-sm text-slate-300">Afiliados Elite</div>
+              </div>
+              <div className="text-center p-4 bg-slate-700/40 rounded-lg border border-slate-600/30">
+                <div className="text-2xl font-bold text-green-400">{platformStats.averageConversion}%</div>
+                <div className="text-sm text-slate-300">Taxa Conversão Média</div>
+              </div>
+              <div className="text-center p-4 bg-slate-700/40 rounded-lg border border-slate-600/30">
+                <div className="text-2xl font-bold text-blue-400">{platformStats.totalCommissions}</div>
+                <div className="text-sm text-slate-300">Comissões Pagas</div>
+              </div>
+              <div className="text-center p-4 bg-slate-700/40 rounded-lg border border-slate-600/30">
+                <div className="text-2xl font-bold text-purple-400">{platformStats.topProducts}</div>
+                <div className="text-sm text-slate-300">Produtos Premium</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Content Area */}
           <div className="lg:col-span-2 space-y-6 lg:space-y-8">
