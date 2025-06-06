@@ -26,34 +26,39 @@ const ProfileGuard: React.FC<ProfileGuardProps> = ({ children }) => {
     return <>{children}</>;
   }
 
-  // 🔐 NOVA LÓGICA: Verificar se é admin principal
-  const isAdminPrincipal = profile?.role === 'super_admin' || profile?.role === 'admin';
+  // 👑 ADMINS TÊM ACESSO TOTAL - INCLUINDO MODERATORS
+  const isAdminUser = profile?.role === 'super_admin' || 
+                      profile?.role === 'admin' || 
+                      profile?.role === 'moderator';
   
-  if (isAdminPrincipal) {
-    // Admins principais têm acesso total, independente do perfil estar completo
+  if (isAdminUser) {
+    console.log('👑 [ProfileGuard] Admin/Moderator detectado - acesso total concedido');
+    // Admins e moderadores têm acesso total, independente do perfil estar completo
     return <>{children}</>;
   }
 
-  // Verificar se o perfil está incompleto (apenas para não-admins)
+  // Verificar se o perfil está incompleto (APENAS para afiliados regulares)
   const isProfileIncomplete = !profile?.first_name || 
                               !profile?.last_name || 
                               !profile?.phone || 
                               !profile?.onboarding_completed_at;
 
-  // NOVA LÓGICA: Permitir acesso limitado ao dashboard mesmo com perfil incompleto
+  // LÓGICA PARA AFILIADOS: Permitir acesso limitado ao dashboard mesmo com perfil incompleto
   // Só redireciona para complete-profile se explicitamente solicitado ou se é primeira vez
   const shouldRedirectToCompleteProfile = isProfileIncomplete && 
     (location.state?.forceCompleteProfile || 
      (!sessionStorage.getItem('profile_skip_allowed') && !profile?.first_name));
 
   if (shouldRedirectToCompleteProfile) {
+    console.log('📝 [ProfileGuard] Redirecionando afiliado para completar perfil');
     return <Navigate to="/complete-profile" replace />;
   }
 
-  // Se está tentando acessar recursos que requerem perfil completo e não tem
+  // Se está tentando acessar recursos que requerem perfil completo e não tem (APENAS AFILIADOS)
   const requiresCompleteProfile = ['/dashboard/chat', '/dashboard/content', '/dashboard/reports'].includes(location.pathname);
   
   if (isProfileIncomplete && requiresCompleteProfile) {
+    console.log('🔒 [ProfileGuard] Afiliado tentando acessar recurso premium sem perfil completo');
     // Em vez de redirecionar, renderiza uma mensagem de acesso limitado
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
@@ -63,24 +68,24 @@ const ProfileGuard: React.FC<ProfileGuardProps> = ({ children }) => {
               <span className="text-slate-900 text-2xl">🔒</span>
             </div>
             
-            <h2 className="text-2xl font-bold text-white mb-4">Acesso Limitado</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Acesso Premium</h2>
             <p className="text-white mb-6">
-              Complete seu perfil para acessar este recurso premium da Elite.
+              Complete seu perfil para acessar este recurso exclusivo da Elite e desbloquear todo o potencial da plataforma.
             </p>
             
             <div className="space-y-3">
               <button
                 onClick={() => window.location.href = '/complete-profile'}
-                className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300"
+                className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg shadow-orange-500/20"
               >
-                Completar Perfil Agora
+                🚀 Completar Perfil Agora
               </button>
               
               <button
                 onClick={() => window.location.href = '/dashboard'}
                 className="w-full bg-slate-700/50 hover:bg-slate-600/50 text-white hover:text-white font-medium py-3 px-6 rounded-xl border border-slate-600 hover:border-slate-500 transition-all duration-300"
               >
-                Voltar ao Dashboard
+                ← Voltar ao Dashboard
               </button>
             </div>
           </div>
@@ -90,6 +95,7 @@ const ProfileGuard: React.FC<ProfileGuardProps> = ({ children }) => {
   }
 
   // Se o perfil está completo ou está acessando áreas permitidas, renderiza o conteúdo
+  console.log('✅ [ProfileGuard] Acesso liberado');
   return <>{children}</>;
 };
 

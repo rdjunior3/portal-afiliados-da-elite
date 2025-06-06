@@ -194,7 +194,20 @@ const CompleteProfile: React.FC = () => {
 
   // Verificar se usuário já tem perfil completo
   useEffect(() => {
+    // 👑 ADMINS E MODERADORES NÃO PRECISAM COMPLETAR PERFIL
+    const isAdminUser = profile?.role === 'super_admin' || 
+                        profile?.role === 'admin' || 
+                        profile?.role === 'moderator';
+    
+    if (isAdminUser) {
+      console.log('👑 [CompleteProfile] Admin detectado - redirecionando para dashboard');
+      navigate('/dashboard');
+      return;
+    }
+
+    // Para afiliados regulares: verificar se já completou o perfil
     if (profile && profile.onboarding_completed_at) {
+      console.log('✅ [CompleteProfile] Perfil já completo - redirecionando para dashboard');
       navigate('/dashboard');
     }
   }, [profile, navigate]);

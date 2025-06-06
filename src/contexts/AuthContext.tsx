@@ -56,10 +56,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
            profile?.role === 'super_admin';
   };
 
-  // Check if user can manage content/products
+  // Check if user can manage content/products - TODOS OS TIPOS DE ADMIN
   const canManageContent = () => {
     return profile?.role === 'admin' || 
-           profile?.role === 'super_admin';
+           profile?.role === 'super_admin' || 
+           profile?.role === 'moderator';
   };
 
   // Enhanced fetch profile with timeout and retry
@@ -78,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setTimeout(() => reject(new Error('Profile fetch timeout')), 20000) // 20s timeout
           )
         ]);
-      }, 2, 2000); // 2 retries, 2s delay
+      }, 2, 2000);
 
       if (error && error.code !== 'PGRST116') {
         console.error('❌ [fetchProfile] Erro:', error);
@@ -184,21 +185,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (event === 'SIGNED_IN' && userProfile && window.location.pathname !== '/dashboard') {
               console.log('🎯 Login detectado, verificando redirecionamento...');
               
-              const isAdminPrincipal = userProfile.role === 'super_admin' || userProfile.role === 'admin';
+              // 👑 ADMINS TÊM ACESSO TOTAL - NÃO PRECISAM COMPLETAR PERFIL
+              const isAdminPrincipal = userProfile.role === 'super_admin' || 
+                                       userProfile.role === 'admin' || 
+                                       userProfile.role === 'moderator';
               
               if (isAdminPrincipal) {
-                console.log('👑 Admin principal detectado - redirecionando para dashboard');
+                console.log('👑 Admin detectado - acesso total concedido, redirecionando para dashboard');
                 setTimeout(() => window.location.href = '/dashboard', 200);
                 return;
               }
               
+              // Verificar perfil incompleto APENAS para usuários regulares (afiliados)
               const isProfileIncomplete = !userProfile.first_name || 
                                          !userProfile.last_name || 
                                          !userProfile.phone || 
                                          !userProfile.onboarding_completed_at;
               
               if (isProfileIncomplete) {
-                console.log('📝 Perfil incompleto detectado - redirecionando para completar perfil');
+                console.log('📝 Afiliado com perfil incompleto detectado - redirecionando para completar perfil');
                 setTimeout(() => window.location.href = '/complete-profile', 200);
               } else {
                 console.log('🎉 Perfil completo - redirecionando para dashboard');
