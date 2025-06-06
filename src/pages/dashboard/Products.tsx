@@ -375,8 +375,8 @@ const Products = () => {
                                 <ImageUpload
                                   value={field.value || ''}
                                   onChange={field.onChange}
-                                  bucket="products"
-                                  folder="thumbnails"
+                                  bucket="uploads"
+                                  folder="products/thumbnails"
                                   placeholder="Envie uma imagem do produto"
                                   maxWidth={400}
                                   maxHeight={400}
