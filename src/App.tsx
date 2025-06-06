@@ -18,12 +18,10 @@ import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
-import CompleteProfile from './pages/CompleteProfile';
 
 // Dashboard Pages
 import Products from './pages/dashboard/Products';
 import Reports from './pages/dashboard/Reports';
-import Profile from './pages/dashboard/Profile';
 import Notifications from './pages/dashboard/Notifications';
 import Settings from './pages/dashboard/Settings';
 
@@ -55,11 +53,6 @@ function AppContent() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/complete-profile" element={
-        <ProtectedRoute>
-          <CompleteProfile />
-        </ProtectedRoute>
-      } />
       
       {/* Dashboard Routes with Layout */}
       <Route
@@ -82,7 +75,6 @@ function AppContent() {
           </ChatGuard>
         } />
         <Route path="reports" element={<Reports />} />
-        <Route path="profile" element={<Profile />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="settings" element={<Settings />} />
       </Route>

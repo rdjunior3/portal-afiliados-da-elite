@@ -124,11 +124,9 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
               {/* Spinner principal */}
               <div className="w-12 h-12 border-3 border-slate-700 border-t-orange-400 rounded-full animate-spin"></div>
               
-              {/* Ícone central */}
+              {/* Ícone central - sem emoji */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-6 h-6 bg-orange-400 rounded-full animate-pulse flex items-center justify-center">
-                  <span className="text-slate-900 text-xs font-bold">⚡</span>
-                </div>
+                <div className="w-6 h-6 bg-orange-400 rounded-full animate-pulse"></div>
               </div>
             </div>
             
@@ -165,14 +163,6 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
               </button>
             </div>
           )}
-          
-          {/* Version Indicator - Discreto */}
-          <div className="pt-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-800/30 rounded-full text-xs text-slate-500">
-              <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
-              <span>Versão Mobile Otimizada</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>

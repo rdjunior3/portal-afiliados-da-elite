@@ -183,32 +183,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             // Redirecionamento após login
             if (event === 'SIGNED_IN' && userProfile && window.location.pathname !== '/dashboard') {
-              console.log('🎯 Login detectado, verificando redirecionamento...');
+              console.log('🎯 Login detectado, redirecionando para dashboard...');
               
-              // 👑 ADMINS TÊM ACESSO TOTAL - NÃO PRECISAM COMPLETAR PERFIL
-              const isAdminPrincipal = userProfile.role === 'super_admin' || 
-                                       userProfile.role === 'admin' || 
-                                       userProfile.role === 'moderator';
-              
-              if (isAdminPrincipal) {
-                console.log('👑 Admin detectado - acesso total concedido, redirecionando para dashboard');
-                setTimeout(() => window.location.href = '/dashboard', 200);
-                return;
-              }
-              
-              // Verificar perfil incompleto APENAS para usuários regulares (afiliados)
-              const isProfileIncomplete = !userProfile.first_name || 
-                                         !userProfile.last_name || 
-                                         !userProfile.phone || 
-                                         !userProfile.onboarding_completed_at;
-              
-              if (isProfileIncomplete) {
-                console.log('📝 Afiliado com perfil incompleto detectado - redirecionando para completar perfil');
-                setTimeout(() => window.location.href = '/complete-profile', 200);
-              } else {
-                console.log('🎉 Perfil completo - redirecionando para dashboard');
-                setTimeout(() => window.location.href = '/dashboard', 200);
-              }
+              // Todos os usuários autenticados vão direto para o dashboard
+              // Podem completar o perfil através das configurações quando necessário
+              setTimeout(() => window.location.href = '/dashboard', 200);
             }
           } catch (error) {
             console.error('💥 Erro ao buscar perfil:', error);
