@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, supabaseWithTimeout, withRetry } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { env } from '@/config/env';
 
@@ -62,23 +62,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
            profile?.role === 'super_admin';
   };
 
-  // Fetch or create user profile
+  // Enhanced fetch profile with timeout and retry
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      console.log('🔍 [fetchProfile] Buscando perfil com timeout estendido...');
+      
+      const { data, error } = await withRetry(async () => {
+        return await Promise.race([
+          supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single(),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Profile fetch timeout')), 20000) // 20s timeout
+          )
+        ]);
+      }, 2, 2000); // 2 retries, 2s delay
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching profile:', error);
+        console.error('❌ [fetchProfile] Erro:', error);
         return null;
       }
 
+      console.log('✅ [fetchProfile] Perfil carregado:', data?.email);
       return data;
     } catch (error) {
-      console.error('Unexpected error fetching profile:', error);
+      console.error('💥 [fetchProfile] Erro inesperado:', error);
       return null;
     }
   };
@@ -86,13 +96,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Create profile if it doesn't exist
   const createProfile = async (user: User, fullName?: string) => {
     try {
+      console.log('🔨 [createProfile] Criando perfil...');
+      
       const profileData = {
         id: user.id,
         email: user.email!,
         first_name: fullName ? fullName.split(' ')[0] : '',
         last_name: fullName ? fullName.split(' ').slice(1).join(' ') : '',
         avatar_url: user.user_metadata?.avatar_url || null,
-        role: 'affiliate' as const, // Default role
+        role: 'affiliate' as const,
         affiliate_status: 'pending' as const,
         commission_rate: 10.00,
         total_earnings: 0.00,
@@ -100,42 +112,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updated_at: new Date().toISOString()
       };
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .insert([profileData])
-        .select()
-        .single();
+      const { data, error } = await withRetry(async () => {
+        return await supabase
+          .from('profiles')
+          .insert([profileData])
+          .select()
+          .single();
+      }, 2, 2000);
 
       if (error) {
-        console.error('Error creating profile:', error);
+        console.error('❌ [createProfile] Erro:', error);
         return null;
       }
 
+      console.log('✅ [createProfile] Perfil criado:', data?.email);
       return data;
     } catch (error) {
-      console.error('Unexpected error creating profile:', error);
+      console.error('💥 [createProfile] Erro inesperado:', error);
       return null;
     }
   };
 
   useEffect(() => {
-    // Set timeout to prevent infinite loading - reduzido para 5 segundos
+    // TIMEOUT AUMENTADO PARA 20 SEGUNDOS
     const loadingTimeout = setTimeout(() => {
-      console.warn('Auth initialization timeout - setting loading to false');
-      // Não forçar logout em caso de timeout, apenas parar loading
+      console.warn('⏰ Auth initialization timeout (20s) - setting loading to false');
       setLoading(false);
-    }, 5000); // Reduzido para 5 segundos
+    }, 20000); // Aumentado para 20 segundos
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state change:', event, session?.user?.email);
+        console.log('🔄 Auth state change:', event, session?.user?.email);
         
         clearTimeout(loadingTimeout);
         
-        // Log detalhado para debug
         if (event === 'SIGNED_OUT' || !session) {
-          console.log('Usuário deslogado ou sem sessão válida');
+          console.log('👋 Usuário deslogado ou sem sessão válida');
           setSession(null);
           setUser(null);
           setProfile(null);
@@ -144,55 +157,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         
         if (event === 'TOKEN_REFRESHED') {
-          console.log('Token refresh - verificando validade');
+          console.log('🔄 Token refresh - verificando validade');
         }
         
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          console.log('Usuário autenticado, buscando perfil...');
-          // Fetch or create profile
-          let userProfile = await fetchProfile(session.user.id);
+          console.log('👤 Usuário autenticado, buscando perfil...');
           
-          if (!userProfile && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-            console.log('Criando perfil para novo usuário...');
-            // Create profile for new users
-            userProfile = await createProfile(
-              session.user, 
-              session.user.user_metadata?.full_name
-            );
-          }
-          
-          setProfile(userProfile);
-          console.log('Perfil carregado:', userProfile?.email);
+          try {
+            let userProfile = await fetchProfile(session.user.id);
+            
+            if (!userProfile && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+              console.log('🆕 Criando perfil para novo usuário...');
+              userProfile = await createProfile(
+                session.user, 
+                session.user.user_metadata?.full_name
+              );
+            }
+            
+            setProfile(userProfile);
+            console.log('✅ Perfil carregado:', userProfile?.email);
 
-          // 🔄 REDIRECIONAMENTO APÓS LOGIN - Apenas no evento SIGNED_IN
-          if (event === 'SIGNED_IN' && userProfile && window.location.pathname !== '/dashboard') {
-            console.log('🎯 AuthContext: Login detectado, verificando redirecionamento...');
-            
-            // Verificar se é admin principal - admins têm acesso direto
-            const isAdminPrincipal = userProfile.role === 'super_admin' || userProfile.role === 'admin';
-            
-            if (isAdminPrincipal) {
-              console.log('🎯 AuthContext: Admin principal detectado - redirecionando para dashboard');
-              setTimeout(() => window.location.href = '/dashboard', 200);
-              return;
+            // Redirecionamento após login
+            if (event === 'SIGNED_IN' && userProfile && window.location.pathname !== '/dashboard') {
+              console.log('🎯 Login detectado, verificando redirecionamento...');
+              
+              const isAdminPrincipal = userProfile.role === 'super_admin' || userProfile.role === 'admin';
+              
+              if (isAdminPrincipal) {
+                console.log('👑 Admin principal detectado - redirecionando para dashboard');
+                setTimeout(() => window.location.href = '/dashboard', 200);
+                return;
+              }
+              
+              const isProfileIncomplete = !userProfile.first_name || 
+                                         !userProfile.last_name || 
+                                         !userProfile.phone || 
+                                         !userProfile.onboarding_completed_at;
+              
+              if (isProfileIncomplete) {
+                console.log('📝 Perfil incompleto detectado - redirecionando para completar perfil');
+                setTimeout(() => window.location.href = '/complete-profile', 200);
+              } else {
+                console.log('🎉 Perfil completo - redirecionando para dashboard');
+                setTimeout(() => window.location.href = '/dashboard', 200);
+              }
             }
-            
-            // Verificar se o perfil está completo (apenas para não-admins)
-            const isProfileIncomplete = !userProfile.first_name || 
-                                       !userProfile.last_name || 
-                                       !userProfile.phone || 
-                                       !userProfile.onboarding_completed_at;
-            
-            if (isProfileIncomplete) {
-              console.log('🎯 AuthContext: Perfil incompleto detectado - redirecionando para completar perfil');
-              setTimeout(() => window.location.href = '/complete-profile', 200);
-            } else {
-              console.log('🎯 AuthContext: Perfil completo - redirecionando para dashboard');
-              setTimeout(() => window.location.href = '/dashboard', 200);
-            }
+          } catch (error) {
+            console.error('💥 Erro ao buscar perfil:', error);
+            setProfile(null);
           }
         } else {
           setProfile(null);
@@ -202,26 +217,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Get initial session with better error handling
+    // Enhanced auth initialization with timeout
     const initializeAuth = async () => {
       try {
-        console.log('Inicializando autenticação...');
+        console.log('🚀 Inicializando autenticação com timeout estendido...');
         
-        const { data: { session }, error } = await Promise.race([
-          supabase.auth.getSession(),
-          new Promise<{ data: { session: Session | null }, error: any }>((_, reject) => 
-            setTimeout(() => reject(new Error('Session check timeout')), 5000) // Otimizado para 5 segundos
-          )
-        ]);
+        const { data: { session }, error } = await supabaseWithTimeout.auth.getSession();
 
         if (error) {
-          console.error('Session check error:', error);
+          console.error('❌ Session check error:', error);
           setLoading(false);
           return;
         }
 
         if (!session) {
-          console.log('Nenhuma sessão ativa encontrada');
+          console.log('📭 Nenhuma sessão ativa encontrada');
           setSession(null);
           setUser(null);
           setProfile(null);
@@ -229,22 +239,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
 
-        console.log('Sessão ativa encontrada:', session.user.email);
+        console.log('✅ Sessão ativa encontrada:', session.user.email);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          const userProfile = await fetchProfile(session.user.id);
-          setProfile(userProfile);
-          console.log('Perfil inicial carregado:', userProfile?.email);
+          try {
+            const userProfile = await fetchProfile(session.user.id);
+            setProfile(userProfile);
+            console.log('✅ Perfil inicial carregado:', userProfile?.email);
+          } catch (error) {
+            console.error('⚠️ Erro ao buscar perfil inicial:', error);
+            setProfile(null);
+          }
         }
         
         clearTimeout(loadingTimeout);
         setLoading(false);
       } catch (error) {
-        console.error('Auth initialization error:', error);
-        // Em caso de timeout, não limpar sessão se não for necessário
-        console.warn('Timeout na inicialização - mantendo estados atuais');
+        console.error('💥 Auth initialization error:', error);
+        console.warn('⏰ Timeout na inicialização - mantendo estados atuais');
         clearTimeout(loadingTimeout);
         setLoading(false);
       }
@@ -469,8 +483,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Enhanced updateProfile with proper timeout handling
   const updateProfile = async (updates: any) => {
-    console.log('🚀 [updateProfile] INICIANDO...');
+    console.log('🚀 [updateProfile] INICIANDO com timeout estendido...');
     console.log('📝 [updateProfile] Dados recebidos:', updates);
     
     if (!user) {
@@ -486,104 +501,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error };
     }
     
-    // Função para tentar atualização com retry
-    const attemptUpdate = async (attempt: number = 1): Promise<any> => {
-      try {
-        console.log(`🔄 [updateProfile] Tentativa ${attempt}/3 - usuário:`, user.id);
-        
-        // Preparar dados para atualização
-        const updateData = {
+    try {
+      console.log('⏳ [updateProfile] Usando função com timeout estendido...');
+      
+      // Usar a nova função com timeout estendido e retry
+      const response = await withRetry(async () => {
+        return await supabaseWithTimeout.profiles.update({
           ...updates,
           updated_at: new Date().toISOString()
-        };
-        
-        console.log('📤 [updateProfile] Dados para envio:', updateData);
-        
-        // Timeout reduzido para 15 segundos
-        const updatePromise = supabase
-          .from('profiles')
-          .update(updateData)
-          .eq('id', user.id)
-          .select()
-          .single();
+        }, user.id);
+      }, 3, 2000); // 3 retries, 2s delay
 
-              const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout: Operação demorou mais de 10 segundos')), 10000)
-      );
-
-        console.log('⏳ [updateProfile] Executando query no Supabase...');
-        
-        const { data, error } = await Promise.race([
-          updatePromise,
-          timeoutPromise
-        ]) as any;
-
-        if (error) {
-          console.error(`❌ [updateProfile] Erro na tentativa ${attempt}:`, error);
-          
-          // Se for timeout e ainda temos tentativas, retry
-          if (error.message?.includes('Timeout') && attempt < 3) {
-            console.log(`🔄 [updateProfile] Timeout na tentativa ${attempt}, tentando novamente...`);
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Aguarda 2 segundos
-            return attemptUpdate(attempt + 1);
-          }
-          
-          throw error;
-        }
-
-        console.log('✅ [updateProfile] Sucesso na tentativa', attempt);
-        return { data, error: null };
-        
-      } catch (error: any) {
-        // Se for timeout e ainda temos tentativas, retry
-        if (error.message?.includes('Timeout') && attempt < 3) {
-          console.log(`🔄 [updateProfile] Timeout na tentativa ${attempt}, tentando novamente...`);
-          await new Promise(resolve => setTimeout(resolve, 2000)); // Aguarda 2 segundos
-          return attemptUpdate(attempt + 1);
-        }
-        
-        throw error;
+      if (response.error) {
+        throw response.error;
       }
-    };
-    
-    try {
-      const result = await attemptUpdate();
-      
-      if (result.data) {
-        // Atualizar o estado local do perfil
-        setProfile(result.data);
+
+      if (response.data) {
+        setProfile(response.data);
         console.log('🎉 [updateProfile] Estado local atualizado com sucesso');
       } else {
-        console.warn('⚠️ [updateProfile] Nenhum dado retornado, mas sem erro');
+        console.warn('⚠️ [updateProfile] Nenhum dado retornado, buscando perfil...');
         
-        // Tentar buscar o perfil atualizado
-        const { data: fetchedProfile, error: fetchError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-          
-        if (fetchError) {
+        try {
+          const userProfile = await fetchProfile(user.id);
+          if (userProfile) {
+            setProfile(userProfile);
+            console.log('✅ [updateProfile] Perfil buscado após update');
+          }
+        } catch (fetchError) {
           console.error('❌ [updateProfile] Erro ao buscar perfil atualizado:', fetchError);
-          return { error: fetchError };
         }
-        
-        console.log('✅ [updateProfile] Perfil buscado após update:', fetchedProfile);
-        setProfile(fetchedProfile);
       }
       
+      console.log('✅ [updateProfile] Operação concluída com sucesso');
       return { error: null };
       
     } catch (error: any) {
       console.error('💥 [updateProfile] Erro após todas as tentativas:', error);
-      console.error('💥 [updateProfile] Stack trace:', error.stack);
       
       let errorMessage = 'Erro ao atualizar perfil após múltiplas tentativas.';
       
-      if (error.message?.includes('Timeout')) {
-        errorMessage = 'A operação está demorando muito. Verifique sua conexão e tente novamente em alguns minutos.';
-      } else if (error.message?.includes('network')) {
-        errorMessage = 'Erro de rede. Verifique sua conexão com a internet.';
+      if (error.message?.includes('timeout')) {
+        errorMessage = 'A operação está demorando muito. Sua conexão pode estar lenta. Tente novamente em alguns minutos.';
+      } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        errorMessage = 'Erro de rede. Verifique sua conexão com a internet e tente novamente.';
       } else if (error.code === 'PGRST301' || error.message?.includes('permission')) {
         errorMessage = 'Sem permissão para atualizar o perfil. Faça login novamente.';
       } else if (error.code === '23505' || error.message?.includes('duplicate')) {
