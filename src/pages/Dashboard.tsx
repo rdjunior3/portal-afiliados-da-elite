@@ -237,7 +237,7 @@ const Dashboard = () => {
                    profile?.affiliate_status === 'pending' ? 'Pendente' : 'Inativo'}
                 </Badge>
               </div>
-              {profile?.affiliate_status !== 'approved' && (
+              {!isAdmin() && profile?.affiliate_status !== 'approved' && (
                   <div className="p-3 lg:p-4 bg-gradient-to-r from-yellow-500/20 to-yellow-600/10 border border-yellow-500/30 rounded-xl backdrop-blur-sm">
                     <div className="flex items-start gap-2 lg:gap-3">
                       <span className="text-lg lg:text-xl">⚠️</span>
@@ -247,10 +247,10 @@ const Dashboard = () => {
                   </p>
                   <Button 
                     size="sm" 
-                          className="mt-2 lg:mt-3 bg-yellow-600/80 hover:bg-yellow-700/80 text-slate-900 font-bold backdrop-blur-sm text-xs lg:text-sm"
-                    onClick={() => navigate('/dashboard/profile')}
+                    onClick={() => navigate('/dashboard/settings')}
+                    className="mt-2 lg:mt-3 bg-yellow-600/80 hover:bg-yellow-700/80 text-slate-900 font-bold backdrop-blur-sm text-xs lg:text-sm"
                   >
-                          Completar Perfil Elite
+                    Completar Perfil Elite <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                       </div>
                     </div>

@@ -26,12 +26,14 @@ export const defaultQueryClientConfig: QueryClientConfig = {
 
 interface QueryProviderProps {
   children: React.ReactNode;
-  client: QueryClient; // A prop client agora é obrigatória
+  client?: QueryClient; 
 }
 
 export const QueryProvider: React.FC<QueryProviderProps> = ({ children, client }) => {
+  const [queryClient] = React.useState(() => client || new QueryClient(defaultQueryClientConfig));
+
   return (
-    <QueryClientProvider client={client}>
+    <QueryClientProvider client={queryClient}>
       {children}
     </QueryClientProvider>
   );

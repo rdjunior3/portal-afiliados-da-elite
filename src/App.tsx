@@ -1,158 +1,23 @@
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
-  Outlet,
-} from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import { QueryProvider, defaultQueryClientConfig } from './providers/QueryProvider';
+import { QueryProvider } from './providers/QueryProvider';
 import { Toaster } from './components/ui/toaster';
-import ProtectedRoute from './components/ProtectedRoute';
-import ProfileGuard from './components/ProfileGuard';
-import ChatGuard from './components/ChatGuard';
 import { usePageTracking, usePerformanceMonitoring } from './hooks/useAnalytics';
-import { validateEnv } from './config/env';
-import { QueryClient } from '@tanstack/react-query';
 
-// Layouts
-import DashboardLayout from './layouts/DashboardLayout';
-
-// Pages
-import Index from './pages/Index';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import Dashboard from './pages/Dashboard';
-
-// Dashboard Pages
-import Products, { productsLoader } from './pages/dashboard/Products';
-import Reports from './pages/dashboard/Reports';
-import Notifications from './pages/dashboard/Notifications';
-import Settings from './pages/dashboard/Settings';
-
-// Content Pages
-import Courses from './pages/content/Courses';
-import CourseDetail from './pages/content/CourseDetail';
-
-// Chat Pages
-import ChatPage from './pages/chat/ChatPage';
-
-// Validar variáveis de ambiente no carregamento (não crítico)
-try {
-  const isValid = validateEnv();
-  if (!isValid) {
-    console.warn('⚠️ App inicializado com configuração limitada');
-  }
-} catch (error) {
-  console.error('❌ Erro de configuração (não crítico):', error);
-}
-
-const queryClient = new QueryClient(defaultQueryClientConfig);
-
-// O layout agora foca apenas nos hooks e na estrutura visual
-function AppLayout() {
+function App() {
   usePageTracking();
   usePerformanceMonitoring();
 
   return (
-    <div className="App">
-      <Outlet />
-      <Toaster />
-    </div>
+    <QueryProvider>
+      <AuthProvider>
+        <div className="App">
+          <Outlet />
+          <Toaster />
+        </div>
+      </AuthProvider>
+    </QueryProvider>
   );
-}
-
-const router = createBrowserRouter([
-  {
-    // Os provedores agora envolvem o layout e todas as suas rotas filhas
-    element: (
-      <QueryProvider client={queryClient}>
-        <AuthProvider>
-          <AppLayout />
-        </AuthProvider>
-      </QueryProvider>
-    ),
-    children: [
-      {
-        path: '/',
-        element: <Index />,
-      },
-      {
-        path: '/login',
-        element: <Login />,
-      },
-      {
-        path: '/signup',
-        element: <Signup />,
-      },
-      {
-        path: '/forgot-password',
-        element: <ForgotPassword />,
-      },
-      {
-        path: '/reset-password',
-        element: <ResetPassword />,
-      },
-      {
-        path: '/dashboard',
-        element: (
-          <ProtectedRoute>
-            <ProfileGuard>
-              <DashboardLayout />
-            </ProfileGuard>
-          </ProtectedRoute>
-        ),
-        children: [
-          {
-            index: true,
-            element: <Dashboard />,
-          },
-          {
-            path: 'products',
-            element: <Products />,
-            loader: productsLoader(queryClient),
-          },
-          {
-            path: 'content',
-            element: <Courses />,
-          },
-          {
-            path: 'content/:courseId',
-            element: <CourseDetail />,
-          },
-          {
-            path: 'chat',
-            element: (
-              <ChatGuard>
-                <ChatPage />
-              </ChatGuard>
-            ),
-          },
-          {
-            path: 'reports',
-            element: <Reports />,
-          },
-          {
-            path: 'notifications',
-            element: <Notifications />,
-          },
-          {
-            path: 'settings',
-            element: <Settings />,
-          },
-        ],
-      },
-      {
-        path: '*',
-        element: <Navigate to="/" replace />,
-      },
-    ],
-  },
-]);
-
-function App() {
-  return <RouterProvider router={router} />;
 }
 
 export default App;

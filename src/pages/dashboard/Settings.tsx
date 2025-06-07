@@ -13,8 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Bell, Shield, User, Camera, Save, Edit, Upload, Trash2, X, Plus, 
-  Phone, Mail, MapPin, CreditCard, DollarSign, Building, Key, 
-  Sparkles, Globe, Instagram, Youtube, Twitter, Linkedin 
+  Phone, Mail, MapPin, Sparkles, Globe, Instagram, Youtube, Linkedin, Key
 } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { useAuth } from '@/contexts/AuthContext';
@@ -33,60 +32,50 @@ const SettingsPage: React.FC = () => {
   // Estados consolidados para todas as configurações
   const [formData, setFormData] = useState({
     // Dados pessoais
-    first_name: profile?.first_name || '',
-    last_name: profile?.last_name || '',
-    phone: profile?.phone || '',
-    avatar_url: profile?.avatar_url || '',
-    bio: profile?.bio || '',
-    website: profile?.website || '',
-    city: profile?.city || '',
-    state: profile?.state || '',
-    country: profile?.country || 'Brasil',
+    first_name: '',
+    last_name: '',
+    username: '', // Novo campo para ID
+    phone: '',
+    avatar_url: '',
+    bio: '',
+    city: '',
+    state: '',
+    country: 'Brasil',
     
     // Redes sociais
-    social_instagram: profile?.social_instagram || '',
-    social_youtube: profile?.social_youtube || '',
-    social_linkedin: profile?.social_linkedin || '',
-    
-    // Configurações de pagamento
-    pix_key: profile?.pix_key || '',
-    bank_name: profile?.bank_name || '',
-    bank_account: profile?.bank_account || '',
-    bank_agency: profile?.bank_agency || '',
+    social_instagram: '',
+    social_youtube: '',
+    social_linkedin: '',
     
     // Preferências de notificação
-    email_notifications: profile?.email_notifications ?? true,
-    sms_notifications: profile?.sms_notifications ?? false,
-    marketing_emails: profile?.marketing_emails ?? true,
-    commission_alerts: profile?.commission_alerts ?? true,
+    email_notifications: true,
+    sms_notifications: false,
+    marketing_emails: true,
+    commission_alerts: true,
   });
 
-  // Atualizar formData quando profile mudar
+  // Atualizar formData quando o perfil do usuário for carregado
   useEffect(() => {
     if (profile) {
-      const newFormData = {
+      setFormData({
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
+        username: profile.username || '',
         phone: profile.phone || '',
         avatar_url: profile.avatar_url || '',
         bio: profile.bio || '',
-        website: profile.website || '',
         city: profile.city || '',
         state: profile.state || '',
         country: profile.country || 'Brasil',
-        social_instagram: profile.social_instagram || '',
-        social_youtube: profile.social_youtube || '',
-        social_linkedin: profile.social_linkedin || '',
-        pix_key: profile.pix_key || '',
-        bank_name: profile.bank_name || '',
-        bank_account: profile.bank_account || '',
-        bank_agency: profile.bank_agency || '',
-        email_notifications: profile.email_notifications ?? true,
-        sms_notifications: profile.sms_notifications ?? false,
-        marketing_emails: profile.marketing_emails ?? true,
-        commission_alerts: profile.commission_alerts ?? true,
-      };
-      setFormData(newFormData);
+        // Desestruturar de colunas JSON
+        social_instagram: profile.social_media?.instagram || '',
+        social_youtube: profile.social_media?.youtube || '',
+        social_linkedin: profile.social_media?.linkedin || '',
+        email_notifications: profile.notification_settings?.email_notifications ?? true,
+        sms_notifications: profile.notification_settings?.sms_notifications ?? false,
+        marketing_emails: profile.notification_settings?.marketing_emails ?? true,
+        commission_alerts: profile.notification_settings?.commission_alerts ?? true,
+      });
     }
   }, [profile]);
 
@@ -108,7 +97,15 @@ const SettingsPage: React.FC = () => {
     if (!formData.first_name.trim()) {
       toast({
         title: "Campo obrigatório",
-        description: "Nome é obrigatório.",
+        description: "O campo Nome é obrigatório para completar o perfil.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!formData.username.trim()) {
+      toast({
+        title: "Campo obrigatório",
+        description: "O campo ID (apelido) é obrigatório para completar o perfil.",
         variant: "destructive",
       });
       return;
@@ -117,45 +114,55 @@ const SettingsPage: React.FC = () => {
     setIsSaving(true);
     
     try {
-      const fullName = `${formData.first_name.trim()} ${formData.last_name.trim()}`;
-      
       const updateData = {
+        // Campos diretos
         first_name: formData.first_name.trim(),
         last_name: formData.last_name.trim(),
-        full_name: fullName,
+        username: formData.username.trim().toLowerCase(), // Salvar em minúsculas para consistência
+        full_name: `${formData.first_name.trim()} ${formData.last_name.trim()}`,
         phone: formData.phone.trim(),
         avatar_url: formData.avatar_url,
         bio: formData.bio.trim(),
-        website: formData.website.trim(),
         city: formData.city.trim(),
         state: formData.state.trim(),
         country: formData.country,
-        social_instagram: formData.social_instagram.trim(),
-        social_youtube: formData.social_youtube.trim(),
-        social_linkedin: formData.social_linkedin.trim(),
-        pix_key: formData.pix_key.trim(),
-        bank_name: formData.bank_name.trim(),
-        bank_account: formData.bank_account.trim(),
-        bank_agency: formData.bank_agency.trim(),
-        email_notifications: formData.email_notifications,
-        sms_notifications: formData.sms_notifications,
-        marketing_emails: formData.marketing_emails,
-        commission_alerts: formData.commission_alerts,
-        // Marcar que o perfil foi completado
-        onboarding_completed_at: new Date().toISOString()
+
+        // Agrupar em objetos JSON para o banco
+        social_media: {
+          instagram: formData.social_instagram.trim(),
+          youtube: formData.social_youtube.trim(),
+          linkedin: formData.social_linkedin.trim(),
+        },
+        notification_settings: {
+          email_notifications: formData.email_notifications,
+          sms_notifications: formData.sms_notifications,
+          marketing_emails: formData.marketing_emails,
+          commission_alerts: formData.commission_alerts,
+        },
+        
+        // Marcar que o perfil foi completado se os campos essenciais estiverem preenchidos
+        onboarding_completed_at: (formData.first_name && formData.username) ? new Date().toISOString() : null
       };
 
       const { error } = await updateProfile(updateData);
 
       if (error) {
-        throw error;
+        if (error.message.includes('profiles_username_key')) {
+           toast({
+            title: "ID já em uso",
+            description: "Este ID (apelido) já pertence a outro usuário. Por favor, escolha um diferente.",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        toast({
+          title: "Configurações salvas! ✅",
+          description: "Suas informações foram atualizadas com sucesso.",
+        });
+        setIsEditing(false);
       }
-
-      toast({
-        title: "Configurações salvas! ✅",
-        description: "Suas informações foram atualizadas com sucesso.",
-      });
-      setIsEditing(false);
     } catch (error: any) {
       toast({
         title: "Erro ao salvar",
@@ -238,290 +245,97 @@ const SettingsPage: React.FC = () => {
               )}
             </h2>
             <p className="text-slate-400">{user?.email}</p>
-            {profile?.affiliate_id && (
-              <p className="text-sm text-slate-500">ID: {profile.affiliate_id}</p>
+            {profile?.username && (
+              <p className="text-sm text-slate-500">ID: {profile.username}</p>
             )}
           </div>
         </div>
       </div>
 
-      {/* Informações Pessoais */}
+      {/* Informações Pessoais e Localização */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-slate-200">Nome *</Label>
-            {isEditing ? (
-              <Input
-                value={formData.first_name}
-                onChange={(e) => handleInputChange('first_name', e.target.value)}
-                placeholder="Seu primeiro nome"
-                className="bg-slate-700/50 border-slate-600 text-white"
-              />
-            ) : (
-              <p className="text-white p-3 bg-slate-800/30 rounded-lg">{profile?.first_name || 'Não informado'}</p>
-            )}
+          <h3 className="text-lg font-semibold text-slate-200 border-b border-slate-700 pb-2">Informações Pessoais</h3>
+          <div>
+            <Label htmlFor="first_name" className="text-slate-400">Nome *</Label>
+            <Input id="first_name" value={formData.first_name} onChange={e => handleInputChange('first_name', e.target.value)} disabled={!isEditing} className="mt-1 bg-slate-800 border-slate-700 focus:border-orange-500" />
           </div>
-          
-          <div className="space-y-2">
-            <Label className="text-slate-200">Sobrenome</Label>
-            {isEditing ? (
-              <Input
-                value={formData.last_name}
-                onChange={(e) => handleInputChange('last_name', e.target.value)}
-                placeholder="Seu sobrenome"
-                className="bg-slate-700/50 border-slate-600 text-white"
-              />
-            ) : (
-              <p className="text-white p-3 bg-slate-800/30 rounded-lg">{profile?.last_name || 'Não informado'}</p>
-            )}
+          <div>
+            <Label htmlFor="last_name" className="text-slate-400">Sobrenome</Label>
+            <Input id="last_name" value={formData.last_name} onChange={e => handleInputChange('last_name', e.target.value)} disabled={!isEditing} className="mt-1 bg-slate-800 border-slate-700 focus:border-orange-500" />
           </div>
-
-          <div className="space-y-2">
-            <Label className="text-slate-200">
-              <Phone className="inline h-4 w-4 mr-1" />
-              Telefone
-            </Label>
-            {isEditing ? (
-              <Input
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                placeholder="(11) 99999-9999"
-                className="bg-slate-700/50 border-slate-600 text-white"
-              />
-            ) : (
-              <p className="text-white p-3 bg-slate-800/30 rounded-lg">{profile?.phone || 'Não informado'}</p>
-            )}
+          <div>
+            <Label htmlFor="username" className="text-slate-400">ID (Apelido) *</Label>
+            <Input id="username" value={formData.username} onChange={e => handleInputChange('username', e.target.value)} disabled={!isEditing} className="mt-1 bg-slate-800 border-slate-700 focus:border-orange-500" />
+            <p className="text-xs text-slate-500 mt-1">Este será seu identificador único na plataforma. Use apenas letras e números, sem espaços.</p>
           </div>
-
-          <div className="space-y-2">
-            <Label className="text-slate-200">
-              <Globe className="inline h-4 w-4 mr-1" />
-              Website
-            </Label>
-            {isEditing ? (
-              <Input
-                value={formData.website}
-                onChange={(e) => handleInputChange('website', e.target.value)}
-                placeholder="https://seusite.com"
-                className="bg-slate-700/50 border-slate-600 text-white"
-              />
-            ) : (
-              <p className="text-white p-3 bg-slate-800/30 rounded-lg">{profile?.website || 'Não informado'}</p>
-            )}
+          <div>
+            <Label htmlFor="phone" className="text-slate-400">Telefone</Label>
+            <Input id="phone" value={formData.phone} onChange={e => handleInputChange('phone', e.target.value)} disabled={!isEditing} className="mt-1 bg-slate-800 border-slate-700 focus:border-orange-500" />
+          </div>
+           <div>
+            <Label htmlFor="email" className="text-slate-400">Email</Label>
+            <Input id="email" value={user?.email || ''} disabled className="mt-1 bg-slate-900 border-slate-800 text-slate-500 cursor-not-allowed" />
           </div>
         </div>
 
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-slate-200">
-                <MapPin className="inline h-4 w-4 mr-1" />
-                Cidade
-              </Label>
-              {isEditing ? (
-                <Input
-                  value={formData.city}
-                  onChange={(e) => handleInputChange('city', e.target.value)}
-                  placeholder="São Paulo"
-                  className="bg-slate-700/50 border-slate-600 text-white"
-                />
-              ) : (
-                <p className="text-white p-3 bg-slate-800/30 rounded-lg">{profile?.city || 'Não informado'}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-slate-200">Estado</Label>
-              {isEditing ? (
-                <Input
-                  value={formData.state}
-                  onChange={(e) => handleInputChange('state', e.target.value)}
-                  placeholder="SP"
-                  className="bg-slate-700/50 border-slate-600 text-white"
-                />
-              ) : (
-                <p className="text-white p-3 bg-slate-800/30 rounded-lg">{profile?.state || 'Não informado'}</p>
-              )}
-            </div>
+          <h3 className="text-lg font-semibold text-slate-200 border-b border-slate-700 pb-2">Localização</h3>
+          <div>
+            <Label htmlFor="city" className="text-slate-400">Cidade</Label>
+            <Input id="city" value={formData.city} onChange={e => handleInputChange('city', e.target.value)} disabled={!isEditing} className="mt-1 bg-slate-800 border-slate-700 focus:border-orange-500" />
           </div>
-
-          <div className="space-y-2">
-            <Label className="text-slate-200">País</Label>
-            {isEditing ? (
-              <Select value={formData.country} onValueChange={(value) => handleInputChange('country', value)}>
-                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
-                  <SelectValue placeholder="Selecione o país" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-600">
-                  <SelectItem value="Brasil">Brasil</SelectItem>
-                  <SelectItem value="Portugal">Portugal</SelectItem>
-                  <SelectItem value="Estados Unidos">Estados Unidos</SelectItem>
-                  <SelectItem value="Outro">Outro</SelectItem>
-                </SelectContent>
-              </Select>
-            ) : (
-              <p className="text-white p-3 bg-slate-800/30 rounded-lg">{profile?.country || 'Não informado'}</p>
-            )}
+          <div>
+            <Label htmlFor="state" className="text-slate-400">Estado</Label>
+            <Input id="state" value={formData.state} onChange={e => handleInputChange('state', e.target.value)} disabled={!isEditing} className="mt-1 bg-slate-800 border-slate-700 focus:border-orange-500" />
           </div>
-
-          <div className="space-y-2">
-            <Label className="text-slate-200">Email</Label>
-            <p className="text-slate-400 p-3 bg-slate-800/30 rounded-lg">{user?.email}</p>
-            <p className="text-xs text-slate-500">O email não pode ser alterado</p>
+          <div>
+            <Label htmlFor="country" className="text-slate-400">País</Label>
+             <Select 
+              value={formData.country} 
+              onValueChange={value => handleInputChange('country', value)}
+              disabled={!isEditing}
+            >
+              <SelectTrigger className="mt-1 bg-slate-800 border-slate-700 focus:border-orange-500">
+                <SelectValue placeholder="Selecione o país" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                <SelectItem value="Brasil">Brasil</SelectItem>
+                <SelectItem value="Portugal">Portugal</SelectItem>
+                <SelectItem value="Estados Unidos">Estados Unidos</SelectItem>
+                <SelectItem value="Outro">Outro</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
-
-      {/* Bio */}
-      <div className="space-y-2">
-        <Label className="text-slate-200">Bio</Label>
-        {isEditing ? (
-          <Textarea
-            value={formData.bio}
-            onChange={(e) => handleInputChange('bio', e.target.value)}
-            placeholder="Conte um pouco sobre você..."
-            className="bg-slate-700/50 border-slate-600 text-white"
-            rows={3}
-          />
-        ) : (
-          <p className="text-white p-3 bg-slate-800/30 rounded-lg min-h-[80px]">
-            {profile?.bio || 'Nenhuma biografia adicionada ainda.'}
-          </p>
-        )}
+      
+      <div>
+        <h3 className="text-lg font-semibold text-slate-200 border-b border-slate-700 pb-2 mb-4">Bio</h3>
+        <Textarea 
+          value={formData.bio} 
+          onChange={e => handleInputChange('bio', e.target.value)} 
+          disabled={!isEditing} 
+          placeholder="Conte um pouco sobre você..."
+          className="bg-slate-800 border-slate-700 focus:border-orange-500 min-h-[100px]"
+        />
       </div>
 
-      {/* Redes Sociais */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-white">Redes Sociais</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label className="text-slate-200">
-              <Instagram className="inline h-4 w-4 mr-1" />
-              Instagram
-            </Label>
-            {isEditing ? (
-              <Input
-                value={formData.social_instagram}
-                onChange={(e) => handleInputChange('social_instagram', e.target.value)}
-                placeholder="@seuinstagram"
-                className="bg-slate-700/50 border-slate-600 text-white"
-              />
-            ) : (
-              <p className="text-white p-3 bg-slate-800/30 rounded-lg">{profile?.social_instagram || 'Não informado'}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-slate-200">
-              <Youtube className="inline h-4 w-4 mr-1" />
-              YouTube
-            </Label>
-            {isEditing ? (
-              <Input
-                value={formData.social_youtube}
-                onChange={(e) => handleInputChange('social_youtube', e.target.value)}
-                placeholder="youtube.com/c/seucanal"
-                className="bg-slate-700/50 border-slate-600 text-white"
-              />
-            ) : (
-              <p className="text-white p-3 bg-slate-800/30 rounded-lg">{profile?.social_youtube || 'Não informado'}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-slate-200">
-              <Linkedin className="inline h-4 w-4 mr-1" />
-              LinkedIn
-            </Label>
-            {isEditing ? (
-              <Input
-                value={formData.social_linkedin}
-                onChange={(e) => handleInputChange('social_linkedin', e.target.value)}
-                placeholder="linkedin.com/in/seuperfil"
-                className="bg-slate-700/50 border-slate-600 text-white"
-              />
-            ) : (
-              <p className="text-white p-3 bg-slate-800/30 rounded-lg">{profile?.social_linkedin || 'Não informado'}</p>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderPaymentTab = () => (
-    <div className="space-y-6">
-      <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <DollarSign className="h-5 w-5 text-orange-400" />
-          <h3 className="text-orange-200 font-semibold">Configurações de Pagamento</h3>
-        </div>
-        <p className="text-orange-100 text-sm">
-          Configure seus dados bancários para receber suas comissões. Todas as informações são criptografadas e seguras.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+       {/* Redes Sociais */}
+      <div>
+        <h3 className="text-lg font-semibold text-slate-200 border-b border-slate-700 pb-2 mb-4">Redes Sociais (Opcional)</h3>
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-slate-200">Chave PIX</Label>
-            {isEditing ? (
-              <Input
-                value={formData.pix_key}
-                onChange={(e) => handleInputChange('pix_key', e.target.value)}
-                placeholder="email@exemplo.com ou CPF"
-                className="bg-slate-700/50 border-slate-600 text-white"
-              />
-            ) : (
-              <p className="text-white p-3 bg-slate-800/30 rounded-lg">{profile?.pix_key || 'Não informado'}</p>
-            )}
+          <div className="flex items-center gap-3">
+            <Instagram className="w-5 h-5 text-slate-400" />
+            <Input placeholder="seu_usuario_instagram" value={formData.social_instagram} onChange={e => handleInputChange('social_instagram', e.target.value)} disabled={!isEditing} className="bg-slate-800 border-slate-700" />
           </div>
-
-          <div className="space-y-2">
-            <Label className="text-slate-200">
-              <Building className="inline h-4 w-4 mr-1" />
-              Banco
-            </Label>
-            {isEditing ? (
-              <Input
-                value={formData.bank_name}
-                onChange={(e) => handleInputChange('bank_name', e.target.value)}
-                placeholder="Nome do banco"
-                className="bg-slate-700/50 border-slate-600 text-white"
-              />
-            ) : (
-              <p className="text-white p-3 bg-slate-800/30 rounded-lg">{profile?.bank_name || 'Não informado'}</p>
-            )}
+          <div className="flex items-center gap-3">
+            <Youtube className="w-5 h-5 text-slate-400" />
+            <Input placeholder="seu_canal_youtube" value={formData.social_youtube} onChange={e => handleInputChange('social_youtube', e.target.value)} disabled={!isEditing} className="bg-slate-800 border-slate-700" />
           </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-slate-200">Conta</Label>
-            {isEditing ? (
-              <Input
-                value={formData.bank_account}
-                onChange={(e) => handleInputChange('bank_account', e.target.value)}
-                placeholder="12345-6"
-                className="bg-slate-700/50 border-slate-600 text-white"
-              />
-            ) : (
-              <p className="text-white p-3 bg-slate-800/30 rounded-lg">{profile?.bank_account || 'Não informado'}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-slate-200">Agência</Label>
-            {isEditing ? (
-              <Input
-                value={formData.bank_agency}
-                onChange={(e) => handleInputChange('bank_agency', e.target.value)}
-                placeholder="1234"
-                className="bg-slate-700/50 border-slate-600 text-white"
-              />
-            ) : (
-              <p className="text-white p-3 bg-slate-800/30 rounded-lg">{profile?.bank_agency || 'Não informado'}</p>
-            )}
+          <div className="flex items-center gap-3">
+            <Linkedin className="w-5 h-5 text-slate-400" />
+            <Input placeholder="seu_perfil_linkedin" value={formData.social_linkedin} onChange={e => handleInputChange('social_linkedin', e.target.value)} disabled={!isEditing} className="bg-slate-800 border-slate-700" />
           </div>
         </div>
       </div>
@@ -529,278 +343,174 @@ const SettingsPage: React.FC = () => {
   );
 
   const renderNotificationsTab = () => (
-    <div className="space-y-6">
-      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Bell className="h-5 w-5 text-blue-400" />
-          <h3 className="text-blue-200 font-semibold">Preferências de Notificação</h3>
-        </div>
-        <p className="text-blue-100 text-sm">
-          Escolha como e quando você gostaria de receber notificações sobre suas atividades como afiliado.
-        </p>
-      </div>
-
-      <div className="space-y-4">
-        {[
-          {
-            key: 'email_notifications',
-            title: 'Notificações por Email',
-            description: 'Receba atualizações importantes por email',
-            value: formData.email_notifications
-          },
-          {
-            key: 'sms_notifications',
-            title: 'Notificações por SMS',
-            description: 'Receba alertas urgentes por SMS',
-            value: formData.sms_notifications
-          },
-          {
-            key: 'marketing_emails',
-            title: 'Emails de Marketing',
-            description: 'Receba dicas e novidades sobre produtos',
-            value: formData.marketing_emails
-          },
-          {
-            key: 'commission_alerts',
-            title: 'Alertas de Comissão',
-            description: 'Seja notificado quando ganhar comissões',
-            value: formData.commission_alerts
-          }
-        ].map((setting) => (
-          <div key={setting.key} className="flex items-center justify-between p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg backdrop-blur-sm">
-            <div>
-              <p className="text-white font-medium">{setting.title}</p>
-              <p className="text-sm text-slate-400 mt-1">{setting.description}</p>
-            </div>
-            <Switch 
-              checked={setting.value}
-              onCheckedChange={(checked) => handleInputChange(setting.key, checked)}
-              disabled={!isEditing}
-            />
+    <Card className="bg-slate-800/60 border-slate-700/50">
+      <CardHeader>
+        <CardTitle className="text-xl text-white">Preferências de Notificação</CardTitle>
+        <CardDescription className="text-slate-400">Escolha como você quer ser comunicado.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6 pt-2">
+        <div className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700">
+          <div>
+            <Label htmlFor="email_notifications" className="font-semibold text-slate-200 flex items-center gap-2">
+              <Mail className="w-4 h-4" />
+              Notificações por E-mail
+            </Label>
+            <p className="text-sm text-slate-400 mt-1">Receba e-mails sobre atividades importantes da sua conta.</p>
           </div>
-        ))}
-      </div>
-    </div>
+          <Switch
+            id="email_notifications"
+            checked={formData.email_notifications}
+            onCheckedChange={value => handleInputChange('email_notifications', value)}
+            disabled={!isEditing}
+            className="data-[state=checked]:bg-orange-500"
+          />
+        </div>
+
+        <div className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700">
+          <div>
+            <Label htmlFor="commission_alerts" className="font-semibold text-slate-200 flex items-center gap-2">
+               <Sparkles className="w-4 h-4 text-green-400" />
+              Alertas de Comissão
+            </Label>
+            <p className="text-sm text-slate-400 mt-1">Seja notificado imediatamente quando uma nova comissão for registrada.</p>
+          </div>
+          <Switch
+            id="commission_alerts"
+            checked={formData.commission_alerts}
+            onCheckedChange={value => handleInputChange('commission_alerts', value)}
+            disabled={!isEditing}
+            className="data-[state=checked]:bg-green-500"
+          />
+        </div>
+
+        <div className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-700">
+          <div>
+            <Label htmlFor="marketing_emails" className="font-semibold text-slate-200 flex items-center gap-2">
+              <Bell className="w-4 h-4" />
+              E-mails de Marketing
+            </Label>
+            <p className="text-sm text-slate-400 mt-1">Receba dicas, novidades sobre produtos e ofertas especiais.</p>
+          </div>
+          <Switch
+            id="marketing_emails"
+            checked={formData.marketing_emails}
+            onCheckedChange={value => handleInputChange('marketing_emails', value)}
+            disabled={!isEditing}
+            className="data-[state=checked]:bg-orange-500"
+          />
+        </div>
+      </CardContent>
+    </Card>
   );
 
   const renderSecurityTab = () => (
-    <div className="space-y-6">
-      <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Shield className="h-5 w-5 text-red-400" />
-          <h3 className="text-red-200 font-semibold">Configurações de Segurança</h3>
+    <Card className="bg-slate-800/60 border-slate-700/50">
+      <CardHeader>
+        <CardTitle className="text-xl text-white">Segurança da Conta</CardTitle>
+        <CardDescription className="text-slate-400">Gerencie a segurança da sua conta.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="p-4 rounded-lg bg-slate-900/50 border border-slate-700">
+          <h3 className="font-semibold text-slate-200 flex items-center gap-2"><Key className="w-4 h-4" />Senha</h3>
+          <p className="text-sm text-slate-400 mt-1 mb-3">
+            É recomendado usar uma senha forte que você não usa em nenhum outro lugar.
+          </p>
+          <Button variant="outline" className="border-slate-600/80 hover:bg-slate-700/50">
+            Alterar Senha
+          </Button>
         </div>
-        <p className="text-red-100 text-sm">
-          Mantenha sua conta segura com essas configurações de segurança.
-        </p>
-      </div>
+        
+        <div className="p-4 rounded-lg bg-slate-900/50 border border-slate-700">
+           <h3 className="font-semibold text-slate-200">Sessões Ativas</h3>
+          <p className="text-sm text-slate-400 mt-1 mb-3">
+            Isso desconectará você de todos os outros dispositivos.
+          </p>
+          <Button variant="destructive_outline">
+            Desconectar de outros dispositivos
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
-      <div className="space-y-4">
+  const getHeaderActions = () => (
+    <>
+      {isEditing ? (
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => setIsEditing(false)}
+            className="border-slate-600/80 hover:bg-slate-700/50"
+          >
+            <X className="h-4 w-4 mr-2" />
+            Cancelar
+          </Button>
+          <Button onClick={handleSaveProfile} disabled={isSaving} className="bg-green-600 hover:bg-green-700 text-white">
+            <Save className="h-4 w-4 mr-2" />
+            {isSaving ? 'Salvando...' : 'Salvar'}
+          </Button>
+        </div>
+      ) : (
         <Button 
-          variant="outline" 
-          className="w-full justify-start border-slate-600 text-slate-300 h-auto p-4"
+          onClick={() => setIsEditing(true)}
+          className="bg-orange-600 hover:bg-orange-700 text-white"
         >
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-3">
-              <Key className="h-5 w-5" />
-              <div className="text-left">
-                <p className="font-medium">Alterar Senha</p>
-                <p className="text-sm text-slate-400">Última alteração: {new Date().toLocaleDateString()}</p>
-              </div>
-            </div>
-            <span className="text-orange-400">→</span>
-          </div>
+          <Edit className="h-4 w-4 mr-2" />
+          Editar Perfil
         </Button>
-
-        <Button 
-          variant="outline" 
-          className="w-full justify-start border-slate-600 text-slate-300 h-auto p-4"
-        >
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-3">
-              <Mail className="h-5 w-5" />
-              <div className="text-left">
-                <p className="font-medium">Alterar Email</p>
-                <p className="text-sm text-slate-400">Email atual: {user?.email}</p>
-              </div>
-            </div>
-            <span className="text-orange-400">→</span>
-          </div>
-        </Button>
-
-        <Button 
-          variant="outline" 
-          className="w-full justify-start border-yellow-600/50 text-yellow-400 hover:bg-yellow-500/20 hover:border-yellow-500 h-auto p-4"
-        >
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-3">
-              <Shield className="h-5 w-5" />
-              <div className="text-left">
-                <p className="font-medium">Configurar 2FA</p>
-                <p className="text-sm text-slate-400">Adicione uma camada extra de segurança</p>
-              </div>
-            </div>
-            <span className="text-yellow-400">→</span>
-          </div>
-        </Button>
-      </div>
-    </div>
+      )}
+    </>
   );
 
   return (
     <PageLayout
-      fullWidth={true}
-      headerContent={
-        <div className="max-w-7xl mx-auto">
-          <PageHeader
-            title="Configurações da Conta"
-            description="Gerencie seu perfil, preferências e configurações de segurança"
-            icon="⚙️"
-          />
-        </div>
-      }
+      headerContent={<PageHeader title="Configurações" description="Gerencie suas informações e preferências." customActions={getHeaderActions()} />}
     >
-      <div className="max-w-5xl mx-auto space-y-8">
-        {/* Header com botões de ação */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Configurações Completas</h1>
-            <p className="text-slate-400">
-              Configure seu perfil e preferências para uma experiência personalizada
-            </p>
-          </div>
-          {!isEditing ? (
-            <Button 
-              onClick={() => setIsEditing(true)}
-              className="bg-orange-600 hover:bg-orange-700"
-            >
-              <Edit className="mr-2 h-4 w-4" />
-              Editar Configurações
-            </Button>
-          ) : (
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleSaveProfile}
-                disabled={isSaving}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <Save className="mr-2 h-4 w-4" />
-                {isSaving ? 'Salvando...' : 'Salvar Alterações'}
-              </Button>
-              <Button 
-                onClick={() => setIsEditing(false)}
-                variant="outline"
-                className="border-slate-600 text-slate-300"
-              >
-                <X className="mr-2 h-4 w-4" />
-                Cancelar
-              </Button>
-            </div>
-          )}
-        </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3 bg-slate-800/60 border border-slate-700/50 p-1 h-auto">
+          <TabsTrigger value="personal" className="flex items-center gap-2">
+            <User className="h-4 w-4" /> Pessoal
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="h-4 w-4" /> Notificações
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" /> Segurança
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="personal" className="mt-0">
+          {renderPersonalTab()}
+        </TabsContent>
+        <TabsContent value="notifications" className="mt-0">
+          {renderNotificationsTab()}
+        </TabsContent>
+        <TabsContent value="security" className="mt-0">
+          {renderSecurityTab()}
+        </TabsContent>
+      </Tabs>
 
-        {/* Tabs de configuração */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-slate-800/50 border border-slate-700/50">
-            <TabsTrigger value="personal" className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Pessoal
-            </TabsTrigger>
-            <TabsTrigger value="payment" className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4" />
-              Pagamento
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2">
-              <Bell className="h-4 w-4" />
-              Notificações
-            </TabsTrigger>
-            <TabsTrigger value="security" className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              Segurança
-            </TabsTrigger>
-          </TabsList>
-
-          <div className="mt-8">
-            <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-lg">
-              <CardContent className="p-8">
-                <TabsContent value="personal" className="mt-0">
-                  {renderPersonalTab()}
-                </TabsContent>
-                <TabsContent value="payment" className="mt-0">
-                  {renderPaymentTab()}
-                </TabsContent>
-                <TabsContent value="notifications" className="mt-0">
-                  {renderNotificationsTab()}
-                </TabsContent>
-                <TabsContent value="security" className="mt-0">
-                  {renderSecurityTab()}
-                </TabsContent>
-              </CardContent>
-            </Card>
-          </div>
-        </Tabs>
-
-        {/* Modal de Upload de Avatar */}
-        <Dialog open={showAvatarModal} onOpenChange={setShowAvatarModal}>
-          <DialogContent className="max-w-md bg-slate-800 border-slate-700">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
-                <Camera className="h-5 w-5 text-orange-400" />
-                Atualizar Foto de Perfil
-              </DialogTitle>
-              <DialogDescription className="text-slate-300">
-                Selecione uma nova imagem para seu perfil. A imagem será recortada automaticamente.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="py-4">
-              <ImageUpload
-                value={formData.avatar_url}
-                onChange={(url) => {
-                  handleInputChange('avatar_url', url);
-                  if (url) {
-                    toast({
-                      title: "Imagem carregada! ✅",
-                      description: "Clique em 'Aplicar' para confirmar a alteração.",
-                    });
-                  }
-                }}
-                bucket="avatars"
-                folder="profiles"
-                label=""
-                placeholder="Clique para selecionar ou arraste uma imagem"
-                maxWidth={400}
-                maxHeight={400}
-                enableCrop={true}
-                cropAspect={1}
-                className="w-full"
-              />
-            </div>
-            
-            <DialogFooter className="gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowAvatarModal(false)}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700"
-              >
-                Cancelar
-              </Button>
-              <Button 
-                onClick={() => {
-                  setShowAvatarModal(false);
-                  toast({
-                    title: "Foto atualizada! 📸",
-                    description: "Não esqueça de salvar as alterações.",
-                  });
-                }}
-                className="bg-orange-600 hover:bg-orange-700 text-white"
-              >
-                Aplicar
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+      {/* Modal de Upload de Avatar */}
+      <Dialog open={showAvatarModal} onOpenChange={setShowAvatarModal}>
+        <DialogContent className="bg-slate-800 border-slate-700 text-white">
+          <DialogHeader>
+            <DialogTitle>Alterar Foto de Perfil</DialogTitle>
+            <DialogDescription>
+              Faça o upload de uma nova imagem para o seu perfil.
+            </DialogDescription>
+          </DialogHeader>
+          <ImageUpload 
+            onUploadComplete={(url) => {
+              handleInputChange('avatar_url', url);
+              setShowAvatarModal(false);
+              toast({ title: 'Upload concluído!', description: 'Sua nova foto de perfil está pronta. Salve as alterações para aplicá-la.' });
+            }}
+          />
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowAvatarModal(false)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageLayout>
   );
 };
