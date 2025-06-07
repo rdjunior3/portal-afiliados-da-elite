@@ -425,7 +425,7 @@ const SettingsPage: React.FC = () => {
           <p className="text-sm text-slate-400 mt-1 mb-3">
             Isso desconectará você de todos os outros dispositivos.
           </p>
-          <Button variant="destructive_outline">
+          <Button variant="destructive">
             Desconectar de outros dispositivos
           </Button>
         </div>
@@ -466,7 +466,7 @@ const SettingsPage: React.FC = () => {
 
   return (
     <PageLayout
-      headerContent={<PageHeader title="Configurações" description="Gerencie suas informações e preferências." customActions={getHeaderActions()} />}
+      headerContent={<PageHeader title="Configurações" description="Gerencie suas informações e preferências." actions={getHeaderActions()} />}
     >
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3 bg-slate-800/60 border border-slate-700/50 p-1 h-auto">
@@ -498,19 +498,25 @@ const SettingsPage: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Alterar Foto de Perfil</DialogTitle>
             <DialogDescription>
-              Faça o upload de uma nova imagem para o seu perfil.
+              Recomendamos uma imagem quadrada (1:1) de até 800x800px para melhor qualidade.
             </DialogDescription>
           </DialogHeader>
-          <ImageUpload 
-            onUploadComplete={(url) => {
-              handleInputChange('avatar_url', url);
-              setShowAvatarModal(false);
-              toast({ title: 'Upload concluído!', description: 'Sua nova foto de perfil está pronta. Salve as alterações para aplicá-la.' });
-            }}
-          />
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowAvatarModal(false)}>Fechar</Button>
-          </DialogFooter>
+          <div className="py-4">
+            <ImageUpload
+              value={formData.avatar_url}
+              onChange={(url) => {
+                handleInputChange('avatar_url', url);
+                setShowAvatarModal(false); 
+                toast({ title: 'Avatar atualizado!', description: 'Clique em "Salvar" para aplicar as mudanças.'});
+              }}
+              bucket="avatars"
+              folder={user ? `public/${user.id}` : 'public'}
+              placeholder="Enviar nova foto"
+              cropAspect={1}
+              maxWidth={800}
+              maxHeight={800}
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </PageLayout>

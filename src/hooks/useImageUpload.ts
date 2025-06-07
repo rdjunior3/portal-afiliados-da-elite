@@ -151,7 +151,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       const random = Math.random().toString(36).substring(7);
       const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${timestamp}-${random}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const filePath = options.folder ? `${options.folder}/${fileName}` : fileName;
 
       console.log(`📤 [Enhanced Upload] Enviando para: ${options.bucket}/${filePath}`);
       setUploadProgress(50);

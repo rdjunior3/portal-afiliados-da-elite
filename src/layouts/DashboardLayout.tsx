@@ -241,53 +241,54 @@ const DashboardLayout: React.FC = () => {
           {!sidebarCollapsed && (
             <div className="border-b border-slate-700/50 bg-gradient-to-r from-slate-800/30 to-slate-700/30 p-4 lg:p-6">
               <div className="flex items-center gap-3 lg:gap-4">
-              <div className="relative">
-                  <div className="h-10 w-10 lg:h-12 lg:w-12 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center shadow-lg border-2 border-orange-300/20">
-                    <TrophyIcon className="w-5 h-5 lg:w-6 lg:h-6" color="#1e293b" />
-                </div>
-                <div className="absolute -bottom-1 -right-1">
-                  {profile?.affiliate_status === 'approved' && (
-                      <div className="w-3 h-3 lg:w-4 lg:h-4 bg-green-500 rounded-full flex items-center justify-center border-2 border-slate-900">
-                        <Sparkles className="w-1.5 h-1.5 lg:w-2.5 lg:h-2.5 text-white" />
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                  <p className="text-xs lg:text-sm font-bold text-white truncate">
-                  {getDisplayName()}
-                </p>
-                  <div className="flex items-center gap-2 mt-1">
-                  <p className="text-xs text-slate-400 truncate">
-                      ID: {profile?.affiliate_id || 'Pendente'}
-                  </p>
-                  {profile?.affiliate_status && (
-                    <Badge 
-                      variant="outline"
-                      className={cn(
-                          "text-xs px-1.5 py-0.5 h-4 lg:h-5 font-bold border",
-                        profile.affiliate_status === 'approved' 
-                            ? 'border-orange-400/60 text-orange-200 bg-orange-500/20' 
-                          : profile.affiliate_status === 'pending'
-                            ? 'border-yellow-400/60 text-yellow-200 bg-yellow-500/20'
-                            : 'border-red-400/60 text-red-200 bg-red-500/20'
+                <div className="relative">
+                    <div className="h-10 w-10 lg:h-12 lg:w-12 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center shadow-lg border-2 border-orange-300/20">
+                      {profile?.avatar_url ? (
+                        <img
+                          src={profile.avatar_url}
+                          alt="Foto de perfil"
+                          className="h-full w-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <TrophyIcon className="w-5 h-5 lg:w-6 lg:h-6" color="#1e293b" />
                       )}
-                    >
-                        {profile.affiliate_status === 'approved' ? 'ELITE' : 
-                         profile.affiliate_status === 'pending' ? 'PENDENTE' : 'INATIVO'}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1">
+                    {profile?.affiliate_status === 'approved' && (
+                        <div className="w-3 h-3 lg:w-4 lg:h-4 bg-green-500 rounded-full flex items-center justify-center border-2 border-slate-900">
+                          <Check className="h-2 w-2 text-white" />
+                        </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex-1">
+                  <h3 className="text-sm lg:text-base font-semibold text-white truncate">{getDisplayName()}</h3>
+                  <p className="text-xs text-slate-400 capitalize">{profile?.role || 'Afiliado'}</p>
+                  {profile?.affiliate_status === 'approved' && (
+                    <Badge variant="outline" className="mt-1 border-orange-500/30 text-orange-400 bg-orange-500/10 text-xs px-1.5 py-0.5">
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      Elite
                     </Badge>
                   )}
                 </div>
               </div>
             </div>
-          </div>
           )}
 
           {sidebarCollapsed && (
             <div className="border-b border-slate-700/50 p-3 lg:p-4 flex justify-center">
               <div className="relative">
                 <div className="h-8 w-8 lg:h-10 lg:w-10 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center shadow-lg border-2 border-orange-300/20">
-                  <TrophyIcon className="w-4 h-4 lg:w-5 lg:h-5" color="#1e293b" />
+                  {profile?.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt="Foto de perfil"
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <TrophyIcon className="w-4 h-4 lg:w-5 lg:h-5" color="#1e293b" />
+                  )}
                 </div>
                 {profile?.affiliate_status === 'approved' && (
                   <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 lg:w-3 lg:h-3 bg-green-500 rounded-full border border-slate-900"></div>
@@ -296,7 +297,7 @@ const DashboardLayout: React.FC = () => {
             </div>
           )}
 
-          <nav className="flex-1 space-y-1 lg:space-y-2 p-3 lg:p-4 overflow-y-auto">
+          <nav className="flex-1 space-y-2 p-2 lg:p-4 overflow-y-auto">
             {navigation.map((item) => {
               const isActive = isActivePath(item.href);
               
@@ -429,157 +430,139 @@ const DashboardLayout: React.FC = () => {
       </aside>
 
       <div className={cn("transition-all duration-300", sidebarCollapsed ? "lg:pl-16 xl:pl-20" : "lg:pl-72 xl:pl-80")}>
-        <header className="sticky top-0 z-30 border-b border-slate-700/50 bg-slate-900/90 backdrop-blur-xl shadow-lg">
-          <div className="flex h-14 lg:h-16 items-center justify-between px-4 lg:px-6">
-            <div className="flex items-center gap-3 lg:gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="lg:hidden text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 h-8 w-8 p-0"
-                onClick={() => setSidebarOpen(true)}
-              >
-                <Menu className="h-4 w-4" />
-              </Button>
-              
-              <div className="lg:hidden">
-                <EliteLogo size="sm" showText={false} animated={true} />
-              </div>
-              
-              <div className="hidden lg:flex items-center text-sm">
-                <span className="text-orange-300 font-semibold flex items-center gap-1">
-                  Dashboard
-                </span>
-                {location.pathname !== '/dashboard' && (
-                  <>
-                    <span className="mx-3 text-slate-500">/</span>
-                    <span className="text-slate-200 capitalize font-medium">
-                      {location.pathname.split('/').pop()?.replace('-', ' ')}
-                    </span>
-                  </>
-                )}
-              </div>
+        <header className="sticky top-0 z-30 flex h-14 lg:h-16 items-center justify-between gap-4 border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-lg px-4 lg:px-8">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="lg:hidden text-slate-400 hover:text-white hover:bg-slate-700/50 h-8 w-8 p-0"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <div className="hidden lg:block text-sm text-slate-400">
+              Bem-vindo de volta, <span className="font-semibold text-white">{getDisplayName()}</span>!
             </div>
+          </div>
+          
+          <div className="flex items-center gap-2 md:gap-4">
+            <ThemeToggle />
 
-            <div className="flex items-center gap-2 lg:gap-3">
-              <ThemeToggle />
-              
-              <div className="relative hidden lg:block" ref={notificationsRef}>
-              <Button
-                variant="ghost"
-                size="sm"
+            {/* Notifications */}
+            <div className="relative" ref={notificationsRef}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="relative text-slate-400 hover:text-white hover:bg-slate-700/50 h-8 w-8 p-0"
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                  className="text-slate-300 hover:text-white relative hover:bg-slate-700/50 transition-all duration-200 h-8 w-8 p-0"
-                >
-                  <Bell className="h-4 w-4" />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full flex items-center justify-center border-2 border-slate-900 shadow-lg">
-                      <span className="text-xs text-slate-900 font-bold">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                      </span>
-                </span>
-                  )}
+              >
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white shadow-md">
+                    {unreadCount}
+                  </span>
+                )}
               </Button>
-              
               {notificationsOpen && (
-                  <div className="absolute right-0 top-full mt-3 w-80 lg:w-96 bg-slate-800/95 backdrop-blur-xl border border-slate-600/50 rounded-xl shadow-2xl z-50">
-                    <div className="p-4 border-b border-slate-600/50 bg-gradient-to-r from-slate-700/30 to-slate-600/30">
-                      <div className="flex items-center justify-between">
-                      <h3 className="text-white font-bold flex items-center gap-2">
-                        Notificações Elite
-                          {unreadCount > 0 && (
-                            <Badge className="bg-orange-500/20 text-orange-400 text-xs">
-                              {unreadCount} nova{unreadCount !== 1 ? 's' : ''}
-                            </Badge>
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 origin-top-right rounded-xl bg-slate-800/90 backdrop-blur-lg border border-slate-700/50 shadow-2xl z-50 overflow-hidden">
+                  <div className="p-3 border-b border-slate-700/50 flex items-center justify-between">
+                    <h3 className="font-semibold text-white">Notificações</h3>
+                    {notifications.length > 0 && (
+                      <Button variant="link" size="sm" className="text-orange-400 p-0 h-auto" onClick={markAllAsRead}>
+                        Marcar todas como lidas
+                      </Button>
+                    )}
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="text-center p-8">
+                        <p className="text-slate-400">Nenhuma notificação por aqui!</p>
+                      </div>
+                    ) : (
+                      notifications.map(notif => (
+                        <div 
+                          key={notif.id} 
+                          className={cn(
+                            "flex items-start gap-4 p-3 border-b border-slate-700/50 transition-colors",
+                            !notif.is_read && "bg-orange-500/5 hover:bg-orange-500/10"
                           )}
-                      </h3>
-                        {unreadCount > 0 && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={markAllAsRead}
-                            className="text-xs text-orange-300 hover:text-orange-200 hover:bg-orange-500/20 h-6 px-2"
-                          >
-                            <Check className="h-3 w-3 mr-1" />
-                            Marcar todas
-                          </Button>
-                        )}
-                      </div>
-                  </div>
-                    <div className="max-h-80 overflow-y-auto">
-                      {notifications.length > 0 ? (
-                        <div className="space-y-1">
-                          {notifications.slice(0, 5).map((notification) => (
-                            <div
-                              key={notification.id}
-                              className={cn(
-                                "p-3 hover:bg-slate-700/30 transition-colors cursor-pointer border-l-2",
-                                !notification.is_read 
-                                  ? "border-l-orange-500 bg-slate-700/20" 
-                                  : "border-l-transparent"
-                              )}
-                              onClick={() => {
-                                if (!notification.is_read) {
-                                  markAsRead(notification.id);
-                                }
-                                if (notification.action_url) {
-                                  window.open(notification.action_url, '_blank');
-                                }
-                              }}
-                            >
-                      <div className="flex items-start gap-3">
-                                <div className="p-1.5 bg-slate-600/30 rounded-lg">
-                                  {getNotificationIcon(notification.type)}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <p className="text-sm font-medium text-white truncate">
-                                      {notification.title}
-                                    </p>
-                                    {!notification.is_read && (
-                                      <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0" />
-                                    )}
-                                  </div>
-                                  <p className="text-xs text-slate-400 line-clamp-2 mb-1">
-                                    {notification.message}
-                                  </p>
-                                  <p className="text-xs text-slate-500">
-                                    {formatNotificationTime(notification.created_at)}
-                                  </p>
+                        >
+                          <div className="w-8 h-8 flex-shrink-0 rounded-full bg-slate-700 flex items-center justify-center mt-1">
+                            {getNotificationIcon(notif.type)}
                           </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-white">{notif.title}</p>
+                            <p className="text-sm text-slate-300">{notif.message}</p>
+                            <p className="text-xs text-slate-500 mt-1">{formatNotificationTime(notif.created_at)}</p>
+                          </div>
+                          {!notif.is_read && (
+                             <Button 
+                               variant="ghost" 
+                               size="sm" 
+                               className="p-0 h-6 w-6 self-center"
+                               onClick={() => markAsRead(notif.id)}
+                               title="Marcar como lida"
+                             >
+                              <Check className="w-4 h-4 text-green-400" />
+                            </Button>
+                          )}
                         </div>
-                      </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="p-8 text-center">
-                          <Bell className="mx-auto h-8 w-8 text-slate-400 mb-3" />
-                          <p className="text-sm text-slate-400">Nenhuma notificação no momento</p>
-                          <p className="text-xs text-slate-500 mt-1">Suas atualizações aparecerão aqui</p>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4 border-t border-slate-600/50 bg-gradient-to-r from-slate-700/30 to-slate-600/30">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                        className="w-full text-orange-300 hover:text-orange-200 hover:bg-orange-500/20 transition-all duration-200"
-                      onClick={() => {
-                        navigate('/dashboard/notifications');
-                        setNotificationsOpen(false);
-                      }}
-                    >
-                      Ver todas as notificações
-                    </Button>
+                      ))
+                    )}
                   </div>
+                  {notifications.length > 0 && (
+                    <div className="p-2 bg-slate-900/50">
+                      <Button variant="link" className="w-full text-slate-300">Ver todas</Button>
+                    </div>
+                  )}
                 </div>
               )}
+            </div>
+            
+            <div className="w-px h-6 bg-slate-700/50" />
+
+            {/* User Profile Dropdown */}
+            <div className="flex items-center gap-3">
+               <div className="relative">
+                 <div className="h-8 w-8 lg:h-10 lg:w-10 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center shadow-lg border-2 border-orange-300/20">
+                    {profile?.avatar_url ? (
+                      <img
+                        src={profile.avatar_url}
+                        alt="Foto de perfil"
+                        className="h-full w-full rounded-full object-cover"
+                      />
+                    ) : (
+                      <TrophyIcon className="w-4 h-4 lg:w-5 lg:h-5" color="#1e293b" />
+                    )}
+                 </div>
+                  {profile?.affiliate_status === 'approved' && (
+                    <div className="absolute -bottom-1 -right-1 w-3 h-3 lg:w-4 lg:h-4 bg-green-500 rounded-full flex items-center justify-center border-2 border-slate-900">
+                      <Check className="w-2 h-2 text-white" />
+                    </div>
+                  )}
+               </div>
+
+              <div className="hidden md:flex flex-col items-start">
+                <span className="text-sm font-semibold text-white">{getDisplayName()}</span>
+                <span className="text-xs text-slate-400 capitalize">{profile?.role || 'Afiliado'}</span>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 h-8 w-8 p-0"
+                title="Sair"
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
             </div>
           </div>
         </header>
 
-        <main className="flex-1">
-          <Outlet />
+        <main className="lg:pl-80 xl:pl-[21rem] pt-16 lg:pt-20">
+          <div className="p-4 sm:p-6 lg:p-8">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>
