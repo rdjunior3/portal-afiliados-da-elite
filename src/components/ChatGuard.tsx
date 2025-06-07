@@ -65,7 +65,7 @@ const ChatGuard: React.FC<ChatGuardProps> = ({ children }) => {
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button
-                  onClick={() => navigate('/dashboard/profile')}
+                  onClick={() => navigate('/dashboard/settings')}
                   className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white"
                 >
                   <CheckCircle className="mr-2 h-4 w-4" />
