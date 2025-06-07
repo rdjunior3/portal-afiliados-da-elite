@@ -433,6 +433,8 @@ const SettingsPage: React.FC = () => {
     </Card>
   );
 
+  const { isAdmin } = useAuth();
+
   const getHeaderActions = () => (
     <>
       {isEditing ? (

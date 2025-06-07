@@ -73,7 +73,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (sessionError) {
         console.error('❌ [Auth] Erro ao obter sessão inicial:', sessionError);
-        // Mesmo com erro, consideramos a inicialização concluída para não bloquear o app
       }
 
       if (initialSession) {
@@ -82,23 +81,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(currentUser);
         setSession(initialSession);
         
-        // 2. Buscar perfil do usuário da sessão
-        const userProfile = await fetchProfile(currentUser.id);
-        if (userProfile) {
+        // 2. Buscar perfil do usuário da sessão, tratando erros de forma segura
+        try {
+          const userProfile = await fetchProfile(currentUser.id);
           setProfile(userProfile);
-          console.log('✅ [Auth] Perfil inicial carregado para:', userProfile.email);
-        } else {
-          console.warn('⚠️ [Auth] Perfil não encontrado para a sessão inicial.');
-          // Poderia tentar criar um perfil aqui se essa for a lógica desejada
+          if (userProfile) {
+            console.log('✅ [Auth] Perfil inicial carregado para:', userProfile.email);
+          } else {
+             console.warn('⚠️ [Auth] Perfil não encontrado para a sessão inicial.');
+          }
+        } catch (error) {
+           console.error('💥 [Auth] Falha ao buscar perfil inicial:', error);
+           // Não bloqueia o app, mas loga o erro. O listener pode tentar de novo.
         }
+
       } else {
         console.log('📭 [Auth] Nenhuma sessão inicial encontrada.');
       }
       
-      // 3. Marcar a inicialização como concluída e remover o loading
       setLoading(false);
       console.log('🏁 [Auth] Inicialização completa.');
-
 
       // 4. Configurar o listener para MUDANÇAS de estado de autenticação
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -108,18 +110,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setSession(currentSession);
 
           if (currentSession) {
-            // Se houver uma sessão (SIGNED_IN, TOKEN_REFRESHED), buscar ou criar perfil
-            let userProfile = await fetchProfile(currentSession.user.id);
+            try {
+              let userProfile = await fetchProfile(currentSession.user.id);
 
-            if (!userProfile && event === 'SIGNED_IN') {
-                console.log('🆕 [Auth] Criando perfil para novo usuário...');
-                userProfile = await createProfile(
-                  currentSession.user,
-                  currentSession.user.user_metadata?.full_name
-                );
+              // Só cria um perfil se ele REALMENTE não existir (null) após um SIGNED_IN
+              if (userProfile === null && event === 'SIGNED_IN') {
+                  console.log('🆕 [Auth] Perfil não encontrado após login, criando um novo...');
+                  userProfile = await createProfile(
+                    currentSession.user,
+                    currentSession.user.user_metadata?.full_name
+                  );
+              }
+              setProfile(userProfile);
+              console.log('✅ [Auth] Perfil atualizado via listener para:', userProfile?.email);
+            } catch (error) {
+              console.error('💥 [Auth] Falha crítica ao buscar/criar perfil no listener. O perfil pode estar desatualizado:', error);
+              // Em caso de erro (ex: timeout), não limpamos o perfil. 
+              // É melhor manter dados antigos do que nenhum dado.
             }
-            setProfile(userProfile);
-            console.log('✅ [Auth] Perfil atualizado via listener para:', userProfile?.email);
           } else {
             // Se não houver sessão (SIGNED_OUT), limpar perfil
             setProfile(null);
@@ -135,37 +143,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     initializeAndListen();
-  }, []); // Executar apenas uma vez na montagem do componente
-
+  }, []);
 
   // Enhanced fetch profile with timeout and retry
   const fetchProfile = async (userId: string) => {
+    // Esta função agora lança um erro em caso de falha inesperada (ex: timeout)
+    // e retorna 'null' apenas quando o perfil genuinamente não é encontrado.
     try {
-      console.log('🔍 [fetchProfile] Buscando perfil com timeout estendido...');
-      
-      const { data, error } = await withRetry(async () => {
-        return await Promise.race([
-          supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', userId)
-            .single(),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Profile fetch timeout')), 20000) // 20s timeout
-          )
-        ]);
-      }, 2, 2000);
+      const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
 
+      // Se houver um erro, mas NÃO for o erro 'not found', lance-o.
       if (error && error.code !== 'PGRST116') {
-        console.error('❌ [fetchProfile] Erro:', error);
-        return null;
+        console.error('❌ [fetchProfile] Erro inesperado ao buscar perfil:', error);
+        throw error;
       }
 
-      console.log('✅ [fetchProfile] Perfil carregado:', data?.email);
-      return data;
+      if (data) {
+        console.log('✅ [fetchProfile] Perfil carregado:', data?.email);
+      } else {
+        console.log('🤔 [fetchProfile] Perfil não encontrado (código PGRST116).');
+      }
+
+      return data; // Retorna os dados do perfil ou null se não for encontrado.
     } catch (error) {
-      console.error('💥 [fetchProfile] Erro inesperado:', error);
-      return null;
+      console.error('💥 [fetchProfile] Erro pego no catch block:', error);
+      throw error; // Re-lança o erro para que a função chamadora possa tratá-lo.
     }
   };
 
@@ -360,7 +366,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     console.log(`🔑 [resetPassword] Tentativa de reset para: ${email}`);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${env.NEXT_PUBLIC_APP_URL}/reset-password`,
+        redirectTo: `${env.REDIRECT_URL}/reset-password`,
       });
 
       if (error) {
