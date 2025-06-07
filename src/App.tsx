@@ -1,22 +1,27 @@
 import { Outlet } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import { QueryProvider } from './providers/QueryProvider';
+import { useAuth } from './contexts/AuthContext';
 import { Toaster } from './components/ui/toaster';
 import { usePageTracking, usePerformanceMonitoring } from './hooks/useAnalytics';
+import { LoadingScreen } from './components/ui/loading';
 
 function App() {
   usePageTracking();
   usePerformanceMonitoring();
 
+  // O AuthProvider já está no main.tsx, então usamos o hook aqui
+  const { loading } = useAuth();
+
+  // Enquanto o AuthContext verifica a sessão, mostramos uma tela de loading global
+  if (loading) {
+    return <LoadingScreen message="Carregando sessão..." />;
+  }
+
+  // Após a verificação, o restante da aplicação é renderizado
   return (
-    <QueryProvider>
-      <AuthProvider>
-        <div className="App">
-          <Outlet />
-          <Toaster />
-        </div>
-      </AuthProvider>
-    </QueryProvider>
+    <div className="App">
+      <Outlet />
+      <Toaster />
+    </div>
   );
 }
 
