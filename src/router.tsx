@@ -1,18 +1,7 @@
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
-  Outlet,
-} from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import { QueryProvider, defaultQueryClientConfig } from './providers/QueryProvider';
-import { Toaster } from './components/ui/toaster';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import ProfileGuard from './components/ProfileGuard';
 import ChatGuard from './components/ChatGuard';
-import { usePageTracking, usePerformanceMonitoring } from './hooks/useAnalytics';
-import { validateEnv } from './config/env';
-import { QueryClient } from '@tanstack/react-query';
 
 // Layouts
 import DashboardLayout from './layouts/DashboardLayout';
@@ -26,7 +15,7 @@ import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 
 // Dashboard Pages
-import Products, { productsLoader } from './pages/dashboard/Products';
+import Products from './pages/dashboard/Products';
 import Reports from './pages/dashboard/Reports';
 import Notifications from './pages/dashboard/Notifications';
 import Settings from './pages/dashboard/Settings';
@@ -37,65 +26,35 @@ import CourseDetail from './pages/content/CourseDetail';
 
 // Chat Pages
 import ChatPage from './pages/chat/ChatPage';
+import App from './App';
 
-// Validar variáveis de ambiente no carregamento (não crítico)
-try {
-  const isValid = validateEnv();
-  if (!isValid) {
-    console.warn('⚠️ App inicializado com configuração limitada');
-  }
-} catch (error) {
-  console.error('❌ Erro de configuração (não crítico):', error);
-}
-
-const queryClient = new QueryClient(defaultQueryClientConfig);
-
-// O layout agora foca apenas nos hooks e na estrutura visual
-function AppLayout() {
-  usePageTracking();
-  usePerformanceMonitoring();
-
-  return (
-    <div className="App">
-      <Outlet />
-      <Toaster />
-    </div>
-  );
-}
-
-const router = createBrowserRouter([
+export const router = createBrowserRouter([
   {
-    // Os provedores agora envolvem o layout e todas as suas rotas filhas
-    element: (
-      <QueryProvider client={queryClient}>
-        <AuthProvider>
-          <AppLayout />
-        </AuthProvider>
-      </QueryProvider>
-    ),
+    path: '/',
+    element: <App />,
     children: [
       {
-        path: '/',
+        index: true,
         element: <Index />,
       },
       {
-        path: '/login',
+        path: 'login',
         element: <Login />,
       },
       {
-        path: '/signup',
+        path: 'signup',
         element: <Signup />,
       },
       {
-        path: '/forgot-password',
+        path: 'forgot-password',
         element: <ForgotPassword />,
       },
       {
-        path: '/reset-password',
+        path: 'reset-password',
         element: <ResetPassword />,
       },
       {
-        path: '/dashboard',
+        path: 'dashboard',
         element: (
           <ProtectedRoute>
             <ProfileGuard>
@@ -111,7 +70,6 @@ const router = createBrowserRouter([
           {
             path: 'products',
             element: <Products />,
-            loader: productsLoader(queryClient),
           },
           {
             path: 'content',
@@ -149,10 +107,4 @@ const router = createBrowserRouter([
       },
     ],
   },
-]);
-
-function App() {
-  return <RouterProvider router={router} />;
-}
-
-export default App;
+]); 

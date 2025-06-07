@@ -4,6 +4,7 @@ import EliteLogo from '../components/ui/EliteLogo';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 
 // Componente de ícone troféu pequeno para uso em botões e elementos
 const TrophyIcon = ({ className = "w-4 h-4", color = "currentColor" }) => (
@@ -118,7 +119,7 @@ const Index = () => {
                         <ellipse cx="19" cy="7.5" rx="0.8" ry="1.3" fill="rgba(255,255,255,0.2)"/>
                         
                         {/* Número 1 Central - mais proeminente */}
-                        <text x="12" y="11" font-family="Arial, sans-serif" font-size="6" font-weight="bold" text-anchor="middle" fill="rgba(255,255,255,0.95)">1</text>
+                        <text x="12" y="11" fontFamily="Arial, sans-serif" fontSize="6" fontWeight="bold" textAnchor="middle" fill="rgba(255,255,255,0.95)">1</text>
                         
                         {/* Estrelas ao redor do número 1 */}
                         <g fill="rgba(255,255,255,0.9)">
@@ -260,50 +261,29 @@ const Index = () => {
                 </div>
               </div>
               
-              {/* CTAs Organizados */}
-              <div className="flex flex-col gap-4 justify-center lg:justify-start w-full max-w-[420px] mx-auto lg:mx-0">
-                {!user ? (
-                  <>
-                    {/* Primary CTA - Cadastro */}
+              {/* Call-to-Action - Alinhados e Mobile-Friendly */}
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
                     <button 
-                      className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 font-bold py-4 px-6 rounded-xl shadow-xl hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-orange-400/40 border-2 border-orange-300/50 w-full"
+                  className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 w-full sm:w-auto px-8 py-4 rounded-xl font-bold shadow-xl hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-orange-300/40"
                       onClick={() => handleAuthAction('signup')}
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <div className="relative flex items-center justify-center gap-2">
-                        <TrophyIcon className="w-4 h-4" color="#1e293b" />
-                        <span className="text-lg">Acessar Área Elite</span>
-                        <div className="bg-yellow-400 text-slate-900 text-xs font-bold px-2 py-1 rounded-full animate-pulse border border-yellow-300">
-                          PREMIUM
-                        </div>
+                    <TrophyIcon className="w-5 h-5" color="#1e293b" />
+                    <span>Tornar-se um Afiliado Elite</span>
                       </div>
                     </button>
-                    
-                    {/* Secondary CTA - Login */}
                     <button 
-                      className="group relative bg-slate-800/60 hover:bg-slate-700/60 border-2 border-orange-500/30 hover:border-orange-400/50 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 backdrop-blur-sm w-full"
+                  className="group relative text-slate-300 hover:text-white w-full sm:w-auto px-8 py-4 rounded-lg transition-all duration-300 font-semibold hover:bg-slate-800/60 backdrop-blur-sm border border-transparent hover:border-orange-500/30"
                       onClick={() => handleAuthAction('login')}
                     >
                       <div className="flex items-center justify-center gap-2">
-                        <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                         </svg>
-                        <span className="text-base">Já sou Elite - Entrar</span>
-                      </div>
-                    </button>
-                  </>
-                ) : (
-                  <button 
-                    className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 font-bold py-4 px-6 rounded-xl shadow-xl hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-orange-300/50 w-full"
-                    onClick={() => navigate('/dashboard')}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative flex items-center justify-center gap-2">
-                      <TrophyIcon className="w-4 h-4" color="#1e293b" />
-                      <span className="text-lg">Acessar Meu Dashboard Elite</span>
+                    <span>Já sou membro</span>
                     </div>
                   </button>
-                )}
               </div>
             </div>
             
@@ -545,21 +525,21 @@ const Index = () => {
             </p>
             
             <div className="free-badge text-white text-xl font-bold px-8 py-4 rounded-full inline-block mb-12">
-              🎯 TOTALMENTE GRATUITO - R$ 0,00 - SEM TAXAS OCULTAS
+              🏆 TOTALMENTE GRATUITO - R$ 0,00 - SEM TAXAS OCULTAS
             </div>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 mb-12 stagger-children">
             <div className="glass-effect card-hover rounded-xl p-6">
-              <div className="text-3xl font-bold mb-2">R$ <span className="counter gradient-text">47.892</span></div>
+              <div className="text-3xl font-bold mb-2">R$ <span className="counter gradient-text" data-target="47892">0</span></div>
               <div className="text-slate-400">Comissões da plataforma</div>
             </div>
             <div className="glass-effect card-hover rounded-xl p-6">
-              <div className="text-3xl font-bold mb-2"><span className="counter gradient-text">237</span>+</div>
+              <div className="text-3xl font-bold mb-2"><span className="counter gradient-text" data-target="237">0</span>+</div>
               <div className="text-slate-400">Afiliados ativos</div>
             </div>
             <div className="glass-effect card-hover rounded-xl p-6">
-              <div className="text-3xl font-bold mb-2"><span className="counter gradient-text">96</span>%</div>
+              <div className="text-3xl font-bold mb-2"><span className="counter gradient-text" data-target="96">0</span>%</div>
               <div className="text-slate-400">Taxa de satisfação</div>
             </div>
           </div>
@@ -585,6 +565,15 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-950/80 border-t border-orange-500/20 mt-12 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
+          <p className="text-slate-400 text-sm">
+            &copy; {new Date().getFullYear()} Afiliados da Elite. Todos os direitos reservados.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };

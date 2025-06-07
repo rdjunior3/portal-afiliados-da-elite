@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useLoaderData, useRevalidator } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +28,7 @@ import { ProductOffer } from '@/types/product-offers.types';
 import TrophyIcon from '@/components/ui/TrophyIcon';
 import { productSchema, ProductFormData } from '@/schemas/productSchema';
 import { useSlugValidation } from '@/hooks/useSlugValidation';
+import { QueryClient } from '@tanstack/react-query';
 
 type Product = Tables<'products'> & {
   categories?: {
@@ -36,7 +38,28 @@ type Product = Tables<'products'> & {
   } | null;
 };
 
+// --- LOADER ---
+export const productsLoader = (queryClient: QueryClient) => async () => {
+  const categoriesQuery = supabase.from('categories').select('*').order('name');
+  const productsQuery = supabase.from('products').select('*, categories(id, name, color)').eq('status', 'active').order('name');
+
+  // O user não está disponível aqui, então a query de links será feita no componente.
+  // Idealmente, a informação do usuário viria de um loader pai.
+  
+  const [{ data: categories, error: catError }, { data: products, error: prodError }] = await Promise.all([
+    categoriesQuery,
+    productsQuery,
+  ]);
+
+  if (catError || prodError) {
+    throw new Response("Erro ao carregar dados dos produtos.", { status: 500 });
+  }
+
+  return { categories, products };
+};
+
 const Products = () => {
+  const initialData = useLoaderData() as { categories: any[], products: Product[] };
   const { user, canManageContent } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -48,6 +71,53 @@ const Products = () => {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productOffers, setProductOffers] = useState<ProductOffer[]>([]);
+
+  // O revalidator substitui a necessidade de invalidar queries manualmente em muitos casos
+  let revalidator = useRevalidator();
+
+  // Os dados agora vêm do loader, mas podemos usar useQuery para mantê-los atualizados
+  // e para filtragem/busca no lado do cliente ou com novas requisições.
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => initialData.categories,
+    staleTime: Infinity // Dados do loader são considerados "fresh"
+  });
+
+  const { data: products, isLoading } = useQuery({
+    queryKey: ['products', selectedCategory, searchQuery],
+    queryFn: async () => {
+      // A lógica de filtro/busca pode ser movida para o lado do cliente
+      // ou refatorada para refazer a query ao loader com parâmetros.
+      // Por enquanto, usamos os dados iniciais.
+      let filteredProducts = initialData.products;
+      if (selectedCategory !== 'all') {
+        filteredProducts = filteredProducts.filter(p => p.category_id === selectedCategory);
+      }
+      if (searchQuery) {
+        filteredProducts = filteredProducts.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+      }
+      return filteredProducts;
+    },
+    initialData: initialData.products
+  });
+
+  // Buscar links do afiliado
+  const { data: affiliateLinks } = useQuery({
+    queryKey: ['affiliate-links', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      const { data, error } = await supabase
+        .from('affiliate_links')
+        .select('product_id, custom_slug')
+        .eq('user_id', user.id)
+        .eq('status', 'active');
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user
+  });
 
   // React Hook Form com Zod
   const form = useForm<ProductFormData>({
@@ -67,65 +137,6 @@ const Products = () => {
   // Hook para validação de slug
   const { validateSlugUnique, generateSlugFromName, isValidating } = useSlugValidation({
     currentProductId: editingProduct?.id
-  });
-
-  // Buscar categorias
-  const { data: categories } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  // Buscar produtos
-  const { data: products, isLoading } = useQuery({
-    queryKey: ['products', selectedCategory, searchQuery],
-    queryFn: async () => {
-      let query = supabase
-        .from('products')
-        .select(`
-          *,
-          categories(id, name, color)
-        `)
-        .eq('status', 'active')
-        .order('name');
-
-      if (selectedCategory !== 'all') {
-        query = query.eq('category_id', selectedCategory);
-      }
-
-      if (searchQuery) {
-        query = query.ilike('name', `%${searchQuery}%`);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as Product[];
-    }
-  });
-
-  // Buscar links do afiliado
-  const { data: affiliateLinks } = useQuery({
-    queryKey: ['affiliate-links', user?.id],
-    queryFn: async () => {
-      if (!user) return [];
-      
-      const { data, error } = await supabase
-        .from('affiliate_links')
-        .select('product_id, custom_slug')
-        .eq('user_id', user.id)
-        .eq('status', 'active');
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user
   });
 
   // Função para submeter o formulário com validações
@@ -180,7 +191,7 @@ const Products = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      revalidator.revalidate(); // Recarrega os dados do loader
       setIsProductModalOpen(false);
       setEditingProduct(null);
       
@@ -233,7 +244,7 @@ const Products = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      revalidator.revalidate(); // Recarrega os dados do loader
       toast({
         title: "Produto removido!",
         description: "O produto foi removido com sucesso.",

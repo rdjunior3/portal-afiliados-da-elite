@@ -1,8 +1,8 @@
 import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, QueryClientConfig } from '@tanstack/react-query';
 
-// Configuração otimizada do QueryClient
-const queryClient = new QueryClient({
+// Configuração padrão que pode ser usada ao criar um novo client
+export const defaultQueryClientConfig: QueryClientConfig = {
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutos
@@ -22,15 +22,16 @@ const queryClient = new QueryClient({
       retry: 1,
     },
   },
-});
+};
 
 interface QueryProviderProps {
   children: React.ReactNode;
+  client: QueryClient; // A prop client agora é obrigatória
 }
 
-export const QueryProvider: React.FC<QueryProviderProps> = ({ children }) => {
+export const QueryProvider: React.FC<QueryProviderProps> = ({ children, client }) => {
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={client}>
       {children}
     </QueryClientProvider>
   );

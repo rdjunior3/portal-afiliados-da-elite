@@ -4,6 +4,36 @@
 @tailwind components;
 @tailwind utilities;
 
+@theme {
+  --font-family-sans: "Inter", "sans-serif";
+  --font-family-display: "Space Grotesk", "sans-serif";
+  --font-family-mono: "JetBrains Mono", "monospace";
+
+  --border-radius-lg: 0.75rem;
+  --border-radius-md: calc(0.75rem - 2px);
+  --border-radius-sm: calc(0.75rem - 4px);
+
+  --animation-accordion-down: accordion-down 0.2s ease-out;
+  --animation-accordion-up: accordion-up 0.2s ease-out;
+
+  --keyframes-accordion-down: {
+    from: {
+      height: 0;
+    }
+    to: {
+      height: var(--radix-accordion-content-height);
+    }
+  };
+  --keyframes-accordion-up: {
+    from: {
+      height: var(--radix-accordion-content-height);
+    }
+    to: {
+      height: 0;
+    }
+  };
+}
+
 @layer base {
   :root {
     /* Light mode colors - Updated with orange theme */
@@ -61,14 +91,13 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-}
 
-@layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 
   /* Força dark mode por padrão para melhor contraste */
