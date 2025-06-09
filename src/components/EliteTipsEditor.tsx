@@ -10,11 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Edit, Trash2, Plus, Save, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface EliteTipsEditorProps {
-  trigger?: React.ReactNode;
-}
-
-const EliteTipsEditor: React.FC<EliteTipsEditorProps> = ({ trigger }) => {
+const EliteTipsEditor = () => {
   const {
     tips,
     isSubmitting,
@@ -53,16 +49,14 @@ const EliteTipsEditor: React.FC<EliteTipsEditorProps> = ({ trigger }) => {
       if (!isOpen) handleCancel();
     }}>
       <DialogTrigger asChild>
-        {trigger || (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-orange-400 hover:text-orange-300 hover:bg-orange-500/10"
-          >
-            <Edit className="h-4 w-4 mr-1" />
-            Editar Dicas
-          </Button>
-        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-orange-400 hover:text-orange-300 hover:bg-orange-500/10"
+        >
+          <Edit className="h-4 w-4 mr-1" />
+          Editar Dicas
+        </Button>
       </DialogTrigger>
       
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-slate-800 border-slate-700">

@@ -1,5 +1,4 @@
 // Data hooks
-export * from './useProductData';
 export * from './useProducts';
 
 // Utility hooks

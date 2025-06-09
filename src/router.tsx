@@ -15,7 +15,7 @@ import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 
 // Dashboard Pages
-import Products, { productsLoader } from './pages/dashboard/Products';
+import Products from './pages/dashboard/Products';
 import Reports from './pages/dashboard/Reports';
 import Notifications from './pages/dashboard/Notifications';
 import Settings from './pages/dashboard/Settings';
@@ -72,7 +72,6 @@ export const createRouter = (queryClient: QueryClient) =>
             {
               path: 'products',
               element: <Products />,
-              loader: productsLoader(queryClient),
             },
             {
               path: 'content',
