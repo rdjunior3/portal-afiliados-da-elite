@@ -4,22 +4,16 @@ import { RouterProvider } from "react-router-dom";
 import { createRouter } from "./router";
 import "./index.css";
 import { QueryClient } from "@tanstack/react-query";
-import { AuthProvider } from "./contexts/AuthContext";
-import { QueryProvider } from "./providers/QueryProvider";
 
-// O QueryClient será instanciado dentro do QueryProvider,
-// mas o router ainda precisa de uma instância para os loaders.
+// O QueryClient ainda é necessário para ser passado para os loaders do roteador.
 const queryClient = new QueryClient();
 
-// Crie o roteador passando o client
+// Crie o roteador passando o client. O App.tsx, como elemento raiz,
+// irá agora fornecer todos os contextos necessários.
 const router = createRouter(queryClient);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <AuthProvider>
-      <QueryProvider>
-        <RouterProvider router={router} />
-      </QueryProvider>
-    </AuthProvider>
+    <RouterProvider router={router} />
   </React.StrictMode>,
 );
