@@ -128,7 +128,10 @@ const ChatPage = () => {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Erro ao buscar salas de chat (provavelmente RLS):", error);
+        return []; // Retorna array vazio em caso de erro
+      }
       return data as ChatRoom[];
     }
   });
