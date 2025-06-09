@@ -13,6 +13,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ChevronDown, Menu } from 'lucide-react';
 import { Transition } from '@headlessui/react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 
 import { 
   Home,
@@ -567,11 +568,7 @@ const DashboardLayout: React.FC = () => {
                     )}
                   </div>
                   <div className="max-h-96 overflow-y-auto">
-                    {notifications.length === 0 ? (
-                      <div className="text-center p-8">
-                        <p className="text-slate-400">Nenhuma notificação por aqui!</p>
-                      </div>
-                    ) : (
+                    {Array.isArray(notifications) && notifications.length > 0 ? (
                       notifications.map(notif => (
                         <div 
                           key={notif.id} 
@@ -601,6 +598,10 @@ const DashboardLayout: React.FC = () => {
                           )}
                         </div>
                       ))
+                    ) : (
+                      <div className="p-4 text-center text-sm text-slate-400">
+                        Nenhuma notificação nova.
+                      </div>
                     )}
                   </div>
                   {notifications.length > 0 && (

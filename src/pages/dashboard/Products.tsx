@@ -32,7 +32,7 @@ const ProductsPage = () => {
   const handleCopyLink = (url: string) => {
     if (!url) {
       toast({ title: "Link indisponível", variant: "destructive" });
-      return;
+        return;
     }
     navigator.clipboard.writeText(url);
     toast({ title: "Link de promoção copiado!" });
@@ -52,32 +52,32 @@ const ProductsPage = () => {
         description="Explore todos os nossos produtos e encontre as melhores ofertas para promover."
       />
 
-      {/* Filtros */}
+        {/* Filtros */}
       <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
+            <Input
             placeholder="Buscar por nome do produto..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-slate-800 border-slate-700"
-          />
-        </div>
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            />
+          </div>
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
           <SelectTrigger className="bg-slate-800 border-slate-700">
             <SelectValue placeholder="Filtrar por categoria" />
-          </SelectTrigger>
+            </SelectTrigger>
           <SelectContent className="bg-slate-800 border-slate-700 text-white">
             <SelectItem value="all">Todas as Categorias</SelectItem>
             {categories.map((cat) => (
               <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
       {/* Grid de Produtos */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoadingProducts
           ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-64 bg-slate-800" />)
           : filteredProducts.map((product) => (
@@ -104,16 +104,16 @@ const ProductsPage = () => {
                         <Button size="sm" onClick={() => handleCopyLink(offer.promotion_url || '')}>
                           <Copy className="h-4 w-4" />
                         </Button>
-                      </div>
+        </div>
                     ))
                   ) : (
                     <p className="text-sm text-slate-400">Nenhuma oferta disponível no momento.</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
           ))}
-      </div>
+    </div>
     </PageLayout>
   );
 };

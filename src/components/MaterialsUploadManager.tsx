@@ -7,8 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import {
-  Upload,
+import { 
+  Upload, 
   Link,
   Cloud,
   Check,
@@ -21,8 +21,8 @@ interface MaterialUploadManagerProps {
   onUploadComplete?: (material: any) => void;
 }
 
-const MaterialsUploadManager: React.FC<MaterialUploadManagerProps> = ({
-  productId,
+const MaterialsUploadManager: React.FC<MaterialUploadManagerProps> = ({ 
+  productId, 
   onUploadComplete,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -103,7 +103,7 @@ const MaterialsUploadManager: React.FC<MaterialUploadManagerProps> = ({
               <Link className="w-4 h-4" /> Link Externo
             </TabsTrigger>
           </TabsList>
-          
+
           <div className="mt-6 space-y-4">
             <div>
               <Label htmlFor="material-title" className="text-slate-300">Título do Material</Label>
@@ -146,7 +146,7 @@ const MaterialsUploadManager: React.FC<MaterialUploadManagerProps> = ({
                     <SelectItem value="other">Outro</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+                  </div>
               <div>
                 <Label htmlFor="material-tags" className="text-slate-300">Tags (separadas por vírgula)</Label>
                 <Input
@@ -156,8 +156,8 @@ const MaterialsUploadManager: React.FC<MaterialUploadManagerProps> = ({
                   value={materialData.tags}
                   onChange={(e) => setMaterialData(prev => ({...prev, tags: e.target.value}))}
                   disabled={isSubmitDisabled}
-                />
-              </div>
+                  />
+                </div>
             </div>
           </div>
 
@@ -181,29 +181,29 @@ const MaterialsUploadManager: React.FC<MaterialUploadManagerProps> = ({
                   </span> ou arraste e solte o arquivo aqui.
                 </p>
                 <p className="text-xs text-slate-500">Tamanho máximo: 10MB</p>
-              </div>
+                </div>
               <Input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                onChange={(e) => handleFileSelect(e.target.files)}
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => handleFileSelect(e.target.files)}
                 disabled={isSubmitDisabled}
-              />
+                />
             </div>
           </TabsContent>
 
           <TabsContent value="link" className="mt-6 space-y-4">
             <div>
               <Label htmlFor="external-link" className="text-slate-300">URL do Material Externo</Label>
-              <Input
-                id="external-link"
+                  <Input
+                    id="external-link"
                 placeholder="https://drive.google.com/..."
                 className="bg-slate-800 border-slate-700 text-white"
-                value={externalLink}
-                onChange={(e) => setExternalLink(e.target.value)}
+                    value={externalLink}
+                    onChange={(e) => setExternalLink(e.target.value)}
                 disabled={isSubmitDisabled}
-              />
-            </div>
+                  />
+                </div>
             <Button onClick={handleAddLink} disabled={isSubmitDisabled || !externalLink || !materialData.title}>
               {isAddingLink ? 'Adicionando...' : 'Adicionar Link'}
             </Button>
@@ -240,7 +240,7 @@ const MaterialsUploadManager: React.FC<MaterialUploadManagerProps> = ({
                   <span>Material adicionado com sucesso!</span>
                 </div>
               )}
-            </div>
+          </div>
           )}
         </Tabs>
       </CardContent>

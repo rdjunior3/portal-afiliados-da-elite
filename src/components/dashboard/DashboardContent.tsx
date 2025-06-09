@@ -165,51 +165,32 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoadingProducts ? (
-                <div className="space-y-3 lg:space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="animate-pulse">
-                      <div className="bg-slate-700/50 h-24 rounded-xl"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {isLoadingProducts ? (
+                  [1, 2, 3].map((i) => (
+                    <div key={i} className="bg-slate-800/50 rounded-lg p-4 animate-pulse">
+                      <div className="h-40 bg-slate-700/50 rounded-md"></div>
+                      <div className="h-6 bg-slate-700/50 rounded-md mt-4 w-3/4"></div>
+                      <div className="h-4 bg-slate-700/50 rounded-md mt-2 w-1/2"></div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {featuredProducts.map((product) => (
-                    <div key={product.id} className="bg-slate-700/20 p-4 rounded-xl">
-                       <h3 className="font-bold text-white text-base mb-3">{product.name}</h3>
-                       <div className="space-y-3">
-                        {product.product_offers.map((offer: any) => (
-                          <div 
-                            key={offer.id}
-                            className="flex items-center justify-between p-3 rounded-lg border bg-slate-700/40 border-slate-600/50"
-                          >
-                            <div className="flex-1 min-w-0">
-                                <p className="text-white font-medium text-sm truncate">{offer.name}</p>
-                                <div className="flex items-center gap-4 text-xs mt-1">
-                                  <Badge variant="outline" className="border-green-400/50 text-green-300 bg-green-500/10">
-                                    R$ {offer.price?.toFixed(2)}
-                                  </Badge>
-                                  <span className="text-orange-300 font-semibold">
-                                    Comissão: {offer.commission_rate}%
-                                  </span>
-                                </div>
-                            </div>
-                             <Button 
-                                size="sm" 
-                                onClick={() => handleCopyLink(offer.promotion_url)}
-                                className="bg-orange-600 hover:bg-orange-700 text-white ml-3 px-3 text-xs"
-                              >
-                                <Copy className="h-3 w-3 mr-1.5" />
-                                Copiar Link
-                              </Button>
+                  ))
+                ) : (
+                  Array.isArray(featuredProducts) && featuredProducts.map((product) => (
+                    <div key={product.id} className="bg-gradient-to-br from-slate-800/80 to-slate-900/60 p-4 rounded-xl shadow-lg hover:shadow-cyan-500/10 transition-shadow duration-300">
+                      <img src={product.image_url || '/placeholder.png'} alt={product.name} className="w-full h-40 object-cover rounded-md mb-4" />
+                      <h3 className="text-lg font-bold text-cyan-400">{product.name}</h3>
+                      <p className="text-sm text-slate-400 mb-2 line-clamp-2">{product.description}</p>
+                      <div className="mt-2 space-y-1">
+                        {Array.isArray(product.product_offers) && product.product_offers.map((offer: any) => (
+                          <div key={offer.id} className="text-xs bg-cyan-900/50 text-cyan-300 px-2 py-1 rounded-full">
+                            {offer.name} - Comissão: R$ {offer.commission_value}
                           </div>
                         ))}
-                       </div>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  ))
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
