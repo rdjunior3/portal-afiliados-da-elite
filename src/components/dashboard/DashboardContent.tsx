@@ -37,8 +37,8 @@ interface DashboardContentProps {
 
 export const DashboardContent: React.FC<DashboardContentProps> = ({
   profile,
-  statsCards,
-  platformStats,
+  statsCards = [],
+  platformStats = { totalAffiliates: 0, averageConversion: 0, totalCommissions: 'R$ 0', topProducts: 0 },
   featuredProducts,
   isLoadingProducts,
   tips,
