@@ -101,8 +101,7 @@ const Login = () => {
           description: 'Bem-vindo de volta à sua área de membros.'
         });
         
-        // Deixar o AuthContext controlar o redirecionamento
-        // O redirecionamento será feito automaticamente pelo AuthContext.signIn
+        navigate(from, { replace: true });
       }
     } catch (error) {
       toast({

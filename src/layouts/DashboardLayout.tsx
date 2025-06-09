@@ -206,7 +206,7 @@ const DashboardLayout: React.FC = () => {
 
       <aside className={cn(
         "fixed left-0 top-0 z-50 h-screen transform bg-gradient-to-b from-slate-900/95 via-slate-900/90 to-slate-800/95 backdrop-blur-xl border-r border-slate-700/50 transition-all duration-300 ease-in-out shadow-2xl",
-        sidebarCollapsed ? "w-16 lg:w-20" : "w-72 lg:w-80",
+        sidebarCollapsed ? "w-20" : "w-80",
         sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
         <div className="flex h-full flex-col">
@@ -429,8 +429,12 @@ const DashboardLayout: React.FC = () => {
         </div>
       </aside>
 
-      <div className={cn("transition-all duration-300", sidebarCollapsed ? "lg:pl-16 xl:pl-20" : "lg:pl-72 xl:pl-80")}>
-        <header className="sticky top-0 z-30 flex h-14 lg:h-16 items-center justify-between gap-4 border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-lg px-4 lg:px-8">
+      {/* Main Content Area */}
+      <div className={cn(
+        "transition-all duration-300",
+        sidebarCollapsed ? "lg:pl-20" : "lg:pl-80"
+      )}>
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-lg px-4 lg:px-8">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -559,7 +563,7 @@ const DashboardLayout: React.FC = () => {
           </div>
         </header>
 
-        <main className="lg:pl-80 xl:pl-[21rem] pt-16 lg:pt-20">
+        <main>
           <div className="p-4 sm:p-6 lg:p-8">
             <Outlet />
           </div>

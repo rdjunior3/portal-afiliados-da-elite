@@ -17,14 +17,11 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   fullWidth = false
 }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
+    <div>
       {/* Page Header Section */}
       {hasHeader && headerContent && (
         <div className="border-b border-slate-700/50 bg-slate-800/30 backdrop-blur-sm">
-          <div className={cn(
-            "mx-auto px-4 sm:px-6 lg:px-8 py-8",
-            fullWidth ? "w-full" : "max-w-7xl"
-          )}>
+          <div className="px-4 sm:px-6 lg:px-8 py-8">
             {headerContent}
           </div>
         </div>
@@ -32,8 +29,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
 
       {/* Page Content */}
       <div className={cn(
-        "mx-auto px-4 sm:px-6 lg:px-8 py-8",
-        fullWidth ? "w-full" : "max-w-7xl",
+        "px-4 sm:px-6 lg:px-8 py-8",
         className
       )}>
         <div className="space-y-8">
