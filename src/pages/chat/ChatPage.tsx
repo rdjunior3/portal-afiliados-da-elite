@@ -157,7 +157,10 @@ const ChatPage = () => {
         .order('created_at', { ascending: true })
         .limit(100);
       
-      if (error) throw error;
+      if (error) {
+        console.error("Erro ao buscar mensagens:", error);
+        return [];
+      }
       return data as Message[];
     },
     enabled: !!selectedRoom
@@ -483,7 +486,7 @@ const ChatPage = () => {
                     </div>
                   ))}
                 </div>
-                ) : messages && messages.length > 0 ? (
+                ) : Array.isArray(messages) && messages.length > 0 ? (
                 messages.map((message) => (
                   <div key={message.id} className="flex gap-4 group">
                     <Avatar className="w-10 h-10">
