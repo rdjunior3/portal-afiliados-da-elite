@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
+import { useNavigate } from 'react-router-dom';
 import { supabase, supabaseWithTimeout, withRetry } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { env } from '@/config/env';
@@ -37,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true); // Manter true até a inicialização completa
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Helper function to check if user is admin
   const isAdmin = () => {
@@ -306,26 +308,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    console.log('🚪 [signOut] Tentativa de logout');
+    console.log('🚶 [signOut] Tentativa de logout...');
     setLoading(true);
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('❌ [signOut] Erro:', error);
-        toast({ title: 'Erro ao Sair', description: error.message, variant: 'destructive' });
-      } else {
-        console.log('✅ [signOut] Sucesso');
-        // O listener onAuthStateChange cuidará de limpar o estado
-        toast({ title: 'Logout Realizado', description: 'Você foi desconectado com sucesso.' });
-      }
-      return { error };
-    } catch (error: any) {
-      console.error('💥 [signOut] Erro inesperado:', error);
-      toast({ title: 'Erro Crítico', description: error.message, variant: 'destructive' });
-      return { error };
-    } finally {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('❌ [signOut] Erro:', error);
+      toast({
+        title: "Erro no Logout",
+        description: "Não foi possível deslogar. Tente novamente.",
+        variant: "destructive",
+      });
       setLoading(false);
+      return { error };
     }
+    
+    // Limpeza de estados já é feita pelo onAuthStateChange
+    // Apenas garantimos o redirecionamento seguro
+    console.log('✅ [signOut] Logout bem-sucedido. Redirecionando...');
+    navigate('/login', { replace: true });
+    setLoading(false);
+    return { error: null };
   };
 
   const signInWithGoogle = async () => {

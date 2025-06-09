@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useProducts, useCategories } from '@/hooks/useProducts'; // Usar o hook centralizado
+import { useAuth } from '@/contexts/AuthContext'; // 1. Importar o hook de autenticação
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, Copy } from 'lucide-react';
+import { Search, Copy, PlusCircle, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -16,6 +17,7 @@ type ProductWithOffers = ReturnType<typeof useProducts>['data']['data']['data'][
 
 const ProductsPage = () => {
   const { toast } = useToast();
+  const { isAdmin } = useAuth(); // 2. Obter a função isAdmin
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -38,6 +40,19 @@ const ProductsPage = () => {
     toast({ title: "Link de promoção copiado!" });
   };
   
+  const handleDeleteProduct = (productId: string) => {
+    // Lógica para deletar o produto.
+    // TODO: Chamar o serviço de produto para deletar e depois invalidar a query para atualizar a lista.
+    console.log(`(Admin) Deletar produto: ${productId}`);
+    toast({ title: "Funcionalidade de exclusão a ser implementada." });
+  };
+
+  const handleAddNewProduct = () => {
+    // Lógica para abrir modal ou navegar para a página de criação.
+    console.log("(Admin) Adicionar novo produto.");
+    toast({ title: "Funcionalidade de adição a ser implementada." });
+  };
+
   // Lógica de filtro no lado do cliente
   const filteredProducts = products.filter(product => {
     const matchesCategory = selectedCategory === 'all' || product.category_id === selectedCategory;
@@ -50,7 +65,15 @@ const ProductsPage = () => {
       <PageHeader
         title="Vitrine de Produtos Elite"
         description="Explore todos os nossos produtos e encontre as melhores ofertas para promover."
-      />
+      >
+        {/* 3. Adicionar botão de "Novo Produto" para admins */}
+        {isAdmin() && (
+          <Button onClick={handleAddNewProduct}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Novo Produto
+          </Button>
+        )}
+      </PageHeader>
 
         {/* Filtros */}
       <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -81,7 +104,17 @@ const ProductsPage = () => {
         {isLoadingProducts
           ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-64 bg-slate-800" />)
           : filteredProducts.map((product) => (
-            <Card key={product.id} className="bg-slate-800 border-slate-700 flex flex-col">
+            <Card key={product.id} className="bg-slate-800 border-slate-700 flex flex-col group relative">
+              
+              {/* 4. Adicionar botão de "Excluir" para admins */}
+              {isAdmin() && (
+                <div className="absolute top-2 right-2 z-10">
+                  <Button variant="destructive" size="icon" onClick={() => handleDeleteProduct(product.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
               <CardHeader>
                 <CardTitle className="text-white">{product.name}</CardTitle>
                 <CardDescription>{product.short_description}</CardDescription>

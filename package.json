@@ -11,7 +11,8 @@
     "apply-migrations": "node scripts/apply-migrations.js",
     "setup-db": "npm run apply-migrations",
     "seed-db": "node scripts/seed-database.js",
-    "setup-complete": "npm run apply-migrations && npm run seed-db"
+    "setup-complete": "npm run apply-migrations && npm run seed-db",
+    "script": "ts-node --esm"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
@@ -75,6 +76,7 @@
     "@types/react-dom": "latest",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "autoprefixer": "latest",
+    "dotenv": "^16.5.0",
     "eslint": "^9.9.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.9",
@@ -82,6 +84,7 @@
     "lovable-tagger": "^1.1.7",
     "postcss": "latest",
     "tailwindcss": "latest",
+    "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1"
