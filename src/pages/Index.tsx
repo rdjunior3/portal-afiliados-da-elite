@@ -148,48 +148,52 @@ const Index = () => {
             
             {/* Navigation Actions melhoradas */}
             <div className="flex items-center gap-3 slide-in-right">
-              {user ? (
-                <div className="flex items-center gap-3">
-                  <button 
-                    className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold shadow-xl hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-orange-300/40"
-                    onClick={() => navigate('/dashboard')}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative flex items-center gap-2">
-                      <TrophyIcon className="w-4 h-4 hidden sm:inline" color="#1e293b" />
-                      <span className="hidden sm:inline">Dashboard Elite</span>
-                      <span className="sm:hidden">Dashboard</span>
+              {!loading && (
+                <>
+                  {user ? (
+                    <div className="flex items-center gap-3">
+                      <button 
+                        className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold shadow-xl hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-orange-300/40"
+                        onClick={() => navigate('/dashboard')}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="relative flex items-center gap-2">
+                          <TrophyIcon className="w-4 h-4 hidden sm:inline" color="#1e293b" />
+                          <span className="hidden sm:inline">Dashboard Elite</span>
+                          <span className="sm:hidden">Dashboard</span>
+                        </div>
+                      </button>
+                      <ThemeToggle />
                     </div>
-                  </button>
-                    <ThemeToggle />
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <button 
-                    className="group relative text-slate-300 hover:text-white px-3 sm:px-4 py-2.5 rounded-lg transition-all duration-300 font-semibold hover:bg-slate-800/60 backdrop-blur-sm border border-transparent hover:border-orange-500/30"
-                    onClick={() => handleAuthAction('login')}
-                  >
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4 transition-transform group-hover:scale-110 hidden sm:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                      </svg>
-                      <span className="hidden sm:inline">Entrar</span>
-                      <span className="sm:hidden">Entrar</span>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <button 
+                        className="group relative text-slate-300 hover:text-white px-3 sm:px-4 py-2.5 rounded-lg transition-all duration-300 font-semibold hover:bg-slate-800/60 backdrop-blur-sm border border-transparent hover:border-orange-500/30"
+                        onClick={() => handleAuthAction('login')}
+                      >
+                        <div className="flex items-center gap-2">
+                          <svg className="w-4 h-4 transition-transform group-hover:scale-110 hidden sm:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                          </svg>
+                          <span className="hidden sm:inline">Entrar</span>
+                          <span className="sm:hidden">Entrar</span>
+                        </div>
+                      </button>
+                      <button 
+                        className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold shadow-xl hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-orange-300/40"
+                        onClick={() => handleAuthAction('signup')}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="relative flex items-center gap-2">
+                          <TrophyIcon className="w-4 h-4 hidden sm:inline" color="#1e293b" />
+                          <span className="hidden sm:inline">Cadastrar Elite</span>
+                          <span className="sm:hidden">Cadastrar</span>
+                        </div>
+                      </button>
+                      <ThemeToggle />
                     </div>
-                  </button>
-                  <button 
-                    className="group relative overflow-hidden bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 hover:from-orange-300 hover:via-orange-400 hover:to-orange-500 text-slate-900 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold shadow-xl hover:shadow-orange-500/40 transition-all duration-300 transform hover:scale-105 border-2 border-orange-300/40"
-                    onClick={() => handleAuthAction('signup')}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="relative flex items-center gap-2">
-                      <TrophyIcon className="w-4 h-4 hidden sm:inline" color="#1e293b" />
-                      <span className="hidden sm:inline">Cadastrar Elite</span>
-                      <span className="sm:hidden">Cadastrar</span>
-                    </div>
-                  </button>
-                    <ThemeToggle />
-                </div>
+                  )}
+                </>
               )}
             </div>
           </div>
