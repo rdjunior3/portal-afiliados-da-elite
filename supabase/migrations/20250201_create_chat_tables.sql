@@ -28,15 +28,24 @@ CREATE INDEX idx_messages_room_id ON messages(room_id);
 CREATE INDEX idx_messages_sender_id ON messages(sender_id);
 CREATE INDEX idx_messages_created_at ON messages(room_id, created_at DESC);
 
--- Triggers
-CREATE TRIGGER update_chat_rooms_updated_at
-    BEFORE UPDATE ON chat_rooms
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+-- Função para atualizar 'updated_at'
+CREATE OR REPLACE FUNCTION update_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
--- RLS Policies
+-- Trigger para a tabela 'chat_rooms'
+DROP TRIGGER IF EXISTS update_chat_rooms_updated_at ON public.chat_rooms;
+CREATE TRIGGER update_chat_rooms_updated_at
+BEFORE UPDATE ON chat_rooms
+FOR EACH ROW
+EXECUTE FUNCTION update_timestamp();
+
+-- Habilitar RLS para a tabela
 ALTER TABLE chat_rooms ENABLE ROW LEVEL SECURITY;
-ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 
 -- Política para chat_rooms (afiliados aprovados podem ver salas ativas)
 CREATE POLICY "Afiliados aprovados podem ver salas de chat" ON chat_rooms
