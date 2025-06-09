@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { useEliteTips, EliteTip } from '@/hooks/useEliteTips';
+import { useEliteTips } from '@/hooks/useEliteTips';
 import { useAuth } from '@/contexts/AuthContext';
 import { Edit, Trash2, Plus, Save, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -15,102 +15,43 @@ interface EliteTipsEditorProps {
 }
 
 const EliteTipsEditor: React.FC<EliteTipsEditorProps> = ({ trigger }) => {
-  const { tips, isUpdating, updateTip, createTip, deleteTip } = useEliteTips();
+  const {
+    tips,
+    isSubmitting,
+    deleteTip,
+    // Form handlers
+    editingTip,
+    isCreating,
+    formData,
+    setFormData,
+    handleEdit,
+    handleCreate,
+    handleSave,
+    handleCancel,
+  } = useEliteTips();
+
   const { isAdmin } = useAuth();
   const { toast } = useToast();
-  const [editingTip, setEditingTip] = useState<EliteTip | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
   const [open, setOpen] = useState(false);
-
-  const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    icon: '💡',
-    order_index: 1
-  });
 
   // Se não é admin, não mostra o componente
   if (!isAdmin()) {
     return null;
   }
 
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      content: '',
-      icon: '💡',
-      order_index: tips.length + 1
-    });
-    setEditingTip(null);
-    setIsCreating(false);
-  };
-
-  const handleEdit = (tip: EliteTip) => {
-    setEditingTip(tip);
-    setFormData({
-      title: tip.title,
-      content: tip.content,
-      icon: tip.icon,
-      order_index: tip.order_index
-    });
-  };
-
-  const handleCreate = () => {
-    setIsCreating(true);
-    setFormData({
-      title: '',
-      content: '',
-      icon: '💡',
-      order_index: tips.length + 1
-    });
-  };
-
-  const handleSave = async () => {
-    if (!formData.title.trim() || !formData.content.trim()) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Preencha título e conteúdo da dica.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    let success = false;
-
-    if (editingTip) {
-      // Editar dica existente
-      success = await updateTip(editingTip.id, {
-        title: formData.title.trim(),
-        content: formData.content.trim(),
-        icon: formData.icon,
-        order_index: formData.order_index
-      });
-    } else if (isCreating) {
-      // Criar nova dica
-      success = await createTip({
-        title: formData.title.trim(),
-        content: formData.content.trim(),
-        icon: formData.icon,
-        order_index: formData.order_index,
-        is_active: true
-      });
-    }
-
-    if (success) {
-      resetForm();
-    }
-  };
-
-  const handleDelete = async (tip: EliteTip) => {
+  const handleDelete = async (tipId: string) => {
     if (window.confirm('Tem certeza que deseja remover esta dica?')) {
-      await deleteTip(tip.id);
+      await deleteTip(tipId);
     }
   };
 
   const emojiOptions = ['💡', '🏆', '💰', '📚', '🎯', '🚀', '⭐', '🔥', '💪', '🎉'];
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      setOpen(isOpen);
+      if (!isOpen) handleCancel();
+    }}>
       <DialogTrigger asChild>
         {trigger || (
           <Button
@@ -154,14 +95,16 @@ const EliteTipsEditor: React.FC<EliteTipsEditorProps> = ({ trigger }) => {
                         size="sm"
                         onClick={() => handleEdit(tip)}
                         className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                        disabled={isSubmitting}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(tip)}
+                        onClick={() => handleDelete(tip.id)}
                         className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        disabled={isSubmitting}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -172,18 +115,17 @@ const EliteTipsEditor: React.FC<EliteTipsEditorProps> = ({ trigger }) => {
             ))}
           </div>
 
-          {/* Botão para Criar Nova Dica */}
           {!editingTip && !isCreating && (
             <Button
               onClick={handleCreate}
               className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+              disabled={isSubmitting}
             >
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Nova Dica
             </Button>
           )}
 
-          {/* Formulário de Edição/Criação */}
           {(editingTip || isCreating) && (
             <Card className="bg-slate-700/50 border-slate-600">
               <CardContent className="p-6 space-y-4">
@@ -252,33 +194,14 @@ const EliteTipsEditor: React.FC<EliteTipsEditorProps> = ({ trigger }) => {
                   />
                 </div>
 
-                {/* Botões de Ação */}
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    onClick={handleSave}
-                    disabled={isUpdating}
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                  >
-                    {isUpdating ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Salvando...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="h-4 w-4 mr-2" />
-                        Salvar
-                      </>
-                    )}
-                  </Button>
-                  
-                  <Button
-                    onClick={resetForm}
-                    variant="outline"
-                    className="border-slate-600 text-slate-300 hover:bg-slate-700"
-                  >
+                <div className="flex justify-end gap-2 mt-4">
+                  <Button variant="outline" onClick={handleCancel} disabled={isSubmitting}>
                     <X className="h-4 w-4 mr-2" />
                     Cancelar
+                  </Button>
+                  <Button onClick={handleSave} disabled={isSubmitting}>
+                    {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+                    {isSubmitting ? 'Salvando...' : 'Salvar'}
                   </Button>
                 </div>
               </CardContent>

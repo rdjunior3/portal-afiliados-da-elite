@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,12 +19,21 @@ export interface EliteTip {
 export const useEliteTips = () => {
   const [tips, setTips] = useState<EliteTip[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { isAdmin } = useAuth();
+  const { user, isAdmin } = useAuth();
 
-  // Buscar dicas ativas
-  const fetchTips = async () => {
+  // State for form management
+  const [editingTip, setEditingTip] = useState<EliteTip | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    icon: '💡',
+    order_index: 1,
+  });
+
+  const fetchTips = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -52,7 +61,7 @@ export const useEliteTips = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Dicas padrão caso não consiga acessar o banco
   const getDefaultTips = (): EliteTip[] => [
@@ -88,6 +97,79 @@ export const useEliteTips = () => {
     }
   ];
 
+  useEffect(() => {
+    fetchTips();
+  }, [fetchTips]);
+  
+  const resetForm = useCallback(() => {
+    setFormData({
+      title: '',
+      content: '',
+      icon: '💡',
+      order_index: tips.length + 1,
+    });
+    setEditingTip(null);
+    setIsCreating(false);
+  }, [tips.length]);
+
+  const handleEdit = (tip: EliteTip) => {
+    setEditingTip(tip);
+    setIsCreating(false);
+    setFormData({
+      title: tip.title,
+      content: tip.content,
+      icon: tip.icon,
+      order_index: tip.order_index,
+    });
+  };
+
+  const handleCreate = () => {
+    resetForm();
+    setIsCreating(true);
+  };
+
+  const handleCancel = () => {
+    resetForm();
+  };
+  
+  const handleSave = async () => {
+    if (!formData.title.trim() || !formData.content.trim()) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Preencha título e conteúdo da dica.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    let success = false;
+
+    if (editingTip) {
+      // Editar dica existente
+      success = await updateTip(editingTip.id, {
+        title: formData.title.trim(),
+        content: formData.content.trim(),
+        icon: formData.icon,
+        order_index: formData.order_index
+      });
+    } else if (isCreating) {
+      // Criar nova dica
+      success = await createTip({
+        title: formData.title.trim(),
+        content: formData.content.trim(),
+        icon: formData.icon,
+        order_index: formData.order_index,
+        is_active: true
+      });
+    }
+
+    if (success) {
+      resetForm();
+    }
+    setIsSubmitting(false);
+  };
+
   // Atualizar dica (apenas para admins)
   const updateTip = async (tipId: string, updates: Partial<EliteTip>) => {
     if (!isAdmin()) {
@@ -100,7 +182,6 @@ export const useEliteTips = () => {
     }
 
     try {
-      setIsUpdating(true);
       const { error } = await supabase
         .from('elite_tips')
         .update({
@@ -140,8 +221,6 @@ export const useEliteTips = () => {
         variant: "destructive",
       });
       return false;
-    } finally {
-      setIsUpdating(false);
     }
   };
 
@@ -157,7 +236,6 @@ export const useEliteTips = () => {
     }
 
     try {
-      setIsUpdating(true);
       const { data, error } = await supabase
         .from('elite_tips')
         .insert([{
@@ -195,8 +273,6 @@ export const useEliteTips = () => {
         variant: "destructive",
       });
       return false;
-    } finally {
-      setIsUpdating(false);
     }
   };
 
@@ -212,7 +288,6 @@ export const useEliteTips = () => {
     }
 
     try {
-      setIsUpdating(true);
       const { error } = await supabase
         .from('elite_tips')
         .update({ is_active: false })
@@ -245,22 +320,25 @@ export const useEliteTips = () => {
         variant: "destructive",
       });
       return false;
-    } finally {
-      setIsUpdating(false);
     }
   };
-
-  useEffect(() => {
-    fetchTips();
-  }, []);
 
   return {
     tips,
     loading,
-    isUpdating,
+    isSubmitting,
+    fetchTips,
     updateTip,
     createTip,
     deleteTip,
-    refetch: fetchTips
+    // Form state and handlers
+    editingTip,
+    isCreating,
+    formData,
+    setFormData,
+    handleEdit,
+    handleCreate,
+    handleSave,
+    handleCancel,
   };
 }; 

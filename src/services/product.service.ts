@@ -1,9 +1,16 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ApiService } from './api.service';
-import { Product, Category, ProductApproval, ApiResponse, PaginationParams } from '@/types';
+import { Database } from '@/types/supabase';
+import { ApiResponse, PaginationParams, PaginatedResponse } from '@/types';
+
+type Product = Database['public']['Tables']['products']['Row'];
+type Category = Database['public']['Tables']['categories']['Row'];
+type ProductWithOffers = Product & {
+  product_offers: Database['public']['Tables']['product_offers']['Row'][];
+};
 
 export class ProductService extends ApiService {
-  async getProducts(params?: PaginationParams): Promise<ApiResponse<any>> {
+  async getProducts(params?: PaginationParams): Promise<ApiResponse<PaginatedResponse<ProductWithOffers>>> {
     try {
       const query = supabase
         .from('products')
@@ -13,17 +20,20 @@ export class ProductService extends ApiService {
             id,
             name,
             slug
+          ),
+          product_offers (
+            *
           )
-        `)
+        `, { count: 'exact' })
         .eq('is_active', true);
 
-      return await this.executePaginatedQuery(query, params);
+      return await this.executePaginatedQuery<ProductWithOffers>(query, params);
     } catch (error) {
       return this.handleError(error);
     }
   }
 
-  async getProduct(id: string): Promise<ApiResponse<Product>> {
+  async getProduct(id: string): Promise<ApiResponse<ProductWithOffers>> {
     try {
       const { data, error } = await supabase
         .from('products')
@@ -33,6 +43,9 @@ export class ProductService extends ApiService {
             id,
             name,
             slug
+          ),
+          product_offers (
+            *
           )
         `)
         .eq('id', id)
@@ -40,7 +53,7 @@ export class ProductService extends ApiService {
 
       if (error) throw error;
 
-      return this.handleSuccess(data);
+      return this.handleSuccess(data as ProductWithOffers);
     } catch (error) {
       return this.handleError(error);
     }
@@ -62,61 +75,7 @@ export class ProductService extends ApiService {
     }
   }
 
-  async requestProductApproval(productId: string): Promise<ApiResponse<ProductApproval>> {
-    try {
-      const user = await this.requireAuth();
-
-      const { data, error } = await supabase
-        .from('product_approvals')
-        .insert({
-          product_id: productId,
-          affiliate_id: user.id,
-          status: 'pending'
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      return this.handleSuccess(data);
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  async getApprovedProducts(params?: PaginationParams): Promise<ApiResponse<any>> {
-    try {
-      const user = await this.requireAuth();
-
-      const query = supabase
-        .from('product_approvals')
-        .select(`
-          *,
-          products (
-            id,
-            name,
-            description,
-            price,
-            commission_rate,
-            image_url,
-            sales_page_url,
-            categories (
-              id,
-              name,
-              slug
-            )
-          )
-        `)
-        .eq('affiliate_id', user.id)
-        .eq('status', 'approved');
-
-      return await this.executePaginatedQuery(query, params);
-    } catch (error) {
-      return this.handleError(error);
-    }
-  }
-
-  async getProductsByCategory(categoryId: string, params?: PaginationParams): Promise<ApiResponse<any>> {
+  async getProductsByCategory(categoryId: string, params?: PaginationParams): Promise<ApiResponse<PaginatedResponse<ProductWithOffers>>> {
     try {
       const query = supabase
         .from('products')
@@ -126,12 +85,15 @@ export class ProductService extends ApiService {
             id,
             name,
             slug
+          ),
+          product_offers (
+            *
           )
-        `)
+        `, { count: 'exact' })
         .eq('category_id', categoryId)
         .eq('is_active', true);
 
-      return await this.executePaginatedQuery(query, params);
+      return await this.executePaginatedQuery<ProductWithOffers>(query, params);
     } catch (error) {
       return this.handleError(error);
     }

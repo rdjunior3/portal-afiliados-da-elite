@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
+import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,8 @@ import ThemeToggle from '@/components/ThemeToggle';
 import EliteLogo from '@/components/ui/EliteLogo';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { ChevronDown, Menu } from 'lucide-react';
+import { Transition } from '@headlessui/react';
 
 import { 
   Home,
@@ -22,7 +24,6 @@ import {
   Shield,
   ChevronLeft,
   X,
-  Menu,
   Bell,
   LogOut,
   Sparkles,
@@ -30,6 +31,7 @@ import {
   Trophy,
   Check
 } from 'lucide-react';
+import BrandIcon from '@/components/ui/BrandIcon';
 
 const TrophyIcon = ({ className = "w-4 h-4", color = "currentColor" }) => (
   <svg className={className} fill={color} viewBox="0 0 24 24">
@@ -195,6 +197,95 @@ const DashboardLayout: React.FC = () => {
     }
   };
 
+  const SidebarContent = () => (
+    <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-slate-900 px-6 pb-4">
+      <div className="flex h-16 shrink-0 items-center gap-x-2">
+        <BrandIcon className="h-8 w-auto text-orange-400" />
+        <span className="text-white font-bold text-lg">AFILIADOS DA ELITE</span>
+      </div>
+      <nav className="flex flex-1 flex-col">
+        {navigation.map((item) => {
+          const isActive = isActivePath(item.href);
+          
+          return (
+            <Link
+              key={item.name}
+              to={item.href}
+              className={cn(
+                "w-full flex items-center rounded-lg lg:rounded-xl transition-all duration-200 group relative overflow-hidden",
+                sidebarCollapsed ? "justify-center p-2 lg:p-3" : "gap-3 lg:gap-4 px-3 lg:px-4 py-2.5 lg:py-3",
+                isActive
+                  ? "bg-gradient-to-r from-orange-500/30 to-orange-600/20 text-orange-200 shadow-lg border border-orange-400/20"
+                  : "text-slate-300 hover:bg-gradient-to-r hover:from-slate-700/40 hover:to-slate-600/30 hover:text-white"
+              )}
+              title={sidebarCollapsed ? item.name : undefined}
+            >
+              <item.icon className={cn(
+                "h-4 w-4 lg:h-5 lg:w-5 flex-shrink-0 transition-colors duration-200",
+                isActive ? "text-orange-300" : "text-slate-400 group-hover:text-slate-200"
+              )} />
+              {!sidebarCollapsed && (
+                <>
+                  <span className="flex-1 text-left text-xs lg:text-sm font-medium">{item.name}</span>
+                  {item.badge && (
+                    <Badge className="bg-orange-500 text-white text-xs px-1.5 lg:px-2 py-0.5">
+                      {item.badge}
+                    </Badge>
+                  )}
+                </>
+              )}
+            </Link>
+          );
+        })}
+
+        {isAdmin() && (
+          <div className="mt-6 lg:mt-8">
+            {!sidebarCollapsed && (
+              <div className="flex items-center gap-2 px-3 lg:px-4 mb-3 lg:mb-4">
+                <div className="h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent flex-1" />
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                  <Shield className="h-2.5 w-2.5 lg:h-3 lg:w-3" />
+                  Admin
+            </h3>
+                <div className="h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent flex-1" />
+              </div>
+            )}
+            {adminNavigation.map((item) => {
+              return (
+                <div key={item.name}>
+                  {sidebarCollapsed ? (
+                    <div
+                      className={cn(
+                        "flex items-center justify-center p-2 lg:p-3 rounded-lg transition-all duration-200 mb-2 cursor-not-allowed opacity-50",
+                        "bg-slate-700/30 text-slate-500"
+                      )}
+                        title={`${item.name} (Em breve)`}
+                    >
+                      <item.icon className="h-4 w-4 lg:h-5 lg:w-5" />
+                    </div>
+                  ) : (
+                    <div
+                  className={cn(
+                        "flex items-center gap-2 lg:gap-3 p-2.5 lg:p-3 rounded-lg transition-all duration-200 mb-2 cursor-not-allowed opacity-50",
+                        "bg-slate-700/30 text-slate-500 hover:bg-slate-700/40"
+                      )}
+                    >
+                      <item.icon className="h-4 w-4 lg:h-5 lg:w-5" />
+                      <span className="font-medium text-xs lg:text-sm">{item.name}</span>
+                      <Badge variant="outline" className="ml-auto text-xs bg-slate-600/50 text-slate-400 border-slate-600 px-1.5 py-0.5">
+                        Em breve
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </nav>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
       {sidebarOpen && (
@@ -302,12 +393,9 @@ const DashboardLayout: React.FC = () => {
               const isActive = isActivePath(item.href);
               
               return (
-                <button
+                <Link
                   key={item.name}
-                  onClick={() => {
-                    navigate(item.href);
-                    setSidebarOpen(false);
-                  }}
+                  to={item.href}
                   className={cn(
                     "w-full flex items-center rounded-lg lg:rounded-xl transition-all duration-200 group relative overflow-hidden",
                     sidebarCollapsed ? "justify-center p-2 lg:p-3" : "gap-3 lg:gap-4 px-3 lg:px-4 py-2.5 lg:py-3",
@@ -331,7 +419,7 @@ const DashboardLayout: React.FC = () => {
                       )}
                     </>
                   )}
-                </button>
+                </Link>
               );
             })}
 
@@ -564,9 +652,7 @@ const DashboardLayout: React.FC = () => {
         </header>
 
         <main>
-          <div className="p-4 sm:p-6 lg:p-8">
-            <Outlet />
-          </div>
+          <Outlet />
         </main>
       </div>
     </div>

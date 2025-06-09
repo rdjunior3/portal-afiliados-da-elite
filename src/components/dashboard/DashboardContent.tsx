@@ -2,21 +2,22 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import TrophyIcon from '@/components/ui/TrophyIcon';
+import BrandIcon from '@/components/ui/BrandIcon';
 import { 
   Plus,
   Sparkles,
   DollarSign,
   TrendingUp,
   Target,
-  ArrowRight
+  ArrowRight,
+  Copy
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import EliteTipsEditor from '@/components/EliteTipsEditor';
-import CreateLinkModal from '@/components/CreateLinkModal';
+import { useToast } from '@/hooks/use-toast';
 
 // ... (Tipos podem ser movidos para um arquivo types.ts dedicado mais tarde)
-type Product = any; // Simplificando por agora
+type ProductWithOffers = any; // Simplificando por agora para focar na estrutura
 type Profile = any;
 type Tip = any;
 
@@ -24,13 +25,13 @@ interface DashboardContentProps {
   profile: Profile;
   statsCards: any[];
   platformStats: any;
-  featuredProducts: Product[];
+  featuredProducts: ProductWithOffers[];
   isLoadingProducts: boolean;
   tips: Tip[];
   tipsLoading: boolean;
   isAdmin: () => boolean;
   getDisplayName: () => string;
-  openCreateLinkModal: (product: Product) => void;
+  openCreateLinkModal: (product: ProductWithOffers) => void;
   navigate: (path: string) => void;
 }
 
@@ -47,6 +48,16 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
   openCreateLinkModal,
   navigate
 }) => {
+  const { toast } = useToast();
+
+  const handleCopyLink = (url: string) => {
+    navigator.clipboard.writeText(url);
+    toast({
+      title: "Link copiado!",
+      description: "O link de promoção foi copiado para sua área de transferência.",
+    });
+  };
+
   return (
     <>
       {/* Status Cards Grid */}
@@ -120,61 +131,12 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Content Area */}
         <div className="lg:col-span-2 space-y-6 lg:space-y-8">
-          {/* Welcome Card */}
-          <Card className="bg-gradient-to-br from-orange-500/15 to-orange-600/10 border-orange-500/30 backdrop-blur-sm shadow-lg shadow-orange-500/10">
-            <CardHeader className="pb-3 lg:pb-4">
-              <CardTitle className="text-lg lg:text-xl font-bold text-white flex items-center gap-2 lg:gap-3">
-                <TrophyIcon className="w-5 h-5 lg:w-6 lg:h-6" color="#f97316" />
-                Portal Afiliados da Elite
-              </CardTitle>
-              <CardDescription className="text-orange-100 text-sm lg:text-base">
-                Seu centro de comando para maximizar seus ganhos como afiliado elite
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 lg:space-y-6">
-              <div className="flex items-center gap-2 lg:gap-3 text-xs lg:text-sm">
-                <Target className="h-4 w-4 lg:h-5 lg:w-5 text-orange-400" />
-                <span className="text-slate-200">Status do perfil: </span>
-                <Badge className={
-                  profile?.affiliate_status === 'approved' 
-                    ? "bg-orange-500/80 text-white backdrop-blur-sm"
-                    : profile?.affiliate_status === 'pending'
-                      ? "bg-yellow-500/80 text-white backdrop-blur-sm"
-                      : "bg-red-500/80 text-white backdrop-blur-sm"
-                }>
-                  {profile?.affiliate_status === 'approved' ? 'Elite Aprovado' : 
-                   profile?.affiliate_status === 'pending' ? 'Pendente' : 'Inativo'}
-                </Badge>
-              </div>
-              {!isAdmin() && profile?.affiliate_status !== 'approved' && (
-                <div className="p-3 lg:p-4 bg-gradient-to-r from-yellow-500/20 to-yellow-600/10 border border-yellow-500/30 rounded-xl backdrop-blur-sm">
-                  <div className="flex items-start gap-2 lg:gap-3">
-                    <span className="text-lg lg:text-xl">⚠️</span>
-                    <div>
-                      <p className="text-xs lg:text-sm text-yellow-100 font-medium">
-                        Complete seu perfil para ter acesso total aos recursos elite
-                      </p>
-                      <Button 
-                        size="sm" 
-                        onClick={() => navigate('/dashboard/settings')}
-                        className="mt-2 lg:mt-3 bg-yellow-600/80 hover:bg-yellow-700/80 text-slate-900 font-bold backdrop-blur-sm text-xs lg:text-sm"
-                      >
-                        Completar Perfil Elite <ArrowRight className="h-4 w-4 ml-2" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Products Section */}
           <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-lg">
             <CardHeader className="pb-3 lg:pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg lg:text-xl font-bold text-white flex items-center gap-1 lg:gap-2">
-                  <span className="hidden sm:inline">Produtos Elite em Destaque</span>
-                  <span className="sm:hidden">Produtos Elite</span>
+                  <span>Produtos Elite em Destaque</span>
                 </CardTitle>
                 <Button 
                   variant="ghost" 
@@ -182,13 +144,12 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
                   onClick={() => navigate('/dashboard/products')}
                   className="text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 backdrop-blur-sm flex items-center gap-1 lg:gap-2 text-xs lg:text-sm"
                 >
-                  <span className="hidden sm:inline">Ver todos</span>
-                  <span className="sm:hidden">Ver</span>
+                  <span>Ver todos</span>
                   <ArrowRight className="h-3 w-3 lg:h-4 lg:w-4" />
                 </Button>
               </div>
               <CardDescription className="text-slate-300 text-xs lg:text-sm">
-                Explore nossos produtos premium com as melhores comissões
+                Explore nossos produtos premium e copie seus links de afiliação.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -196,39 +157,43 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
                 <div className="space-y-3 lg:space-y-4">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="animate-pulse">
-                      <div className="bg-slate-700/50 h-16 lg:h-20 rounded-xl"></div>
+                      <div className="bg-slate-700/50 h-24 rounded-xl"></div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="space-y-3 lg:space-y-4">
-                  {featuredProducts.slice(0, 4).map((product) => (
-                    <div 
-                      key={product.id}
-                      className="flex items-center justify-between p-3 lg:p-4 rounded-xl transition-all duration-300 border bg-slate-700/30 border-slate-600/50 hover:border-orange-500/30 backdrop-blur-sm"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1 lg:gap-2 mb-1 lg:mb-2">
-                          <h3 className="font-bold text-white text-sm lg:text-base truncate">{product.name}</h3>
-                        </div>
-                        <div className="flex items-center gap-2 lg:gap-4 text-xs lg:text-sm">
-                          <Badge variant="outline" className="border-orange-400/50 text-orange-300 bg-orange-500/10 text-xs">
-                            💰 {product.commission_rate}%
-                          </Badge>
-                          <span className="text-green-300 font-semibold">
-                            R$ {product.price?.toFixed(2) || '0.00'}
-                          </span>
-                        </div>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        onClick={() => openCreateLinkModal(product)}
-                        className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white ml-3 px-2 lg:px-3 text-xs lg:text-sm"
-                      >
-                        <Plus className="h-3 w-3 lg:h-4 lg:w-4 mr-1" />
-                        <span className="hidden sm:inline">Criar Link</span>
-                        <span className="sm:hidden">Link</span>
-                      </Button>
+                <div className="space-y-6">
+                  {featuredProducts.map((product) => (
+                    <div key={product.id} className="bg-slate-700/20 p-4 rounded-xl">
+                       <h3 className="font-bold text-white text-base mb-3">{product.name}</h3>
+                       <div className="space-y-3">
+                        {product.product_offers.map((offer: any) => (
+                          <div 
+                            key={offer.id}
+                            className="flex items-center justify-between p-3 rounded-lg border bg-slate-700/40 border-slate-600/50"
+                          >
+                            <div className="flex-1 min-w-0">
+                                <p className="text-white font-medium text-sm truncate">{offer.name}</p>
+                                <div className="flex items-center gap-4 text-xs mt-1">
+                                  <Badge variant="outline" className="border-green-400/50 text-green-300 bg-green-500/10">
+                                    R$ {offer.price?.toFixed(2)}
+                                  </Badge>
+                                  <span className="text-orange-300 font-semibold">
+                                    Comissão: {offer.commission_rate}%
+                                  </span>
+                                </div>
+                            </div>
+                             <Button 
+                                size="sm" 
+                                onClick={() => handleCopyLink(offer.promotion_url)}
+                                className="bg-orange-600 hover:bg-orange-700 text-white ml-3 px-3 text-xs"
+                              >
+                                <Copy className="h-3 w-3 mr-1.5" />
+                                Copiar Link
+                              </Button>
+                          </div>
+                        ))}
+                       </div>
                     </div>
                   ))}
                 </div>
@@ -249,7 +214,15 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
             <CardContent className="space-y-3 lg:space-y-4">
               <div className="text-center">
                 <div className="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-3 lg:mb-4 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg shadow-orange-500/20">
-                  <TrophyIcon className="w-6 h-6 lg:w-8 lg:h-8" color="#1e293b" />
+                  {profile?.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt="Foto de perfil"
+                      className="h-full w-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <BrandIcon className="w-6 h-6 lg:w-8 lg:h-8 text-slate-900" />
+                  )}
                 </div>
                 <h3 className="text-white font-bold text-base lg:text-lg">{getDisplayName()}</h3>
                 <p className="text-orange-300 font-medium text-sm lg:text-base">Afiliado Elite</p>

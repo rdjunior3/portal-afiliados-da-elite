@@ -1,13 +1,9 @@
 import { Outlet } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { Toaster } from './components/ui/toaster';
-import { usePageTracking, usePerformanceMonitoring } from './hooks/useAnalytics';
 import { LoadingScreen } from './components/ui/loading';
 
 function App() {
-  usePageTracking();
-  usePerformanceMonitoring();
-
   // O AuthProvider já está no main.tsx, então usamos o hook aqui
   const { loading } = useAuth();
 
