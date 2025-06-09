@@ -43,7 +43,7 @@ export class ApiService {
       
       // Get paginated data
       const paginatedQuery = this.buildPaginatedQuery(query, params);
-      const { data, error } = await paginatedQuery.select('*');
+      const { data, error } = await paginatedQuery;
 
       if (error) throw error;
 
