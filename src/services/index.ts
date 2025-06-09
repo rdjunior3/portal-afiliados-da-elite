@@ -1,8 +1,6 @@
-// Export all services
-export { ApiService } from './api.service';
-export { ProductService, productService } from './product.service';
+import { ApiService } from './api.service';
+import { ProductService } from './product.service';
 
-// Export service instances for easy import
-export const services = {
-  product: productService,
-} as const; 
+const productService = new ProductService();
+
+export { ApiService, ProductService, productService }; 
