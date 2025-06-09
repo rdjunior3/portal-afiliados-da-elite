@@ -40,9 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Helper function to check if user is admin
   const isAdmin = () => {
-    return profile?.role === 'admin' || 
-           profile?.role === 'super_admin' || 
-           profile?.role === 'moderator';
+    return profile?.role === 'admin';
   };
 
   // Helper function to check specific admin levels
@@ -51,12 +49,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const isModerator = () => {
-    return profile?.role === 'moderator' || 
-           profile?.role === 'admin' || 
-           profile?.role === 'super_admin';
+    return profile?.role === 'moderator';
   };
 
-  // Check if user can manage content/products - TODOS OS TIPOS DE ADMIN
+  // Check if user can manage content/products - Usado para agrupar permissões
   const canManageContent = () => {
     return profile?.role === 'admin' || 
            profile?.role === 'super_admin' || 

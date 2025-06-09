@@ -61,6 +61,7 @@ const DashboardLayout: React.FC = () => {
   // Hook de notificações
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
+  // Executa a configuração inicial (ex: criar salas de chat padrão para admin)
   useInitialSetup();
 
   useEffect(() => {
