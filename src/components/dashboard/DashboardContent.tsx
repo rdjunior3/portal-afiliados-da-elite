@@ -15,6 +15,8 @@ import {
 import { cn } from '@/lib/utils';
 import EliteTipsEditor from '@/components/EliteTipsEditor';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { User } from '@supabase/supabase-js';
 
 // ... (Tipos podem ser movidos para um arquivo types.ts dedicado mais tarde)
 type ProductWithOffers = any; // Simplificando por agora para focar na estrutura
@@ -22,20 +24,19 @@ type Profile = any;
 type Tip = any;
 
 interface DashboardContentProps {
+  user: User;
   profile: Profile;
-  statsCards: any[];
-  platformStats: any;
+  statsCards?: any[];
+  platformStats?: any;
   featuredProducts: ProductWithOffers[];
   isLoadingProducts: boolean;
   tips: Tip[];
   tipsLoading: boolean;
-  isAdmin: () => boolean;
-  getDisplayName: () => string;
-  openCreateLinkModal: (product: ProductWithOffers) => void;
   navigate: (path: string) => void;
 }
 
 export const DashboardContent: React.FC<DashboardContentProps> = ({
+  user,
   profile,
   statsCards = [],
   platformStats = { totalAffiliates: 0, averageConversion: 0, totalCommissions: 'R$ 0', topProducts: 0 },
@@ -43,12 +44,23 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
   isLoadingProducts,
   tips,
   tipsLoading,
-  isAdmin,
-  getDisplayName,
-  openCreateLinkModal,
   navigate
 }) => {
   const { toast } = useToast();
+  const { isAdmin } = useAuth();
+
+  const getDisplayName = () => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name} ${profile.last_name}`;
+    }
+    if (profile?.first_name) {
+      return profile.first_name;
+    }
+    if (user.user_metadata?.full_name) {
+      return user.user_metadata.full_name;
+    }
+    return user.email?.split('@')[0] || 'Afiliado';
+  };
 
   const handleCopyLink = (url: string) => {
     navigator.clipboard.writeText(url);

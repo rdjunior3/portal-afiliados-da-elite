@@ -23,19 +23,6 @@ const Dashboard = () => {
     return null;
   }
 
-  const getDisplayName = () => {
-    if (profile?.first_name && profile?.last_name) {
-      return `${profile.first_name} ${profile.last_name}`;
-    }
-    if (profile?.first_name) {
-      return profile.first_name;
-    }
-    if (user.user_metadata?.full_name) {
-      return user.user_metadata.full_name;
-    }
-    return user.email?.split('@')[0] || 'Afiliado';
-  };
-
   const featuredProducts = productsData?.data?.data || [];
 
   return (
@@ -43,19 +30,19 @@ const Dashboard = () => {
       fullWidth={true}
       headerContent={
         <PageHeader
-          title={`Olá, ${getDisplayName()}! 👋`}
+          title={`Olá! 👋`}
           description="Bem-vindo ao seu portal elite de afiliados"
           customIcon={<TrophyIcon className="w-6 h-6" color="#f97316" />}
         />
       }
     >
       <DashboardContent
+        user={user}
         profile={profile}
         featuredProducts={featuredProducts}
         isLoadingProducts={isLoadingProducts}
         tips={tips}
         tipsLoading={tipsLoading}
-        isAdmin={isAdmin}
         navigate={navigate}
       />
     </PageLayout>
