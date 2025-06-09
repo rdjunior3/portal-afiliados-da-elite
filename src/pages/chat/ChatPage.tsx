@@ -104,6 +104,7 @@ interface RoomForm {
 const EMOJI_LIST = ['👍', '👎', '❤️', '😀', '😂', '😮', '😢', '😡', '🎉', '🔥'];
 
 const ChatPage = () => {
+  console.log("ChatPage vFINAL Loaded - Se você vir esta mensagem, o deploy está funcionando.");
   const { user, profile, isAdmin } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -119,7 +120,7 @@ const ChatPage = () => {
   });
 
   // Buscar salas de chat
-  const { data: rooms, isLoading: isLoadingRooms } = useQuery({
+  const { data: rooms = [], isLoading: isLoadingRooms, isError: isErrorRooms } = useQuery({
     queryKey: ['chat-rooms'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -137,7 +138,7 @@ const ChatPage = () => {
   });
 
   // Buscar mensagens da sala selecionada
-  const { data: messages, isLoading: isLoadingMessages } = useQuery({
+  const { data: messages = [], isLoading: isLoadingMessages, isError: isErrorMessages } = useQuery({
     queryKey: ['messages', selectedRoom?.id],
     queryFn: async () => {
       if (!selectedRoom) return [];
@@ -286,6 +287,19 @@ const ChatPage = () => {
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
+
+  // Verificação de segurança definitiva antes de renderizar
+  if ((!isLoadingRooms && !Array.isArray(rooms)) || (!isLoadingMessages && !Array.isArray(messages))) {
+    console.error("BLOQUEIO DE RENDERIZAÇÃO: 'rooms' ou 'messages' não são arrays após o carregamento.", { rooms, messages });
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-red-900 text-white">
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold">Erro Crítico de Dados</h1>
+          <p>Não foi possível carregar os dados do chat. Verifique o console para mais detalhes.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return (
