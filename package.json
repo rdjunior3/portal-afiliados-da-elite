@@ -15,7 +15,6 @@
     "script": "ts-node --esm"
   },
   "dependencies": {
-    "@clerk/clerk-react": "^5.31.9",
     "@headlessui/react": "^2.2.4",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",

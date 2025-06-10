@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
-import { AffiliateLink } from '../types';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import type { AffiliateLink } from '@/types';
 
 export function useAffiliateLinks(productId: string | undefined) {
   const [links, setLinks] = useState<AffiliateLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useUser();
+  const { user } = useAuth();
 
   const fetchLinks = useCallback(async () => {
     if (!productId || !user) {
