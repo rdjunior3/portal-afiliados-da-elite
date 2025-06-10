@@ -1,5 +1,8 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
 
 interface PageHeaderProps {
   title: string;
@@ -8,6 +11,7 @@ interface PageHeaderProps {
   customIcon?: React.ReactNode;
   actions?: React.ReactNode;
   className?: string;
+  showNewProductButton?: boolean;
 }
 
 export const PageHeader: React.FC<PageHeaderProps> = ({ 
@@ -16,8 +20,17 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   icon, 
   customIcon,
   actions,
-  className 
+  className,
+  showNewProductButton = false
 }) => {
+  const { isAdmin } = useAuth();
+
+  const handleAddNewProduct = () => {
+    // Logic to open modal or navigate to the creation page.
+    console.log("(Admin) Adicionar novo produto.");
+    // In a real app, you would probably use a navigation or state management solution here
+  };
+
   return (
     <div className={cn(
       "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4",
@@ -43,11 +56,15 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       </div>
       
       {/* Actions */}
-      {actions && (
-        <div className="flex items-center gap-3">
-          {actions}
-        </div>
-      )}
+      <div className="flex items-center gap-3">
+        {actions}
+        {showNewProductButton && isAdmin() && (
+          <Button onClick={handleAddNewProduct}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Novo Produto
+          </Button>
+        )}
+      </div>
     </div>
   );
 }; 

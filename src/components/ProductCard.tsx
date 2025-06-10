@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Copy, Trash2 } from 'lucide-react';
-import { ProductWithOffers } from '@/types'; // Assuming you have this type from your previous setup
+import { ProductWithOffers } from '@/types';
 import { useAffiliateLinks } from '@/hooks/useAffiliateLinks';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -16,7 +16,7 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete }) => {
   const { toast } = useToast();
   const { links, loading: linksLoading, error: linksError } = useAffiliateLinks(product.id);
-  const { isAdmin }. = useAuth();
+  const { isAdmin } = useAuth();
 
   const handleCopyLink = (url: string) => {
     if (!url) {
@@ -62,7 +62,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete }) =
                     <span>Comissão: <span className="text-orange-400">{offer.commission_rate}%</span></span>
                   </div>
                 </div>
-                <Button size="sm" onClick={() => handleCopyLink(getOfferLink(offer.id, offer.promotion_url || ''))}>
+                <Button size="sm" onClick={() => handleCopyLink(getOfferLink(offer.id, offer.affiliate_link || ''))}>
                   <Copy className="h-4 w-4" />
                 </Button>
               </div>

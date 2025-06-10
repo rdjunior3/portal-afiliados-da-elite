@@ -1,6 +1,7 @@
 // Re-export all types from their specific modules
 export * from './affiliate.types';
 export * from './product.types';
+export * from './product-offers.types';
 export * from './commission.types';
 export * from './database.types';
 

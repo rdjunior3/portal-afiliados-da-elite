@@ -27,8 +27,9 @@ export interface AffiliateLink {
   id: string;
   affiliate_id: string;
   product_id: string;
+  offer_id: string;
   short_code: string;
-  original_url: string;
+  affiliate_url: string;
   custom_params?: Record<string, any>;
   is_active: boolean;
   expires_at?: string;
