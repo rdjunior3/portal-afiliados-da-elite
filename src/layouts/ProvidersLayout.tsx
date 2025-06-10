@@ -1,7 +1,8 @@
 import React from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { QueryProvider } from '@/providers/QueryProvider';
-import { Toaster } from '@/components/ui/toaster';
+import { ThemeProvider } from 'next-themes'; // Importar o ThemeProvider
+import { Toaster } from '@/components/ui/sonner'; // Corrigido para sonner, que é o que está no package.json
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingScreen } from '@/components/ui/loading';
 
@@ -28,16 +29,23 @@ const AuthLoadingGate: React.FC<{ children: React.ReactNode }> = ({ children }) 
 const ProvidersLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <React.StrictMode>
-      <QueryProvider>
-        <AuthProvider>
-          <AuthLoadingGate>
-            {children}
-            <Toaster />
-          </AuthLoadingGate>
-        </AuthProvider>
-      </QueryProvider>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="dark"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <QueryProvider>
+          <AuthProvider>
+            <AuthLoadingGate>
+              {children}
+              <Toaster />
+            </AuthLoadingGate>
+          </AuthProvider>
+        </QueryProvider>
+      </ThemeProvider>
     </React.StrictMode>
   );
 };
 
-export default ProvidersLayout; 
+export default ProvidersLayout;
