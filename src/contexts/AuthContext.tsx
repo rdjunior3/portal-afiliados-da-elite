@@ -267,8 +267,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
+    console.log(`🔑 [signIn] Tentativa de login para: ${email}`);
     setLoading(true);
-    
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -276,31 +276,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
-        let errorMessage = 'Erro no login. Verifique suas credenciais.';
-        
-        if (error.message.includes('credentials')) {
-          errorMessage = 'Email ou senha incorretos.';
-        } else if (error.message.includes('confirmed')) {
-          errorMessage = 'Confirme seu email antes de fazer login.';
-        } else if (error.message.includes('blocked')) {
-          errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos.';
-        }
-        
         toast({
           title: "Erro no login",
-          description: errorMessage,
+          description: "Credenciais inválidas. Verifique seu email e senha.",
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "Login realizado! 🎉",
-          description: "Bem-vindo de volta à Elite!",
-        });
-
-        // Não fazer redirecionamento aqui - deixar o onAuthStateChange controlar
-        // O redirecionamento será feito automaticamente quando o perfil for carregado
+        return { error };
       }
-
+      
+      console.log('✅ [signIn] Login bem-sucedido, aguardando redirecionamento do listener...');
+      toast({
+        title: "Login bem-sucedido!",
+        description: "Bem-vindo de volta!",
+        variant: "success",
+      });
+      return { error: null };
+    } catch (error: any) {
+      console.error('💥 [signIn] Erro inesperado:', error);
+      toast({
+        title: "Erro Inesperado",
+        description: "Ocorreu um erro durante o login. Tente novamente.",
+        variant: "destructive",
+      });
       return { error };
     } finally {
       setLoading(false);
@@ -308,29 +305,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    console.log('🚶 [signOut] Tentativa de logout...');
-    setLoading(true);
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('❌ [signOut] Erro:', error);
+    console.log('👋 [signOut] Tentativa de logout...');
+    setLoading(true); // Inicia o carregamento para a transição
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('❌ [signOut] Erro:', error);
+        toast({
+          title: "Erro ao sair",
+          description: "Não foi possível fazer o logout. Tente novamente.",
+          variant: "destructive",
+        });
+        return { error };
+      }
+      
+      // Limpeza manual imediata dos estados para garantir que a UI reaja
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      
+      navigate('/'); // Redireciona para a página inicial/login
+      
+      console.log('✅ [signOut] Logout bem-sucedido e redirecionado.');
       toast({
-        title: "Erro no Logout",
-        description: "Não foi possível deslogar. Tente novamente.",
+        title: "Você saiu!",
+        description: "Até a próxima!",
+        variant: "info",
+      });
+
+      return { error: null };
+    } catch (error: any) {
+      console.error('💥 [signOut] Erro inesperado:', error);
+      toast({
+        title: "Erro Inesperado",
+        description: "Ocorreu um erro ao tentar sair.",
         variant: "destructive",
       });
-      setLoading(false);
       return { error };
+    } finally {
+      // O loading será resolvido pela re-renderização na nova rota.
+      // Não definimos como `false` aqui para evitar piscar de conteúdo.
     }
-    
-    // Limpeza de estados já é feita pelo onAuthStateChange
-    // Apenas garantimos o redirecionamento seguro
-    console.log('✅ [signOut] Logout bem-sucedido. Redirecionando...');
-    navigate('/login', { replace: true });
-    setLoading(false);
-    return { error: null };
   };
 
   const signInWithGoogle = async () => {
+    console.log('🌐 [signInWithGoogle] Tentando login com Google...');
     setLoading(true);
     
     try {
