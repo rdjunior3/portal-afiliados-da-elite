@@ -48,11 +48,6 @@
   "buildCommand": "rm -f package-lock.json && npm install && npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "functions": {
-    "app/api/**": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "env": {
     "NODE_VERSION": "18.x"
   }
