@@ -45,7 +45,7 @@
       ]
     }
   ],
-  "buildCommand": "rm -f package-lock.json && npm install && npm run build",
+  "buildCommand": "rm -rf package-lock.json node_modules && npm install && npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
   "env": {
