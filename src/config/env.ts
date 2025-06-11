@@ -23,9 +23,9 @@ const getBaseUrl = () => {
 };
 
 export const env = {
-  // Supabase
-  SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL || "https://rbqzddsserknaedojuex.supabase.co",
-  SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJicXpkZHNzZXJrbmFlZG9qdWV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg2MjE4NjYsImV4cCI6MjA2NDE5Nzg2Nn0.HU4i2JyLdV6c3CGUp5Ww-9doAELnReyFab7JPpiQWb4",
+  // Supabase - REMOVIDAS as credenciais hardcoded por segurança
+  SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+  SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
   
   // App
   APP_TITLE: import.meta.env.VITE_APP_TITLE || "Portal Afiliados da Elite",
@@ -44,20 +44,33 @@ export const env = {
   GOOGLE_ANALYTICS_ID: import.meta.env.VITE_GOOGLE_ANALYTICS_ID,
 } as const;
 
-// Validation
+// Validation - Mais rigorosa para garantir segurança
 const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY'] as const;
 
 export function validateEnv() {
   const missing = requiredEnvVars.filter(key => !env[key]);
   
   if (missing.length > 0) {
-    console.warn(`⚠️ Missing environment variables: ${missing.join(', ')}`);
-    console.warn('Using fallback values. App functionality may be limited.');
-    // Don't throw error, just warn
+    const errorMessage = `❌ ERRO CRÍTICO: Variáveis de ambiente obrigatórias não encontradas: ${missing.join(', ')}`;
+    console.error(errorMessage);
+    console.error('📝 Crie um arquivo .env na raiz do projeto com as seguintes variáveis:');
+    console.error('VITE_SUPABASE_URL=sua_url_do_supabase');
+    console.error('VITE_SUPABASE_ANON_KEY=sua_chave_anonima');
+    
+    // Em produção, lance erro para evitar funcionamento sem credenciais
+    if (import.meta.env.PROD) {
+      throw new Error('Configuração de ambiente inválida para produção');
+    }
+    
     return false;
   }
   
-  console.log('✅ Environment variables validated successfully');
+  // Validações adicionais de segurança
+  if (env.SUPABASE_URL && !env.SUPABASE_URL.startsWith('https://')) {
+    console.warn('⚠️ AVISO: URL do Supabase deve usar HTTPS em produção');
+  }
+  
+  console.log('✅ Variáveis de ambiente validadas com sucesso');
   return true;
 }
 

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase, supabaseWithTimeout, withRetry } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { env } from '@/config/env';
+import { validateEmail, RateLimiter, maskSensitiveData } from '@/lib/security';
 
 interface AuthContextType {
   user: User | null;
@@ -214,13 +215,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    console.log(`✍️ [signUp] Tentativa de cadastro para: ${email}`);
+    // Validações de segurança
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
+      toast({
+        title: "Erro no cadastro",
+        description: "Email inválido",
+        variant: "destructive",
+      });
+      return { error: new Error('Email inválido') };
+    }
+
+    // Rate limiting
+    const rateLimitKey = `signup_${emailValidation.sanitized}`;
+    if (!RateLimiter.isAllowed(rateLimitKey, 3, 15 * 60 * 1000)) { // 3 tentativas por 15 min
+      toast({
+        title: "Muitas tentativas",
+        description: "Aguarde alguns minutos antes de tentar novamente",
+        variant: "destructive",
+      });
+      return { error: new Error('Rate limit exceeded') };
+    }
+
+    console.log(`✍️ [signUp] Tentativa de cadastro para: ${maskSensitiveData(email)}`);
     setLoading(true);
     try {
       const redirectUrl = `${window.location.origin}/dashboard`;
       
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: emailValidation.sanitized,
         password,
         options: {
           emailRedirectTo: redirectUrl,
@@ -267,11 +290,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
-    console.log(`🔑 [signIn] Tentativa de login para: ${email}`);
+    // Validações de segurança
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
+      toast({
+        title: "Erro no login",
+        description: "Email inválido",
+        variant: "destructive",
+      });
+      return { error: new Error('Email inválido') };
+    }
+
+    // Rate limiting para tentativas de login
+    const rateLimitKey = `signin_${emailValidation.sanitized}`;
+    if (!RateLimiter.isAllowed(rateLimitKey, 5, 15 * 60 * 1000)) { // 5 tentativas por 15 min
+      toast({
+        title: "Muitas tentativas de login",
+        description: "Conta temporariamente bloqueada. Tente novamente em 15 minutos",
+        variant: "destructive",
+      });
+      return { error: new Error('Rate limit exceeded') };
+    }
+
+    console.log(`🔑 [signIn] Tentativa de login para: ${maskSensitiveData(email)}`);
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: emailValidation.sanitized,
         password,
       });
 
