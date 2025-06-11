@@ -1,8 +1,8 @@
 import React from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { QueryProvider } from '@/providers/QueryProvider';
-import { ThemeProvider } from 'next-themes'; // Importar o ThemeProvider
-import { Toaster } from '@/components/ui/sonner'; // Corrigido para sonner, que é o que está no package.json
+import { ThemeProvider } from 'next-themes';
+import { Toaster } from '@/components/ui/sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingScreen } from '@/components/ui/loading';
 
