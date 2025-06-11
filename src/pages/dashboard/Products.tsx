@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useProducts, useCategories } from '@/hooks/useProducts';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ProductCard } from '@/components/ProductCard';
+import CreateProductModal from '@/components/modals/CreateProductModal';
 import TrophyIcon from '@/components/ui/TrophyIcon';
 
 // O tipo agora vem implicitamente do hook useProducts
@@ -18,6 +20,7 @@ const ProductsPage = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Usar os hooks para buscar dados
   const { data: productsData, isLoading: isLoadingProducts } = useProducts({});
@@ -41,55 +44,96 @@ const ProductsPage = () => {
   });
 
   return (
-    <PageLayout
-      headerContent={
-        <PageHeader
-          title="Vitrine de Produtos Elite"
-          description="Explore todos os nossos produtos e encontre as melhores ofertas para promover."
-          customIcon={<TrophyIcon className="w-6 h-6" color="#f97316" />}
-          showNewProductButton={true}
-        />
-      }
-    >
-      <div className="max-w-7xl mx-auto">
-        {/* Filtros */}
-        <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Buscar por nome do produto..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-slate-800 border-slate-700"
+    <>
+      <PageLayout
+        headerContent={
+          <div className="flex items-center justify-between">
+            <PageHeader
+              title="Vitrine de Produtos Elite"
+              description="Explore todos os nossos produtos e encontre as melhores ofertas para promover."
+              customIcon={<TrophyIcon className="w-6 h-6" color="#f97316" />}
             />
+            <Button 
+              onClick={() => setShowCreateModal(true)}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Cadastrar Produto
+            </Button>
           </div>
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="bg-slate-800 border-slate-700">
-              <SelectValue placeholder="Filtrar por categoria" />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-700 text-white">
-              <SelectItem value="all">Todas as Categorias</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        }
+      >
+        <div className="max-w-7xl mx-auto">
+          {/* Filtros */}
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                placeholder="Buscar por nome do produto..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-slate-800 border-slate-700"
+              />
+            </div>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="bg-slate-800 border-slate-700">
+                <SelectValue placeholder="Filtrar por categoria" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                <SelectItem value="all">Todas as Categorias</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        {/* Grid de Produtos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {isLoadingProducts
-            ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-64 bg-slate-800" />)
-            : filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onDelete={handleDeleteProduct}
-                />
-              ))}
+          {/* Grid de Produtos */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {isLoadingProducts
+              ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-64 bg-slate-800" />)
+              : filteredProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onDelete={handleDeleteProduct}
+                  />
+                ))}
+          </div>
+
+          {/* Estado vazio */}
+          {!isLoadingProducts && filteredProducts.length === 0 && (
+            <div className="text-center py-12">
+              <TrophyIcon className="w-16 h-16 mx-auto mb-4 opacity-50" color="#64748b" />
+              <h3 className="text-lg font-medium text-slate-300 mb-2">
+                {products.length === 0 ? 'Nenhum produto cadastrado' : 'Nenhum produto encontrado'}
+              </h3>
+              <p className="text-slate-400 mb-6">
+                {products.length === 0 
+                  ? 'Comece cadastrando seu primeiro produto para começar a vender.'
+                  : 'Tente ajustar os filtros para encontrar o que procura.'
+                }
+              </p>
+              {products.length === 0 && (
+                <Button 
+                  onClick={() => setShowCreateModal(true)}
+                  className="bg-orange-600 hover:bg-orange-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Cadastrar Primeiro Produto
+                </Button>
+              )}
+            </div>
+          )}
         </div>
-      </div>
-    </PageLayout>
+      </PageLayout>
+
+      {/* Modal de cadastro de produto */}
+      <CreateProductModal 
+        isOpen={showCreateModal} 
+        onClose={() => setShowCreateModal(false)} 
+      />
+    </>
   );
 };
 

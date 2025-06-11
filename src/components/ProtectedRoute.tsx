@@ -15,7 +15,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { user, session, loading, profile, isAdmin, isModerator } = useAuth();
   const location = useLocation();
-
+  
   // Mostrar loading enquanto verifica autenticação
   if (loading) {
     return (

@@ -111,11 +111,13 @@ const DashboardLayout: React.FC = () => {
     { name: 'Configurações', href: '/dashboard/settings', icon: Settings },
   ];
 
+  // Admin navigation - DESABILITADO TEMPORARIAMENTE conforme solicitação
+  // Será habilitado futuramente
   const adminNavigation = [
-    { name: 'Gerenciar Afiliados', href: '/admin/affiliates', icon: Users },
-    { name: 'Gerenciar Produtos', href: '/admin/products', icon: Package },
-    { name: 'Gerenciar Comissões', href: '/admin/commissions', icon: DollarSign },
-    { name: 'Gerenciar Conteúdo', href: '/admin/content', icon: BookOpen },
+    // { name: 'Gerenciar Afiliados', href: '/admin/affiliates', icon: Users },
+    // { name: 'Gerenciar Produtos', href: '/admin/products', icon: Package },
+    // { name: 'Gerenciar Comissões', href: '/admin/commissions', icon: DollarSign },
+    // { name: 'Gerenciar Conteúdo', href: '/admin/content', icon: BookOpen },
   ];
 
   const handleSignOut = async () => {

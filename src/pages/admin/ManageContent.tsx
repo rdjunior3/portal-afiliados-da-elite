@@ -1,45 +1,34 @@
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { BookOpen, Plus } from 'lucide-react';
+import { PageLayout } from '@/components/layout/PageLayout';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { Card, CardContent } from '@/components/ui/card';
+import { BookOpen, Clock } from 'lucide-react';
 
-const ManageContent = () => {
+const ManageContent: React.FC = () => {
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gradient-orange">
-            Gerenciar Conteúdo
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Gerencie cursos, aulas e materiais educacionais
-          </p>
-        </div>
-        <Button className="gradient-orange glow-orange-hover">
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Curso
-        </Button>
-      </div>
-
-      {/* Content */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Em Desenvolvimento</CardTitle>
-          <CardDescription>
-            Esta funcionalidade está sendo desenvolvida
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12">
-            <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              Em breve você poderá gerenciar todo o conteúdo educacional da plataforma.
+    <PageLayout
+      headerContent={
+        <PageHeader
+          title="Gerenciar Conteúdo"
+          description="Esta funcionalidade está temporariamente desabilitada."
+          customIcon={<BookOpen className="w-6 h-6" color="#64748b" />}
+        />
+      }
+    >
+      <div className="max-w-4xl mx-auto">
+        <Card className="bg-slate-800 border-slate-700">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <Clock className="w-16 h-16 text-slate-400 mb-4" />
+            <h2 className="text-xl font-semibold text-slate-300 mb-2">
+              Funcionalidade Temporariamente Desabilitada
+            </h2>
+            <p className="text-slate-400 text-center max-w-md">
+              O gerenciamento de conteúdo está temporariamente desabilitado e será habilitado em uma versão futura da plataforma.
             </p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </PageLayout>
   );
 };
 

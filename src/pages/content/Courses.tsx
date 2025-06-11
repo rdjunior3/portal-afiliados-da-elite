@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { ImageUpload } from '@/components/ui/image-upload';
+import { PageLayout } from '@/components/layout/PageLayout';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { 
   Search, 
   Plus, 
@@ -21,7 +22,8 @@ import {
   Star,
   Edit,
   Trash2,
-  ImageIcon
+  ImageIcon,
+  BookOpen
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -42,12 +44,12 @@ const formatDuration = (seconds: number) => {
 
 const getTotalDuration = (lessons: Lesson[]) => {
   if (!lessons || lessons.length === 0) return 'N/A';
-  const totalSeconds = lessons.reduce((total, lesson) => total + (lesson.duration_seconds || 0), 0);
+  const totalSeconds = lessons.reduce((total, lesson) => total + (lesson.video_duration || 0), 0);
   return formatDuration(totalSeconds);
 };
 
 const Courses: React.FC = () => {
-  const { isAdmin } = useAuth();
+  const { canManageContent } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -66,7 +68,6 @@ const Courses: React.FC = () => {
     title: '',
     description: '',
     video_url: '',
-    platform: 'youtube',
     duration: '',
     course_id: ''
   });
@@ -89,12 +90,12 @@ const Courses: React.FC = () => {
     }
   });
 
-  // Mutation para criar curso
+  // Mutation para criar curso (módulo)
   const createCourseMutation = useMutation({
     mutationFn: async (courseData: typeof newCourse) => {
       // Validação básica
       if (!courseData.title.trim()) {
-        throw new Error('Título do curso é obrigatório');
+        throw new Error('Título do módulo é obrigatório');
       }
 
       const { data, error } = await supabase
@@ -103,8 +104,10 @@ const Courses: React.FC = () => {
           title: courseData.title.trim(),
           description: courseData.description.trim() || null,
           cover_image_url: courseData.cover_image_url || null,
-          thumbnail_url: courseData.cover_image_url || null, // Usar a mesma imagem como thumbnail
+          thumbnail_url: courseData.cover_image_url || null,
           is_active: true,
+          is_free: true,
+          price: 0,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }])
@@ -117,16 +120,16 @@ const Courses: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
       toast({
-        title: "Curso criado com sucesso! 🎓",
-        description: "O novo curso foi adicionado à plataforma.",
+        title: "Módulo criado com sucesso! 🎓",
+        description: "O novo módulo foi adicionado à plataforma.",
       });
       setShowAddCourse(false);
       setNewCourse({ title: '', description: '', cover_image_url: '' });
     },
     onError: (error: any) => {
       toast({
-        title: "Erro ao criar curso",
-        description: error.message || "Não foi possível criar o curso. Tente novamente.",
+        title: "Erro ao criar módulo",
+        description: error.message || "Não foi possível criar o módulo. Tente novamente.",
         variant: "destructive",
       });
     }
@@ -140,15 +143,33 @@ const Courses: React.FC = () => {
         throw new Error('Título da aula é obrigatório');
       }
       if (!lessonData.course_id) {
-        throw new Error('Selecione um curso para a aula');
+        throw new Error('Selecione um módulo para a aula');
       }
       if (!lessonData.video_url.trim()) {
         throw new Error('URL do vídeo é obrigatória');
       }
 
+      // Converter duração MM:SS para segundos
       const durationInSeconds = lessonData.duration ? 
-        parseInt(lessonData.duration.split(':')[0]) * 60 + parseInt(lessonData.duration.split(':')[1] || '0') : 
-        null;
+        (() => {
+          const parts = lessonData.duration.split(':').map(p => parseInt(p) || 0);
+          if (parts.length === 2) {
+            return parts[0] * 60 + parts[1]; // MM:SS
+          } else if (parts.length === 1) {
+            return parts[0] * 60; // apenas minutos
+          }
+          return 0;
+        })() : 0;
+
+      // Obter o próximo order_index
+      const { data: existingLessons } = await supabase
+        .from('lessons')
+        .select('order_index')
+        .eq('course_id', lessonData.course_id)
+        .order('order_index', { ascending: false })
+        .limit(1);
+
+      const nextOrderIndex = (existingLessons?.[0]?.order_index || 0) + 1;
 
       const { data, error } = await supabase
         .from('lessons')
@@ -157,10 +178,9 @@ const Courses: React.FC = () => {
           title: lessonData.title.trim(),
           description: lessonData.description?.trim() || null,
           video_url: lessonData.video_url.trim(),
-          platform: lessonData.platform,
-          duration_seconds: durationInSeconds,
+          video_duration: durationInSeconds,
           is_active: true,
-          order_index: 1,
+          order_index: nextOrderIndex,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }])
@@ -174,10 +194,10 @@ const Courses: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
       toast({
         title: "Aula adicionada com sucesso! 📹",
-        description: "A nova aula foi criada e está disponível no curso.",
+        description: "A nova aula foi criada e está disponível no módulo.",
       });
       setShowAddLesson(false);
-      setNewLesson({ title: '', description: '', video_url: '', platform: 'youtube', duration: '', course_id: '' });
+      setNewLesson({ title: '', description: '', video_url: '', duration: '', course_id: '' });
     },
     onError: (error: any) => {
       toast({
@@ -189,176 +209,282 @@ const Courses: React.FC = () => {
   });
 
   // Filtrar cursos
-  const filteredCourses = courses?.filter(course =>
+  const filteredCourses = courses?.filter(course => 
     course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     course.description?.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-6 space-y-6">
-      {/* Header com design padrão */}
-      <div className="px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-              <TrophyIcon className="w-6 h-6 text-slate-900" />
+    <PageLayout
+      headerContent={
+        <div className="flex items-center justify-between">
+          <PageHeader
+            title="Área de Conteúdo - Módulos e Aulas"
+            description="Gerencie os módulos de aprendizado e suas respectivas aulas."
+            customIcon={<GraduationCap className="w-6 h-6" color="#f97316" />}
+          />
+          
+          {canManageContent() && (
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setShowAddLesson(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Nova Aula
+              </Button>
+              <Button 
+                onClick={() => setShowAddCourse(true)}
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Novo Módulo
+              </Button>
             </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Academia Elite</h1>
-              <p className="text-slate-300 mt-1">Cursos e aulas exclusivas para afiliados de alto desempenho</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {isAdmin() && (
-              <div className="flex gap-2">
-                <Dialog open={showAddCourse} onOpenChange={setShowAddCourse}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Novo Curso
-                    </Button>
-                  </DialogTrigger>
-                  {/* Dialog Content aqui... */}
-                </Dialog>
-                
-                <Dialog open={showAddLesson} onOpenChange={setShowAddLesson}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="border-orange-500/50 text-orange-400 hover:bg-orange-500/10">
-                      <Play className="w-4 h-4 mr-2" />
-                      Nova Aula
-                    </Button>
-                  </DialogTrigger>
-                  {/* Dialog Content aqui... */}
-                </Dialog>
-              </div>
-            )}
-          </div>
+          )}
         </div>
-      </div>
-
-      {/* Busca */}
-      <Card className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm">
-        <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+      }
+    >
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Filtros */}
+        <div className="flex gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              placeholder="Buscar cursos..."
+              placeholder="Buscar módulos ou aulas..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder-slate-400"
+              className="pl-10 bg-slate-800 border-slate-700"
             />
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Grade de Cursos */}
-      {isLoading ? (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mx-auto mb-4"></div>
-          <p className="text-slate-300">Carregando cursos...</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCourses.map((course) => (
-            <Card key={course.id} className="bg-slate-800/60 border-slate-700/50 hover:border-orange-500/50 transition-all duration-300 group cursor-pointer backdrop-blur-sm">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 bg-gradient-to-r from-orange-400 to-orange-500 rounded-lg flex items-center justify-center">
-                      <GraduationCap className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg text-white group-hover:text-orange-400 transition-colors">
-                        {course.title}
-                      </CardTitle>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="secondary" className="text-xs bg-slate-700/60 text-slate-300">
-                          {course.lessons?.length || 0} aulas
-                        </Badge>
-                        <Badge variant="outline" className="text-xs border-orange-500/50 text-orange-400">
-                          Elite
-                        </Badge>
                       </div>
-                    </div>
+                      
+        {/* Grid de Cursos */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i} className="bg-slate-800 border-slate-700 animate-pulse">
+                <div className="h-48 bg-slate-700 rounded-t-lg"></div>
+                <CardContent className="p-6">
+                  <div className="h-4 bg-slate-700 rounded mb-2"></div>
+                  <div className="h-3 bg-slate-700 rounded mb-4"></div>
+                  <div className="flex gap-2">
+                    <div className="h-6 bg-slate-700 rounded w-16"></div>
+                    <div className="h-6 bg-slate-700 rounded w-20"></div>
                   </div>
-                  
-                  {isAdmin() && (
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-slate-200">
-                        <Edit className="w-3 h-3" />
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-400 hover:text-red-300">
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          ) : filteredCourses.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCourses.map((course) => (
+              <Card key={course.id} className="bg-slate-800 border-slate-700 hover:border-orange-500/50 transition-colors">
+                <div className="relative h-48 bg-gradient-to-br from-orange-500/20 to-blue-600/20 rounded-t-lg overflow-hidden">
+                  {course.cover_image_url ? (
+                    <img 
+                      src={course.cover_image_url} 
+                      alt={course.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <BookOpen className="w-12 h-12 text-slate-400" />
                     </div>
                   )}
+                  <div className="absolute top-2 right-2">
+                    <Badge className="bg-orange-600/90 text-white">
+                      {course.lessons?.length || 0} aulas
+                    </Badge>
+                    </div>
                 </div>
-              </CardHeader>
-              
-              <CardContent>
-                <p className="text-slate-300 text-sm mb-4">
-                  {course.description || "Curso exclusivo para afiliados elite"}
-                </p>
                 
-                <div className="space-y-3">
-                  {/* Course Stats */}
-                  <div className="flex items-center gap-4 text-sm text-slate-400">
+                <CardContent className="p-6">
+                  <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">
+                    {course.title}
+                  </h3>
+                  <p className="text-slate-400 text-sm mb-4 line-clamp-2">
+                    {course.description || 'Sem descrição disponível'}
+                  </p>
+                  
+                  <div className="flex items-center gap-4 text-sm text-slate-300 mb-4">
                     <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
-                      <span>{getTotalDuration(course.lessons || [])}</span>
+                      {getTotalDuration(course.lessons || [])}
                     </div>
                     <div className="flex items-center gap-1">
                       <Users className="w-4 h-4" />
-                      <span>Elite</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 fill-orange-400 text-orange-400" />
-                      <span>Premium</span>
+                      {course.enrollment_count || 0}
                     </div>
                   </div>
                   
-                  {/* Progress or Access Button */}
-                  <div className="pt-2">
-                    <Button 
-                      className="w-full bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white"
-                      onClick={() => navigate(`/dashboard/content/${course.id}`)}
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      Acessar Curso
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!isLoading && filteredCourses.length === 0 && (
-        <div className="text-center py-12">
-          <GraduationCap className="w-16 h-16 text-slate-500 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-slate-300 mb-2">
-            {searchTerm ? 'Nenhum curso encontrado' : 'Nenhum curso disponível'}
-          </h3>
-          <p className="text-slate-400 mb-6">
-            {searchTerm 
-              ? 'Tente ajustar os termos de busca.' 
-              : 'Novos cursos exclusivos estão sendo preparados para você.'
-            }
-          </p>
-          {isAdmin() && !searchTerm && (
-            <Button 
-              onClick={() => setShowAddCourse(true)}
-              className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Criar Primeiro Curso
-            </Button>
+                  <Button 
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                    onClick={() => navigate(`/content/courses/${course.id}`)}
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Acessar Módulo
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <GraduationCap className="w-16 h-16 mx-auto mb-4 opacity-50 text-slate-400" />
+            <h3 className="text-lg font-medium text-slate-300 mb-2">
+              {courses?.length === 0 ? 'Nenhum módulo cadastrado' : 'Nenhum módulo encontrado'}
+              </h3>
+            <p className="text-slate-400 mb-6">
+              {courses?.length === 0 
+                ? 'Comece criando seu primeiro módulo de conteúdo.'
+                : 'Tente ajustar o termo de busca.'
+              }
+            </p>
+            {courses?.length === 0 && canManageContent() && (
+                <Button 
+                  onClick={() => setShowAddCourse(true)}
+                className="bg-orange-600 hover:bg-orange-700"
+                >
+                <Plus className="w-4 h-4 mr-2" />
+                Criar Primeiro Módulo
+                </Button>
+              )}
+            </div>
           )}
+      </div>
+
+      {/* Modal para criar curso/módulo */}
+      <Dialog open={showAddCourse} onOpenChange={setShowAddCourse}>
+        <DialogContent className="bg-slate-900 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-orange-400">Criar Novo Módulo</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="course-title" className="text-slate-300">Título do Módulo *</Label>
+              <Input
+                id="course-title"
+                value={newCourse.title}
+                onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
+                placeholder="Ex: Fundamentos do Marketing Digital"
+                className="bg-slate-800 border-slate-700"
+              />
+            </div>
+            <div>
+              <Label htmlFor="course-description" className="text-slate-300">Descrição</Label>
+              <Textarea
+                id="course-description"
+                value={newCourse.description}
+                onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
+                placeholder="Descreva o conteúdo deste módulo..."
+                className="bg-slate-800 border-slate-700 h-20"
+              />
+            </div>
+            <div>
+              <Label htmlFor="course-image" className="text-slate-300">URL da Imagem de Capa</Label>
+              <Input
+                id="course-image"
+                value={newCourse.cover_image_url}
+                onChange={(e) => setNewCourse({ ...newCourse, cover_image_url: e.target.value })}
+                placeholder="https://exemplo.com/imagem.jpg"
+                className="bg-slate-800 border-slate-700"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddCourse(false)} className="border-slate-700">
+              Cancelar
+            </Button>
+            <Button 
+              onClick={() => createCourseMutation.mutate(newCourse)}
+              disabled={createCourseMutation.isPending}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {createCourseMutation.isPending ? 'Criando...' : 'Criar Módulo'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para criar aula */}
+      <Dialog open={showAddLesson} onOpenChange={setShowAddLesson}>
+        <DialogContent className="bg-slate-900 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-blue-400">Adicionar Nova Aula</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="lesson-course" className="text-slate-300">Módulo *</Label>
+              <Select value={newLesson.course_id} onValueChange={(value) => setNewLesson({ ...newLesson, course_id: value })}>
+                <SelectTrigger className="bg-slate-800 border-slate-700">
+                  <SelectValue placeholder="Selecione o módulo" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700">
+                  {courses?.map(course => (
+                    <SelectItem key={course.id} value={course.id}>
+                      {course.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="lesson-title" className="text-slate-300">Título da Aula *</Label>
+              <Input
+                id="lesson-title"
+                value={newLesson.title}
+                onChange={(e) => setNewLesson({ ...newLesson, title: e.target.value })}
+                placeholder="Ex: Introdução ao SEO"
+                className="bg-slate-800 border-slate-700"
+              />
+            </div>
+            <div>
+              <Label htmlFor="lesson-description" className="text-slate-300">Descrição</Label>
+              <Textarea
+                id="lesson-description"
+                value={newLesson.description}
+                onChange={(e) => setNewLesson({ ...newLesson, description: e.target.value })}
+                placeholder="Descreva o conteúdo desta aula..."
+                className="bg-slate-800 border-slate-700 h-20"
+              />
+            </div>
+            <div>
+              <Label htmlFor="lesson-video" className="text-slate-300">URL do Vídeo *</Label>
+              <Input
+                id="lesson-video"
+                value={newLesson.video_url}
+                onChange={(e) => setNewLesson({ ...newLesson, video_url: e.target.value })}
+                placeholder="https://youtube.com/watch?v=..."
+                className="bg-slate-800 border-slate-700"
+              />
+            </div>
+            <div>
+              <Label htmlFor="lesson-duration" className="text-slate-300">Duração (MM:SS)</Label>
+              <Input
+                id="lesson-duration"
+                value={newLesson.duration}
+                onChange={(e) => setNewLesson({ ...newLesson, duration: e.target.value })}
+                placeholder="Ex: 15:30"
+                className="bg-slate-800 border-slate-700"
+              />
         </div>
-      )}
-    </div>
+      </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddLesson(false)} className="border-slate-700">
+              Cancelar
+            </Button>
+            <Button 
+              onClick={() => createLessonMutation.mutate(newLesson)}
+              disabled={createLessonMutation.isPending}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {createLessonMutation.isPending ? 'Criando...' : 'Criar Aula'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </PageLayout>
   );
 };
 
