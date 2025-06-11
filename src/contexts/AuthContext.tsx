@@ -406,7 +406,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(null);
       setProfile(null);
       
-      navigate('/'); // Redireciona para a página inicial/login
+      navigate('/login'); // Redireciona para a página de login
       
       console.log('✅ [signOut] Logout bem-sucedido e redirecionado.');
       toast({

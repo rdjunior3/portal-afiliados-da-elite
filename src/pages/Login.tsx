@@ -229,7 +229,7 @@ const Login = () => {
             <Button 
               type="submit" 
               disabled={loading}
-              className="w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-slate-900 font-semibold transition-all duration-300 transform hover:scale-[1.02]"
+                              className="w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-slate-100 font-semibold transition-all duration-300 transform hover:scale-[1.02]"
             >
               {loading ? (
                 <div className="flex items-center gap-2">

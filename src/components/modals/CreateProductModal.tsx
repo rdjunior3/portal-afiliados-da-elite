@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, X, Image, DollarSign, Link, Tag } from 'lucide-react';
+import { Plus, X, Image, DollarSign, Link, Tag, Upload } from 'lucide-react';
 
 interface CreateProductModalProps {
   isOpen: boolean;
@@ -40,6 +40,9 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
   const [offers, setOffers] = useState<ProductOffer[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Buscar categorias
   const { data: categories } = useQuery({
@@ -56,6 +59,81 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     }
   });
 
+  // Auto-gerar tags baseadas no nome do produto
+  useEffect(() => {
+    if (formData.name.trim()) {
+      const autoTags = formData.name
+        .toLowerCase()
+        .split(' ')
+        .filter(word => word.length > 2)
+        .map(word => word.trim())
+        .filter(word => word.length > 0)
+        .slice(0, 5);
+      
+      // Merge com tags manuais, removendo duplicatas
+      const manualTags = tags.filter(tag => !autoTags.includes(tag.toLowerCase()));
+      setTags([...autoTags, ...manualTags]);
+    }
+  }, [formData.name]);
+
+  // Upload de imagem
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Erro no arquivo",
+        description: "Por favor, selecione apenas arquivos de imagem.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validar tamanho (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Arquivo muito grande",
+        description: "A imagem deve ter no máximo 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setImageFile(file);
+    
+    // Criar preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Upload para Supabase Storage
+  const uploadImageToSupabase = async (file: File): Promise<string> => {
+    setUploadingImage(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `product-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   // Mutation para criar produto
   const createProductMutation = useMutation({
     mutationFn: async (productData: typeof formData & { offers: ProductOffer[], tags: string[] }) => {
@@ -66,13 +144,14 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
       if (!productData.sales_page_url.trim()) throw new Error('Link para afiliação é obrigatório');
       if (productData.offers.length === 0) throw new Error('Pelo menos uma oferta é obrigatória');
 
-      // Gerar tags automáticas baseadas no nome e descrição
-      const autoTags = [
-        ...productData.name.toLowerCase().split(' ').filter(word => word.length > 2),
-        ...productData.description.toLowerCase().split(' ').filter(word => word.length > 3)
-      ].slice(0, 5);
+      // Upload da imagem se houver
+      let finalImageUrl = productData.image_url;
+      if (imageFile) {
+        finalImageUrl = await uploadImageToSupabase(imageFile);
+      }
 
-      const allTags = [...new Set([...productData.tags, ...autoTags])];
+      // Usar tags já geradas automaticamente
+      const allTags = [...new Set(productData.tags)];
 
       // Criar produto
       const { data: product, error: productError } = await supabase
@@ -81,7 +160,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
           name: productData.name.trim(),
           description: productData.description.trim(),
           category_id: productData.category_id,
-          image_url: productData.image_url || null,
+          image_url: finalImageUrl || null,
           sales_page_url: productData.sales_page_url.trim(),
           price: productData.offers[0]?.price || 0,
           commission_rate: productData.offers[0]?.commission_rate || 10,
@@ -149,6 +228,8 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     setOffers([]);
     setTags([]);
     setNewTag('');
+    setImageFile(null);
+    setImagePreview('');
   };
 
   const addOffer = () => {
@@ -202,25 +283,25 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
           {/* Informações básicas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-slate-300">Nome do Produto *</Label>
+              <Label htmlFor="name" className="text-slate-200">Nome do Produto *</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Ex: Curso de Marketing Digital"
-                className="bg-slate-800 border-slate-700"
+                className="bg-slate-800 border-slate-700 text-slate-100"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category" className="text-slate-300">Categoria *</Label>
+              <Label htmlFor="category" className="text-slate-200">Categoria *</Label>
               <Select value={formData.category_id} onValueChange={(value) => setFormData({ ...formData, category_id: value })}>
-                <SelectTrigger className="bg-slate-800 border-slate-700">
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-100">
                   <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-slate-700">
                   {categories?.map(category => (
-                    <SelectItem key={category.id} value={category.id}>
+                    <SelectItem key={category.id} value={category.id} className="text-slate-100">
                       {category.name}
                     </SelectItem>
                   ))}
@@ -229,36 +310,62 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
             </div>
           </div>
 
-          {/* Imagem do produto */}
+          {/* Upload de Imagem */}
           <div className="space-y-2">
-            <Label htmlFor="image_url" className="text-slate-300 flex items-center gap-2">
+            <Label className="text-slate-200 flex items-center gap-2">
               <Image className="w-4 h-4" />
-              Imagem do Produto
+              Imagem do Produto (Ideal: 500x500px) *
             </Label>
-            <Input
-              id="image_url"
-              value={formData.image_url}
-              onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-              placeholder="URL da imagem do produto"
-              className="bg-slate-800 border-slate-700"
-            />
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="bg-slate-800 border-slate-700 text-slate-100"
+                />
+                <p className="text-xs text-slate-400 mt-1">
+                  Formatos aceitos: JPG, PNG, GIF (máx. 5MB)
+                </p>
+              </div>
+              {imagePreview && (
+                <div className="w-20 h-20 border border-slate-700 rounded-lg overflow-hidden">
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+            </div>
+            {!imageFile && (
+              <div className="space-y-2">
+                <Label className="text-slate-300">Ou insira URL da imagem:</Label>
+                <Input
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                  placeholder="https://exemplo.com/imagem.jpg"
+                  className="bg-slate-800 border-slate-700 text-slate-100"
+                />
+              </div>
+            )}
           </div>
 
           {/* Descrição */}
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-slate-300">Descrição *</Label>
+            <Label htmlFor="description" className="text-slate-200">Descrição *</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Descreva o produto detalhadamente..."
-              className="bg-slate-800 border-slate-700 h-24"
+              className="bg-slate-800 border-slate-700 h-24 text-slate-100"
             />
           </div>
 
           {/* Link para afiliação */}
           <div className="space-y-2">
-            <Label htmlFor="sales_page_url" className="text-slate-300 flex items-center gap-2">
+            <Label htmlFor="sales_page_url" className="text-slate-200 flex items-center gap-2">
               <Link className="w-4 h-4" />
               Link para Afiliação *
             </Label>
@@ -267,22 +374,22 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
               value={formData.sales_page_url}
               onChange={(e) => setFormData({ ...formData, sales_page_url: e.target.value })}
               placeholder="URL da página de vendas na plataforma terceira"
-              className="bg-slate-800 border-slate-700"
+              className="bg-slate-800 border-slate-700 text-slate-100"
             />
           </div>
 
           {/* Tags */}
           <div className="space-y-2">
-            <Label className="text-slate-300 flex items-center gap-2">
+            <Label className="text-slate-200 flex items-center gap-2">
               <Tag className="w-4 h-4" />
-              Tags de Filtro (Automáticas + Manuais)
+              Tags de Filtro (Geradas automaticamente do nome + Manuais)
             </Label>
             <div className="flex gap-2">
               <Input
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
                 placeholder="Adicionar tag personalizada"
-                className="bg-slate-800 border-slate-700"
+                className="bg-slate-800 border-slate-700 text-slate-100"
                 onKeyPress={(e) => e.key === 'Enter' && addTag()}
               />
               <Button type="button" onClick={addTag} size="sm" className="bg-orange-600 hover:bg-orange-700">
@@ -290,8 +397,8 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
               </Button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {tags.map(tag => (
-                <Badge key={tag} variant="secondary" className="bg-slate-700 text-slate-300">
+              {tags.map((tag, index) => (
+                <Badge key={`${tag}-${index}`} variant="secondary" className="bg-slate-700 text-slate-200">
                   {tag}
                   <button onClick={() => removeTag(tag)} className="ml-1 text-red-400 hover:text-red-300">
                     <X className="w-3 h-3" />
@@ -299,6 +406,11 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                 </Badge>
               ))}
             </div>
+            {tags.length === 0 && formData.name && (
+              <p className="text-xs text-slate-400">
+                As tags serão geradas automaticamente quando você digitar o nome do produto
+              </p>
+            )}
           </div>
 
           {/* Ofertas do produto */}

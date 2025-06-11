@@ -226,7 +226,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onClick={() => setMode('login')}
                   className={cn(
                     "flex-1 py-2 px-4 text-sm font-medium transition-colors duration-300 rounded-md",
-                    mode === 'login' ? 'text-slate-900' : 'text-slate-300 hover:text-white'
+                    mode === 'login' ? 'text-slate-100' : 'text-slate-300 hover:text-white'
                   )}
             >
               Login
@@ -235,7 +235,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onClick={() => setMode('signup')}
                   className={cn(
                     "flex-1 py-2 px-4 text-sm font-medium transition-colors duration-300 rounded-md",
-                    mode === 'signup' ? 'text-slate-900' : 'text-slate-300 hover:text-white'
+                    mode === 'signup' ? 'text-slate-100' : 'text-slate-300 hover:text-white'
                   )}
             >
               Cadastro
@@ -374,7 +374,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               type="submit" 
                 disabled={loading || !isFormValid}
                 className={cn(
-                  "w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-slate-900 font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed",
+                  "w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-slate-100 font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed",
                   "transform hover:scale-[1.02] active:scale-[0.98]"
                 )}
             >
