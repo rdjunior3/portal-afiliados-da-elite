@@ -45,12 +45,10 @@
       ]
     }
   ],
-  "buildCommand": "npm run build",
+  "buildCommand": "rm -f package-lock.json && npm install && npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "installCommand": "npm install --include=optional --force",
   "env": {
-    "NODE_VERSION": "18",
-    "NPM_FLAGS": "--include=optional --force"
+    "NODE_VERSION": "18"
   }
 } 
