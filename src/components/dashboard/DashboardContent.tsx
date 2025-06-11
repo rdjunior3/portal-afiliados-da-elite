@@ -214,7 +214,7 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
                       className="h-full w-full rounded-full object-cover"
                     />
                   ) : (
-                    <BrandIcon className="w-6 h-6 lg:w-8 lg:h-8 text-slate-900" />
+                                          <BrandIcon className="w-6 h-6 lg:w-8 lg:h-8 text-slate-100" />
                   )}
                 </div>
                 <h3 className="text-white font-bold text-base lg:text-lg">{getDisplayName()}</h3>

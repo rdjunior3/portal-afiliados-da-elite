@@ -94,7 +94,7 @@ const Index = () => {
                   {/* Ícone Troféu Elite - Apenas no desktop */}
                   <div className="relative hidden sm:block">
                     <div className="w-10 h-10 bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-lg">
-                      <svg className="w-7 h-7 text-slate-900" fill="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-7 h-7 text-slate-100" fill="currentColor" viewBox="0 0 24 24">
                         {/* Base/Pedestal escuro */}
                         <rect x="7" y="19" width="10" height="2.5" rx="0.5" fill="rgba(0,0,0,0.7)"/>
                         <rect x="8" y="18.5" width="8" height="1" fill="rgba(0,0,0,0.5)"/>
@@ -364,7 +364,7 @@ const Index = () => {
                           <div className="bg-gradient-to-r from-blue-500/10 to-blue-600/5 rounded-lg p-1.5 lg:p-2.5 border border-blue-500/20">
                             <div className="flex items-center gap-1.5 lg:gap-2.5">
                               <div className="w-5 h-5 lg:w-7 lg:h-7 bg-blue-400 rounded flex items-center justify-center">
-                                <span className="text-slate-900 font-bold text-xs">💬</span>
+                                <span className="text-slate-100 font-bold text-xs">💬</span>
                               </div>
                               <div>
                                 <div className="text-white text-xs lg:text-sm font-medium">Chat Elite</div>
@@ -418,7 +418,7 @@ const Index = () => {
                 </div>
                 
                 {/* Floating Elements - Apenas CHAT mantido */}
-                <div className="absolute -bottom-2 lg:-bottom-4 -left-2 lg:-left-4 bg-gradient-to-r from-blue-400 to-blue-500 text-slate-900 px-2 lg:px-4 py-1 lg:py-2 rounded-full text-xs font-bold float-animation shadow-xl border-2 border-blue-300/50 transform -rotate-2">
+                                  <div className="absolute -bottom-2 lg:-bottom-4 -left-2 lg:-left-4 bg-gradient-to-r from-blue-400 to-blue-500 text-slate-100 px-2 lg:px-4 py-1 lg:py-2 rounded-full text-xs font-bold float-animation shadow-xl border-2 border-blue-300/50 transform -rotate-2">
                   <div className="flex items-center gap-1">
                     <span className="text-xs lg:text-sm">💬</span>
                     <span className="hidden sm:inline">CHAT ATIVO</span>
@@ -545,7 +545,7 @@ const Index = () => {
           
           <div className="space-y-4 slide-in-up">
             <button 
-              className="btn-primary bg-gradient-to-r from-orange-400 to-orange-500 text-slate-900 px-8 py-4 rounded-lg font-bold text-lg inline-flex items-center gap-3 focus-ring"
+              className="btn-primary bg-gradient-to-r from-orange-400 to-orange-500 text-slate-100 px-8 py-4 rounded-lg font-bold text-lg inline-flex items-center gap-3 focus-ring"
               onClick={() => handleAuthAction('signup')}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

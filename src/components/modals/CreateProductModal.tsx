@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, X, Image, DollarSign, Link, Tag, Upload } from 'lucide-react';
+import { testSupabaseConnection, createProductImagesBucket } from '@/utils/testSupabase';
 
 interface CreateProductModalProps {
   isOpen: boolean;
@@ -43,6 +44,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [testingConnection, setTestingConnection] = useState(false);
 
   // Buscar categorias
   const { data: categories } = useQuery({
@@ -75,6 +77,34 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
       setTags([...autoTags, ...manualTags]);
     }
   }, [formData.name]);
+
+  // Teste de conexão automático quando abre o modal
+  useEffect(() => {
+    if (isOpen) {
+      handleTestConnection();
+    }
+  }, [isOpen]);
+
+  const handleTestConnection = async () => {
+    setTestingConnection(true);
+    try {
+      const isConnected = await testSupabaseConnection();
+      if (!isConnected) {
+        toast({
+          title: "Problema de Conexão",
+          description: "Verifique sua conexão com o Supabase. Veja o console para detalhes.",
+          variant: "destructive",
+        });
+      }
+      
+      // Tentar criar o bucket se não existir
+      await createProductImagesBucket();
+    } catch (error) {
+      console.error('Erro no teste de conexão:', error);
+    } finally {
+      setTestingConnection(false);
+    }
+  };
 
   // Upload de imagem
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,21 +144,43 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
   // Upload para Supabase Storage
   const uploadImageToSupabase = async (file: File): Promise<string> => {
     setUploadingImage(true);
+    console.log('📸 [UploadImage] Iniciando upload:', { 
+      fileName: file.name, 
+      fileSize: file.size, 
+      fileType: file.type 
+    });
+    
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `product-${Date.now()}.${fileExt}`;
+      
+      console.log('📸 [UploadImage] Nome do arquivo:', fileName);
       
       const { error: uploadError } = await supabase.storage
         .from('product-images')
         .upload(fileName, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('❌ [UploadImage] Erro no upload:', uploadError);
+        throw new Error(`Erro no upload: ${uploadError.message}`);
+      }
+
+      console.log('✅ [UploadImage] Upload concluído, obtendo URL pública...');
 
       const { data: { publicUrl } } = supabase.storage
         .from('product-images')
         .getPublicUrl(fileName);
 
+      console.log('🔗 [UploadImage] URL pública:', publicUrl);
+
+      if (!publicUrl) {
+        throw new Error('Não foi possível obter a URL pública da imagem');
+      }
+
       return publicUrl;
+    } catch (error: any) {
+      console.error('💥 [UploadImage] Erro geral:', error);
+      throw error;
     } finally {
       setUploadingImage(false);
     }
@@ -137,6 +189,13 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
   // Mutation para criar produto
   const createProductMutation = useMutation({
     mutationFn: async (productData: typeof formData & { offers: ProductOffer[], tags: string[] }) => {
+      console.log('🚀 [CreateProduct] Iniciando criação de produto:', { 
+        name: productData.name, 
+        hasImageFile: !!imageFile,
+        offersCount: productData.offers.length,
+        tagsCount: productData.tags.length 
+      });
+
       // Validações
       if (!productData.name.trim()) throw new Error('Nome do produto é obrigatório');
       if (!productData.category_id) throw new Error('Categoria é obrigatória');
@@ -144,39 +203,60 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
       if (!productData.sales_page_url.trim()) throw new Error('Link para afiliação é obrigatório');
       if (productData.offers.length === 0) throw new Error('Pelo menos uma oferta é obrigatória');
 
+      console.log('✅ [CreateProduct] Validações passaram');
+
       // Upload da imagem se houver
       let finalImageUrl = productData.image_url;
       if (imageFile) {
-        finalImageUrl = await uploadImageToSupabase(imageFile);
+        console.log('📸 [CreateProduct] Fazendo upload da imagem...');
+        try {
+          finalImageUrl = await uploadImageToSupabase(imageFile);
+          console.log('✅ [CreateProduct] Upload da imagem concluído:', finalImageUrl);
+        } catch (error) {
+          console.error('❌ [CreateProduct] Erro no upload da imagem:', error);
+          throw new Error(`Erro no upload da imagem: ${error.message}`);
+        }
       }
 
       // Usar tags já geradas automaticamente
       const allTags = [...new Set(productData.tags)];
+      console.log('🏷️ [CreateProduct] Tags finais:', allTags);
 
       // Criar produto
+      console.log('📦 [CreateProduct] Criando produto na tabela products...');
+      const productToInsert = {
+        name: productData.name.trim(),
+        description: productData.description.trim(),
+        category_id: productData.category_id,
+        image_url: finalImageUrl || null,
+        sales_page_url: productData.sales_page_url.trim(),
+        price: productData.offers[0]?.price || 0,
+        commission_rate: productData.offers[0]?.commission_rate || 10,
+        commission_amount: (productData.offers[0]?.price || 0) * ((productData.offers[0]?.commission_rate || 10) / 100),
+        is_active: true,
+        is_featured: false,
+        total_sales: 0,
+        status: 'active'
+      };
+
+      console.log('📦 [CreateProduct] Dados do produto:', productToInsert);
+
       const { data: product, error: productError } = await supabase
         .from('products')
-        .insert([{
-          name: productData.name.trim(),
-          description: productData.description.trim(),
-          category_id: productData.category_id,
-          image_url: finalImageUrl || null,
-          sales_page_url: productData.sales_page_url.trim(),
-          price: productData.offers[0]?.price || 0,
-          commission_rate: productData.offers[0]?.commission_rate || 10,
-          commission_amount: (productData.offers[0]?.price || 0) * ((productData.offers[0]?.commission_rate || 10) / 100),
-          is_active: true,
-          is_featured: false,
-          total_sales: 0,
-          status: 'active'
-        }])
+        .insert([productToInsert])
         .select()
         .single();
 
-      if (productError) throw productError;
+      if (productError) {
+        console.error('❌ [CreateProduct] Erro ao criar produto:', productError);
+        throw productError;
+      }
+
+      console.log('✅ [CreateProduct] Produto criado com sucesso:', product.id);
 
       // Criar ofertas
       if (productData.offers.length > 0) {
+        console.log('💰 [CreateProduct] Criando ofertas...');
         const offersData = productData.offers.map((offer, index) => ({
           product_id: product.id,
           name: offer.name,
@@ -190,13 +270,21 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
           sort_order: index
         }));
 
+        console.log('💰 [CreateProduct] Dados das ofertas:', offersData);
+
         const { error: offersError } = await supabase
           .from('product_offers')
           .insert(offersData);
 
-        if (offersError) throw offersError;
+        if (offersError) {
+          console.error('❌ [CreateProduct] Erro ao criar ofertas:', offersError);
+          throw offersError;
+        }
+
+        console.log('✅ [CreateProduct] Ofertas criadas com sucesso');
       }
 
+      console.log('🎉 [CreateProduct] Processo completo!');
       return product;
     },
     onSuccess: () => {
@@ -276,6 +364,12 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
           <DialogTitle className="text-orange-400 flex items-center gap-2">
             <Plus className="w-5 h-5" />
             Cadastrar Novo Produto
+            {testingConnection && (
+              <div className="flex items-center gap-2 text-xs text-blue-400">
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-400"></div>
+                Verificando conexão...
+              </div>
+            )}
           </DialogTitle>
         </DialogHeader>
 
@@ -506,16 +600,33 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} className="border-slate-700">
-            Cancelar
-          </Button>
-          <Button 
-            onClick={() => createProductMutation.mutate({ ...formData, offers, tags })}
-            disabled={createProductMutation.isPending}
-            className="bg-orange-600 hover:bg-orange-700"
-          >
-            {createProductMutation.isPending ? 'Criando...' : 'Criar Produto'}
-          </Button>
+          <div className="flex justify-between items-center w-full">
+            <Button 
+              variant="outline" 
+              onClick={handleTestConnection}
+              disabled={testingConnection}
+              className="border-slate-700 text-slate-300"
+              size="sm"
+            >
+              {testingConnection ? 'Testando...' : '🔧 Testar Conexão'}
+            </Button>
+            
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={onClose} className="border-slate-700">
+                Cancelar
+              </Button>
+              <Button 
+                onClick={() => createProductMutation.mutate({ ...formData, offers, tags })}
+                disabled={createProductMutation.isPending || uploadingImage}
+                className="bg-orange-600 hover:bg-orange-700"
+              >
+                {createProductMutation.isPending 
+                  ? (uploadingImage ? 'Enviando imagem...' : 'Criando...') 
+                  : 'Criar Produto'
+                }
+              </Button>
+            </div>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

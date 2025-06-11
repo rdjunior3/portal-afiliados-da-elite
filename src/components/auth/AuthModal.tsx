@@ -191,7 +191,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div className="flex items-center justify-center gap-3">
                 <div className="relative">
                   <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-slate-900" />
+                    <Sparkles className="w-5 h-5 text-slate-100" />
                   </div>
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse" />
                 </div>
@@ -409,7 +409,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             >
               <div className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center">
-                  <span className="text-slate-900 text-xs font-bold">G</span>
+                                          <span className="text-slate-100 text-xs font-bold">G</span>
               </div>
               <span>Continuar com Google</span>
             </div>

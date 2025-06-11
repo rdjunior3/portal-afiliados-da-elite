@@ -96,10 +96,10 @@ const MaterialsUploadManager: React.FC<MaterialUploadManagerProps> = ({
       <CardContent>
         <Tabs defaultValue="upload" className="w-full" onValueChange={resetForm}>
           <TabsList className="grid w-full grid-cols-2 bg-slate-800 border border-slate-700">
-            <TabsTrigger value="upload" className="gap-2 data-[state=active]:bg-orange-500 data-[state=active]:text-slate-900">
+                            <TabsTrigger value="upload" className="gap-2 data-[state=active]:bg-orange-500 data-[state=active]:text-slate-100">
               <Upload className="w-4 h-4" /> Upload de Arquivo
             </TabsTrigger>
-            <TabsTrigger value="link" className="gap-2 data-[state=active]:bg-orange-500 data-[state=active]:text-slate-900">
+                            <TabsTrigger value="link" className="gap-2 data-[state=active]:bg-orange-500 data-[state=active]:text-slate-100">
               <Link className="w-4 h-4" /> Link Externo
             </TabsTrigger>
           </TabsList>

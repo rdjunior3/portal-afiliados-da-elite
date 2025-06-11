@@ -114,7 +114,7 @@ export const UserProfile: React.FC = () => {
                   src={profile?.avatar_url || user.user_metadata?.avatar_url} 
                   alt={getDisplayName()} 
                 />
-                <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-500 text-slate-900 text-xs font-bold">
+                <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-500 text-slate-100 text-xs font-bold">
                   {getInitials(getDisplayName())}
                 </AvatarFallback>
               </Avatar>
@@ -154,7 +154,7 @@ export const UserProfile: React.FC = () => {
                 src={profile?.avatar_url || user.user_metadata?.avatar_url} 
                 alt={getDisplayName()} 
               />
-              <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-500 text-slate-900 font-bold">
+                              <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-500 text-slate-100 font-bold">
                 {getInitials(getDisplayName())}
               </AvatarFallback>
             </Avatar>

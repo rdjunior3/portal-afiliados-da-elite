@@ -68,7 +68,7 @@ const ManageCommissions = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-              <TrophyIcon className="w-6 h-6 text-slate-900" />
+                              <TrophyIcon className="w-6 h-6 text-slate-100" />
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white">Comissões Recebidas</h1>

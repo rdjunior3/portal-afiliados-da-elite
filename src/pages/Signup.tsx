@@ -164,7 +164,7 @@ const Signup = () => {
             {benefits.map((benefit, index) => (
               <div key={index} className="flex items-center gap-3">
                 <div className="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center">
-                  <Check className="w-3 h-3 text-slate-900" />
+                                        <Check className="w-3 h-3 text-slate-100" />
                 </div>
                 <span className="text-slate-300">{benefit}</span>
               </div>

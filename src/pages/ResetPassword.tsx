@@ -176,7 +176,7 @@ const ResetPassword = () => {
             {/* Action */}
             <Button 
               onClick={() => navigate('/login')}
-              className="w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-slate-900 font-semibold transition-all duration-300 transform hover:scale-[1.02]"
+                              className="w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-slate-100 font-semibold transition-all duration-300 transform hover:scale-[1.02]"
             >
               Fazer login
             </Button>
@@ -333,7 +333,7 @@ const ResetPassword = () => {
             <Button 
               type="submit" 
               disabled={loading || formData.password !== formData.confirmPassword}
-              className="w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-slate-900 font-semibold transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-300 hover:to-orange-400 text-slate-100 font-semibold transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <div className="flex items-center gap-2">

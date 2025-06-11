@@ -40,7 +40,7 @@ const EliteLogo: React.FC<EliteLogoProps> = ({
       <svg 
         className={cn(
           iconSizes[size],
-          "text-slate-900",
+          "text-slate-100",
           animated && "transition-all duration-300 ease-in-out group-hover:scale-105"
         )}
         fill="currentColor" 
