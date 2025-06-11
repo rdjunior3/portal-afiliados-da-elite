@@ -30,6 +30,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import TrophyIcon from '@/components/ui/TrophyIcon';
 
 interface Course {
   id: string;
@@ -224,37 +225,33 @@ const Courses: React.FC = () => {
 
   return (
     <PageLayout
-      fullWidth={true}
       headerContent={
-        <div className="max-w-7xl mx-auto">
-          <PageHeader
-            title="Aulas Elite"
-            description="Acesse conteúdos exclusivos e treinamentos premium para afiliados"
-            icon="🎓"
-          />
-        </div>
+        <PageHeader
+          title="Academia Elite de Conhecimento"
+          description="Cursos e aulas exclusivas para maximizar seus resultados como afiliado"
+          customIcon={<TrophyIcon className="w-6 h-6" color="#f97316" />}
+        />
       }
     >
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header com busca e ações */}
-        <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between">
+      <div className="space-y-6">
+        {/* Header Section with Search and Add */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              placeholder="Buscar cursos e aulas..."
+              placeholder="Buscar cursos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400"
+              className="pl-10 bg-slate-800 border-slate-700"
             />
           </div>
-              
+          
           {isAdmin() && (
-            <div className="flex gap-3">
-              {/* Dialog para Criar Novo Curso - Melhorado */}
+            <div className="flex gap-2">
               <Dialog open={showAddCourse} onOpenChange={setShowAddCourse}>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white">
-                    <Plus className="h-4 w-4 mr-2" />
+                  <Button className="bg-orange-500 hover:bg-orange-600">
+                    <Plus className="w-4 h-4 mr-2" />
                     Novo Curso
                   </Button>
                 </DialogTrigger>
@@ -344,12 +341,11 @@ const Courses: React.FC = () => {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-
-              {/* Dialog para Adicionar Nova Aula - Melhorado */}
+              
               <Dialog open={showAddLesson} onOpenChange={setShowAddLesson}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700">
-                    <Video className="h-4 w-4 mr-2" />
+                  <Button variant="outline" className="border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white">
+                    <Play className="w-4 h-4 mr-2" />
                     Nova Aula
                   </Button>
                 </DialogTrigger>
@@ -476,143 +472,118 @@ const Courses: React.FC = () => {
           )}
         </div>
 
-        {/* Lista de Cursos - Layout melhorado */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {isLoading ? (
-            // Loading skeleton melhorado
-            [...Array(6)].map((_, i) => (
-              <Card key={i} className="bg-slate-800/60 border-slate-700/50 animate-pulse">
-                <div className="w-full h-48 bg-slate-700 rounded-t-lg"></div>
-                <CardHeader>
-                  <div className="h-6 bg-slate-700 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-slate-700 rounded w-full mb-1"></div>
-                  <div className="h-4 bg-slate-700 rounded w-2/3"></div>
-                </CardHeader>
-                <div className="p-6 pt-0">
-                  <div className="h-10 bg-slate-700 rounded"></div>
-                </div>
-              </Card>
-            ))
-          ) : filteredCourses.length > 0 ? (
-            filteredCourses.map((course) => (
-              <Card key={course.id} className="bg-slate-800/60 border-slate-700/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer">
-                <div 
-                  className="relative"
-                  onClick={() => navigate(`/dashboard/content/${course.id}`)}
-                >
-                  {course.cover_image_url || course.thumbnail_url ? (
-                    <img
-                      src={course.cover_image_url || course.thumbnail_url!}
-                      alt={course.title}
-                      className="w-full h-48 object-cover rounded-t-lg"
-                    />
-                  ) : (
-                    <div className="w-full h-48 bg-gradient-to-br from-slate-700 to-slate-800 rounded-t-lg flex items-center justify-center">
-                      <GraduationCap className="h-16 w-16 text-slate-500" />
-                    </div>
-                  )}
-
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-t-lg flex items-center justify-center">
-                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
-                      <Play className="h-4 w-4 mr-2" />
-                      Assistir
-                    </Button>
-                  </div>
-
-                  {course.lessons && (
-                    <Badge className="absolute top-3 right-3 bg-orange-500 text-white">
-                      {course.lessons.length} aulas
-                    </Badge>
-                  )}
-                  
-                  {isAdmin() && (
-                    <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 bg-slate-800/80 text-blue-400 hover:text-blue-300">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 bg-slate-800/80 text-red-400 hover:text-red-300">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg font-bold text-white group-hover:text-orange-300 transition-colors">
-                    {course.title}
-                  </CardTitle>
-                  <p className="text-slate-400 text-sm line-clamp-2">{course.description}</p>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-4 text-sm text-slate-400">
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {course.lessons ? getTotalDuration(course.lessons) : '0:00'}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <BookOpen className="h-4 w-4" />
-                      {course.lessons?.length || 0} aulas
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 text-yellow-400" />
-                      Elite
-                    </div>
-                  </div>
-
-                  {/* Preview das Aulas */}
-                  {course.lessons && course.lessons.length > 0 && (
-                    <div className="border-t border-slate-700 pt-4">
-                      <p className="text-sm font-medium text-slate-300 mb-2">Aulas do curso:</p>
-                      <div className="space-y-1">
-                        {course.lessons.slice(0, 3).map((lesson) => (
-                          <div key={lesson.id} className="flex items-center gap-2 text-xs text-slate-500">
-                            {getPlatformIcon(lesson.platform)}
-                            <span className="flex-1 truncate">{lesson.title}</span>
-                            <span>{formatDuration(lesson.duration_seconds)}</span>
+        {/* Courses Grid */}
+        {isLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+            <p className="text-slate-400 mt-4">Carregando cursos...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCourses.map((course) => (
+              <Card key={course.id} className="bg-slate-800 border-slate-700 hover:border-orange-500/50 transition-all duration-300 group cursor-pointer">
+                <div onClick={() => navigate(`/dashboard/content/courses/${course.id}`)}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-10 h-10 bg-gradient-to-r from-orange-400 to-orange-500 rounded-lg flex items-center justify-center">
+                          <GraduationCap className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg group-hover:text-orange-400 transition-colors">
+                            {course.title}
+                          </CardTitle>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="secondary" className="text-xs">
+                              {course.lessons?.length || 0} aulas
+                            </Badge>
+                            <Badge variant="outline" className="text-xs border-orange-500/50 text-orange-400">
+                              Elite
+                            </Badge>
                           </div>
-                        ))}
-                        {course.lessons.length > 3 && (
-                          <p className="text-xs text-slate-400 pl-6">
-                            +{course.lessons.length - 3} aulas adicionais
-                          </p>
-                        )}
+                        </div>
+                      </div>
+                      
+                      {isAdmin() && (
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-400 hover:text-red-300">
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent>
+                    <p className="text-slate-300 text-sm mb-4">
+                      {course.description || "Curso exclusivo para afiliados elite"}
+                    </p>
+                    
+                    <div className="space-y-3">
+                      {/* Course Stats */}
+                      <div className="flex items-center gap-4 text-sm text-slate-400">
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          <span>{getTotalDuration(course.lessons || [])}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Users className="w-4 h-4" />
+                          <span>Elite</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Star className="w-4 h-4 fill-orange-400 text-orange-400" />
+                          <span>Premium</span>
+                        </div>
+                      </div>
+                      
+                      {/* Progress or Access Button */}
+                      <div className="pt-2">
+                        <Button 
+                          className="w-full bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/dashboard/content/courses/${course.id}`);
+                          }}
+                        >
+                          <Play className="w-4 h-4 mr-2" />
+                          Acessar Curso
+                        </Button>
                       </div>
                     </div>
-                  )}
-                  
-                  <Button 
-                    className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-500 hover:to-orange-600 text-white"
-                    onClick={() => navigate(`/dashboard/content/${course.id}`)}
-                  >
-                    Acessar Curso
-                  </Button>
-                </CardContent>
+                  </CardContent>
+                </div>
               </Card>
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12">
-              <GraduationCap className="h-16 w-16 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">
-                {searchTerm ? 'Nenhum curso encontrado' : 'Nenhum curso disponível'}
-              </h3>
-              <p className="text-slate-400">
-                {searchTerm 
-                  ? 'Tente pesquisar com outros termos ou limpe o filtro para ver todos os cursos.'
-                  : 'Em breve teremos conteúdos exclusivos para elevar seus resultados como afiliado.'}
-              </p>
-              {!searchTerm && isAdmin() && (
-                <Button 
-                  className="mt-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500"
-                  onClick={() => setShowAddCourse(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Criar Primeiro Curso
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && filteredCourses.length === 0 && (
+          <div className="text-center py-12">
+            <GraduationCap className="w-16 h-16 text-slate-500 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-slate-300 mb-2">
+              {searchTerm ? 'Nenhum curso encontrado' : 'Nenhum curso disponível'}
+            </h3>
+            <p className="text-slate-400 mb-6">
+              {searchTerm 
+                ? 'Tente ajustar os termos de busca.' 
+                : 'Novos cursos exclusivos estão sendo preparados para você.'
+              }
+            </p>
+            {isAdmin() && !searchTerm && (
+              <Button 
+                onClick={() => setShowAddCourse(true)}
+                className="bg-orange-500 hover:bg-orange-600"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Criar Primeiro Curso
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </PageLayout>
   );

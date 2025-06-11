@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ProductCard } from '@/components/ProductCard';
+import TrophyIcon from '@/components/ui/TrophyIcon';
 
 // O tipo agora vem implicitamente do hook useProducts
 type ProductWithOffers = ReturnType<typeof useProducts>['data']['data']['data'][0];
@@ -42,15 +43,12 @@ const ProductsPage = () => {
   return (
     <PageLayout
       headerContent={
-        <div className="bg-slate-900/70 border-b border-slate-800 backdrop-blur-sm -mx-4 -mt-4 mb-4 md:-mx-6 md:-mt-6 md:mb-6 lg:-mx-8 lg:-mt-8 lg:mb-8">
-          <div className="max-w-7xl mx-auto px-4 py-4 md:px-6 md:py-6 lg:px-8">
-            <PageHeader
-              title="Vitrine de Produtos Elite"
-              description="Explore todos os nossos produtos e encontre as melhores ofertas para promover."
-              showNewProductButton={true}
-            />
-          </div>
-        </div>
+        <PageHeader
+          title="Vitrine de Produtos Elite"
+          description="Explore todos os nossos produtos e encontre as melhores ofertas para promover."
+          customIcon={<TrophyIcon className="w-6 h-6" color="#f97316" />}
+          showNewProductButton={true}
+        />
       }
     >
       <div className="max-w-7xl mx-auto">
