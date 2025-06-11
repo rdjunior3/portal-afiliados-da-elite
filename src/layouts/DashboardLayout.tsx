@@ -112,46 +112,43 @@ const DashboardLayout: React.FC = () => {
   ];
 
   const adminNavigation = [
-    { name: 'Gerenciar Afiliados', href: '/dashboard/admin/affiliates', icon: Users, disabled: true },
-    { name: 'Gerenciar Produtos', href: '/dashboard/admin/products', icon: Package, disabled: true },
-    { name: 'Gerenciar Conteúdo', href: '/dashboard/admin/content', icon: BookOpen, disabled: true },
-    { name: 'Integrações', href: '/dashboard/admin/integrations', icon: Settings, disabled: true },
+    { name: 'Gerenciar Afiliados', href: '/admin/affiliates', icon: Users },
+    { name: 'Gerenciar Produtos', href: '/admin/products', icon: Package },
+    { name: 'Gerenciar Comissões', href: '/admin/commissions', icon: DollarSign },
+    { name: 'Gerenciar Conteúdo', href: '/admin/content', icon: BookOpen },
   ];
 
   const handleSignOut = async () => {
     try {
-    const { error } = await signOut();
+      console.log('🚪 [DashboardLayout] Iniciando logout...');
       
-    if (error) {
-      toast({
-        title: "Erro ao sair",
-        description: "Não foi possível fazer logout. Tente novamente.",
-        variant: "destructive",
-      });
-    } else {
+      const { error } = await signOut();
+      
+      if (error) {
+        console.error('❌ [DashboardLayout] Erro no logout:', error);
+        toast({
+          title: "Erro ao sair",
+          description: "Não foi possível fazer logout. Tente novamente.",
+          variant: "destructive",
+        });
+      } else {
+        console.log('✅ [DashboardLayout] Logout bem-sucedido');
         toast({
           title: "Logout realizado",
           description: "Até a próxima!",
         });
+        
+        // O AuthContext já gerencia o redirecionamento
+        // Não fazemos redirecionamento manual aqui para evitar conflitos
       }
       
-      setTimeout(() => {
-        navigate('/', { replace: true });
-        window.location.href = '/';
-      }, 500);
-      
     } catch (error) {
-      console.error('Erro durante logout:', error);
+      console.error('💥 [DashboardLayout] Erro durante logout:', error);
       toast({
-        title: "Logout forçado",
-        description: "Sua sessão foi encerrada.",
+        title: "Sessão encerrada",
+        description: "Sua sessão foi encerrada por segurança.",
         variant: "destructive",
       });
-      
-      setTimeout(() => {
-        navigate('/', { replace: true });
-        window.location.href = '/';
-      }, 500);
     }
   };
 
@@ -261,33 +258,29 @@ const DashboardLayout: React.FC = () => {
               </div>
             )}
             {adminNavigation.map((item) => {
+              const isActive = isActivePath(item.href);
+              
               return (
-                <div key={item.name}>
-                  {sidebarCollapsed ? (
-                    <div
-                      className={cn(
-                        "flex items-center justify-center p-2 lg:p-3 rounded-lg transition-all duration-200 mb-2 cursor-not-allowed opacity-50",
-                        "bg-slate-700/30 text-slate-500"
-                      )}
-                        title={`${item.name} (Em breve)`}
-                    >
-                      <item.icon className="h-4 w-4 lg:h-5 lg:w-5" />
-                    </div>
-                  ) : (
-                    <div
+                <Link
+                  key={item.name}
+                  to={item.href}
                   className={cn(
-                        "flex items-center gap-2 lg:gap-3 p-2.5 lg:p-3 rounded-lg transition-all duration-200 mb-2 cursor-not-allowed opacity-50",
-                        "bg-slate-700/30 text-slate-500 hover:bg-slate-700/40"
-                      )}
-                    >
-                      <item.icon className="h-4 w-4 lg:h-5 lg:w-5" />
-                      <span className="font-medium text-xs lg:text-sm">{item.name}</span>
-                      <Badge variant="outline" className="ml-auto text-xs bg-slate-600/50 text-slate-400 border-slate-600 px-1.5 py-0.5">
-                        Em breve
-                      </Badge>
-                    </div>
+                    "w-full flex items-center rounded-lg lg:rounded-xl transition-all duration-200 group relative overflow-hidden mb-2",
+                    sidebarCollapsed ? "justify-center p-2 lg:p-3" : "gap-3 lg:gap-4 px-3 lg:px-4 py-2.5 lg:py-3",
+                    isActive
+                      ? "bg-gradient-to-r from-orange-500/30 to-orange-600/20 text-orange-200 shadow-lg border border-orange-400/20"
+                      : "text-slate-300 hover:bg-gradient-to-r hover:from-slate-700/40 hover:to-slate-600/30 hover:text-white"
                   )}
-                </div>
+                  title={sidebarCollapsed ? item.name : undefined}
+                >
+                  <item.icon className={cn(
+                    "h-4 w-4 lg:h-5 lg:w-5 flex-shrink-0 transition-colors duration-200",
+                    isActive ? "text-orange-300" : "text-slate-400 group-hover:text-slate-200"
+                  )} />
+                  {!sidebarCollapsed && (
+                    <span className="flex-1 text-left text-xs lg:text-sm font-medium">{item.name}</span>
+                  )}
+                </Link>
               );
             })}
           </div>
@@ -447,32 +440,26 @@ const DashboardLayout: React.FC = () => {
                 )}
                 {adminNavigation.map((item) => {
                   return (
-                    <div key={item.name}>
-                      {sidebarCollapsed ? (
-                        <div
-                          className={cn(
-                            "flex items-center justify-center p-2 lg:p-3 rounded-lg transition-all duration-200 mb-2 cursor-not-allowed opacity-50",
-                            "bg-slate-700/30 text-slate-500"
-                          )}
-                          title={`${item.name} (Em breve)`}
-                        >
-                          <item.icon className="h-4 w-4 lg:h-5 lg:w-5" />
-                        </div>
-                      ) : (
-                        <div
+                    <Link
+                      key={item.name}
+                      to={item.href}
                       className={cn(
-                            "flex items-center gap-2 lg:gap-3 p-2.5 lg:p-3 rounded-lg transition-all duration-200 mb-2 cursor-not-allowed opacity-50",
-                            "bg-slate-700/30 text-slate-500 hover:bg-slate-700/40"
-                          )}
-                        >
-                          <item.icon className="h-4 w-4 lg:h-5 lg:w-5" />
-                          <span className="font-medium text-xs lg:text-sm">{item.name}</span>
-                          <Badge variant="outline" className="ml-auto text-xs bg-slate-600/50 text-slate-400 border-slate-600 px-1.5 py-0.5">
-                            Em breve
-                          </Badge>
-                        </div>
+                        "w-full flex items-center rounded-lg lg:rounded-xl transition-all duration-200 group relative overflow-hidden mb-2",
+                        sidebarCollapsed ? "justify-center p-2 lg:p-3" : "gap-3 lg:gap-4 px-3 lg:px-4 py-2.5 lg:py-3",
+                        isActivePath(item.href)
+                          ? "bg-gradient-to-r from-orange-500/30 to-orange-600/20 text-orange-200 shadow-lg border border-orange-400/20"
+                          : "text-slate-300 hover:bg-gradient-to-r hover:from-slate-700/40 hover:to-slate-600/30 hover:text-white"
                       )}
-                    </div>
+                      title={sidebarCollapsed ? item.name : undefined}
+                    >
+                      <item.icon className={cn(
+                        "h-4 w-4 lg:h-5 lg:w-5 flex-shrink-0 transition-colors duration-200",
+                        isActivePath(item.href) ? "text-orange-300" : "text-slate-400 group-hover:text-slate-200"
+                      )} />
+                      {!sidebarCollapsed && (
+                        <span className="flex-1 text-left text-xs lg:text-sm font-medium">{item.name}</span>
+                      )}
+                    </Link>
                   );
                 })}
               </div>

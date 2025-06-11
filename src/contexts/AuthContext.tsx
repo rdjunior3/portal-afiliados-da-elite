@@ -67,35 +67,65 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       console.log('🚀 [Auth] Iniciando verificação de sessão...');
 
-      // 1. Obter a sessão inicial
-      const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('❌ [Auth] Erro ao obter sessão inicial:', sessionError);
-      }
-
-      if (initialSession) {
-        console.log('✅ [Auth] Sessão inicial encontrada para:', initialSession.user.email);
-        const currentUser = initialSession.user;
-        setUser(currentUser);
-        setSession(initialSession);
+      try {
+        // 1. Obter a sessão inicial de forma mais rigorosa
+        const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
         
-        // 2. Buscar perfil do usuário da sessão, tratando erros de forma segura
-        try {
-          const userProfile = await fetchProfile(currentUser.id);
-          setProfile(userProfile);
-          if (userProfile) {
-            console.log('✅ [Auth] Perfil inicial carregado para:', userProfile.email);
-          } else {
-             console.warn('⚠️ [Auth] Perfil não encontrado para a sessão inicial.');
-          }
-        } catch (error) {
-           console.error('💥 [Auth] Falha ao buscar perfil inicial:', error);
-           // Não bloqueia o app, mas loga o erro. O listener pode tentar de novo.
+        if (sessionError) {
+          console.error('❌ [Auth] Erro ao obter sessão inicial:', sessionError);
+          // Em caso de erro de sessão, garantir estado limpo
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+          setLoading(false);
+          return;
         }
 
-      } else {
-        console.log('📭 [Auth] Nenhuma sessão inicial encontrada.');
+        if (initialSession?.user) {
+          console.log('✅ [Auth] Sessão inicial encontrada para:', initialSession.user.email);
+          
+          // Verificação adicional: sessão não expirada
+          const now = Math.floor(Date.now() / 1000);
+          if (initialSession.expires_at && initialSession.expires_at < now) {
+            console.log('⏰ [Auth] Sessão expirada, limpando estado');
+            setUser(null);
+            setSession(null);
+            setProfile(null);
+            setLoading(false);
+            return;
+          }
+          
+          const currentUser = initialSession.user;
+          setUser(currentUser);
+          setSession(initialSession);
+          
+          // 2. Buscar perfil do usuário da sessão, tratando erros de forma segura
+          try {
+            const userProfile = await fetchProfile(currentUser.id);
+            setProfile(userProfile);
+            if (userProfile) {
+              console.log('✅ [Auth] Perfil inicial carregado para:', userProfile.email);
+            } else {
+               console.warn('⚠️ [Auth] Perfil não encontrado para a sessão inicial.');
+            }
+          } catch (error) {
+             console.error('💥 [Auth] Falha ao buscar perfil inicial:', error);
+             // Não bloqueia o app, mas loga o erro. O listener pode tentar de novo.
+          }
+
+        } else {
+          console.log('📭 [Auth] Nenhuma sessão inicial encontrada.');
+          // Garantir estado limpo
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+        }
+      } catch (error) {
+        console.error('💥 [Auth] Erro crítico na inicialização:', error);
+        // Em caso de erro crítico, garantir estado limpo
+        setUser(null);
+        setSession(null);
+        setProfile(null);
       }
       
       setLoading(false);
@@ -105,6 +135,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, currentSession) => {
           console.log(`🔄 [Auth] Evento de mudança de estado: ${event}`, currentSession?.user?.email);
+          
+          if (event === 'SIGNED_OUT' || !currentSession) {
+            // Limpeza imediata para logout
+            setUser(null);
+            setSession(null);
+            setProfile(null);
+            console.log('👋 [Auth] Usuário deslogado, perfil limpo.');
+            return;
+          }
+          
           setUser(currentSession?.user ?? null);
           setSession(currentSession);
 
@@ -127,10 +167,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               // Em caso de erro (ex: timeout), não limpamos o perfil. 
               // É melhor manter dados antigos do que nenhum dado.
             }
-          } else {
-            // Se não houver sessão (SIGNED_OUT), limpar perfil
-            setProfile(null);
-            console.log('👋 [Auth] Usuário deslogado, perfil limpo.');
           }
         }
       );
