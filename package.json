@@ -13,6 +13,10 @@
     "seed-db": "node scripts/seed-database.js",
     "setup-complete": "npm run apply-migrations && npm run seed-db"
   },
+  "engines": {
+    "node": "18.x",
+    "npm": ">=8.0.0"
+  },
   "dependencies": {
     "@clerk/clerk-react": "^5.31.8",
     "@hookform/resolvers": "^3.9.0",
