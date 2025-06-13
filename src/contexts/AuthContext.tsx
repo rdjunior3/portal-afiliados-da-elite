@@ -170,6 +170,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               }
               setProfile(userProfile);
               console.log('✅ [Auth] Perfil atualizado via listener para:', maskSensitiveData(userProfile?.email));
+              
+              // CORREÇÃO: Redirecionamento automático para admins após login
+              if (event === 'SIGNED_IN' && userProfile?.role === 'admin') {
+                console.log('🔄 [Auth] Redirecionando admin para dashboard...');
+                navigate('/dashboard');
+              }
             } catch (error) {
               console.error('💥 [Auth] Falha crítica ao buscar/criar perfil no listener. O perfil pode estar desatualizado:', error);
               // Em caso de erro (ex: timeout), não limpamos o perfil. 
@@ -192,12 +198,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = async (userId: string) => {
     // Esta função agora lança um erro em caso de falha inesperada (ex: timeout)
     // e retorna 'null' apenas quando o perfil genuinamente não é encontrado.
+    console.log(`🔍 [fetchProfile] Buscando perfil para userId: ${userId}`);
     try {
       const { data, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', userId)
           .single();
+
+      // Log do resultado da query
+      console.log('📊 [fetchProfile] Resultado da query:', { data: data?.email, error: error?.code });
 
       // Se houver um erro, mas NÃO for o erro 'not found', lance-o.
       if (error && error.code !== 'PGRST116') {
@@ -206,7 +216,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data) {
-        console.log('✅ [fetchProfile] Perfil carregado:', data?.email);
+        console.log('✅ [fetchProfile] Perfil carregado:', maskSensitiveData(data?.email), 'Role:', data?.role);
       } else {
         console.log('🤔 [fetchProfile] Perfil não encontrado (código PGRST116).');
       }

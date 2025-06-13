@@ -16,6 +16,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { user, session, loading, profile, isAdmin, isModerator } = useAuth();
   const location = useLocation();
   
+  // Debug logs para troubleshooting
+  console.log('🔐 [ProtectedRoute] Estado atual:', {
+    hasUser: !!user,
+    hasSession: !!session,
+    hasProfile: !!profile,
+    isLoading: loading,
+    userRole: profile?.role,
+    isVerified: profile?.is_verified,
+    emailConfirmed: user?.email_confirmed_at,
+    requireAdmin,
+    requireModerator
+  });
+  
   // Mostrar loading enquanto verifica autenticação
   if (loading) {
     return (
@@ -49,7 +62,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Verificar permissões específicas
   if (requireAdmin && !isAdmin()) {
-    console.log('🚫 [ProtectedRoute] Acesso negado: requer admin');
+    console.log('🚫 [ProtectedRoute] Acesso negado: requer admin, role atual:', profile?.role);
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -58,15 +71,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Verificar se o email foi confirmado (para usuários não-admin)
+  // CORREÇÃO: Verificar confirmação de email apenas para usuários não-admin
+  // Admins podem acessar mesmo sem confirmação de email
   if (!isAdmin() && user.email_confirmed_at === null) {
-    console.log('📧 [ProtectedRoute] Email não confirmado');
+    console.log('📧 [ProtectedRoute] Email não confirmado para usuário não-admin');
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 flex items-center justify-center">
         <div className="max-w-md mx-auto text-center p-6">
           <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2v10a2 2 0 002 2z" />
             </svg>
           </div>
           <h2 className="text-xl font-bold text-white mb-2">Confirme seu email</h2>
@@ -84,7 +98,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  console.log('✅ [ProtectedRoute] Acesso autorizado');
+  console.log('✅ [ProtectedRoute] Acesso autorizado para:', profile?.email || user?.email);
   return <>{children}</>;
 };
 
