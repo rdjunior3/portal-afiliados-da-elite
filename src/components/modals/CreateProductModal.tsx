@@ -87,21 +87,53 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
 
   const handleTestConnection = async () => {
     setTestingConnection(true);
+    console.log('🔧 [Modal] Iniciando teste de conexão...');
+    
     try {
       const isConnected = await testSupabaseConnection();
-      if (!isConnected) {
+      
+      if (isConnected) {
         toast({
-          title: "Problema de Conexão",
-          description: "Verifique sua conexão com o Supabase. Veja o console para detalhes.",
+          title: "✅ Conexão Bem-sucedida",
+          description: "Supabase está funcionando corretamente. Veja o console para detalhes.",
+          variant: "default",
+        });
+        
+        // Tentar criar o bucket apenas se a conexão básica funcionar
+        console.log('🪣 [Modal] Tentando criar bucket...');
+        const bucketCreated = await createProductImagesBucket();
+        
+        if (bucketCreated) {
+          toast({
+            title: "📦 Storage Configurado",
+            description: "Bucket de imagens criado/verificado com sucesso.",
+            variant: "default",
+          });
+        }
+      } else {
+        toast({
+          title: "⚠️ Problemas na Conexão",
+          description: "Algumas tabelas podem não existir. Execute os scripts de migração no Supabase.",
           variant: "destructive",
         });
+        
+        // Mostrar instruções específicas
+        console.log('🔧 [Modal] INSTRUÇÕES DE CORREÇÃO:');
+        console.log('1. Acesse: https://supabase.com/dashboard/project/rbqzddsserknaedojuex/sql');
+        console.log('2. Execute o script: db_scripts/fix_critical_tables.sql');
+        console.log('3. Execute o script: db_scripts/fix_storage_buckets.sql');
+        console.log('4. Teste novamente a conexão');
       }
       
-      // Tentar criar o bucket se não existir
-      await createProductImagesBucket();
-    } catch (error) {
-      console.error('Erro no teste de conexão:', error);
+    } catch (error: any) {
+      console.error('💥 [Modal] Erro crítico no teste:', error.message);
+      toast({
+        title: "💥 Erro Crítico",
+        description: `Falha no teste: ${error.message}. Verifique sua conexão com a internet.`,
+        variant: "destructive",
+      });
     } finally {
+      console.log('🏁 [Modal] Teste de conexão finalizado');
       setTestingConnection(false);
     }
   };

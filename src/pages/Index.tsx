@@ -6,30 +6,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
-// Componente de ícone troféu pequeno para uso em botões e elementos
-const TrophyIcon = ({ className = "w-4 h-4", color = "currentColor" }) => (
-  <svg className={className} fill={color} viewBox="0 0 24 24">
-    <rect x="7" y="19" width="10" height="2.5" rx="0.5" fill="rgba(0,0,0,0.7)"></rect>
-    <rect x="8" y="18.5" width="8" height="1" fill="rgba(0,0,0,0.5)"></rect>
-    <rect x="10.5" y="16" width="3" height="3" fill={color}></rect>
-    <path d="M6 4C6 3.45 6.45 3 7 3H17C17.55 3 18 3.45 18 4V9C18 12.31 15.31 15 12 15C8.69 15 6 12.31 6 9V4Z" fill={color}></path>
-    <rect x="7" y="4" width="10" height="0.5" fill="rgba(255,255,255,0.3)"></rect>
-    <rect x="7" y="6" width="10" height="0.3" fill="rgba(255,255,255,0.2)"></rect>
-    <ellipse cx="5" cy="7.5" rx="1.5" ry="2" fill={color}></ellipse>
-    <ellipse cx="19" cy="7.5" rx="1.5" ry="2" fill={color}></ellipse>
-    <ellipse cx="5" cy="7.5" rx="0.8" ry="1.3" fill="rgba(255,255,255,0.2)"></ellipse>
-    <ellipse cx="19" cy="7.5" rx="0.8" ry="1.3" fill="rgba(255,255,255,0.2)"></ellipse>
-    <text x="12" y="11" fontFamily="Arial, sans-serif" fontSize="6" fontWeight="bold" textAnchor="middle" fill="rgba(255,255,255,0.95)">1</text>
-    <g fill="rgba(255,255,255,0.9)">
-      <polygon points="9,8 9.2,8.6 9.8,8.6 9.3,9 9.5,9.6 9,9.2 8.5,9.6 8.7,9 8.2,8.6 8.8,8.6"></polygon>
-      <polygon points="15,8 15.2,8.6 15.8,8.6 15.3,9 15.5,9.6 15,9.2 14.5,9.6 14.7,9 14.2,8.6 14.8,8.6"></polygon>
-      <polygon points="10.5,6 10.6,6.4 11,6.4 10.7,6.7 10.8,7.1 10.5,6.9 10.2,7.1 10.3,6.7 10,6.4 10.4,6.4"></polygon>
-      <polygon points="13.5,6 13.6,6.4 14,6.4 13.7,6.7 13.8,7.1 13.5,6.9 13.2,7.1 13.3,6.7 13,6.4 13.4,6.4"></polygon>
-      <polygon points="12,5 12.1,5.4 12.5,5.4 12.2,5.7 12.3,6.1 12,5.9 11.7,6.1 11.8,5.7 11.5,5.4 11.9,5.4"></polygon>
-    </g>
-  </svg>
-);
-
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -120,11 +96,11 @@ const Index = () => {
                         
                         {/* Estrelas ao redor do número 1 */}
                         <g fill="rgba(255,255,255,0.9)">
-                          <polygon points="9,8 9.2,8.6 9.8,8.6 9.3,9 9.5,9.6 9,9.2 8.5,9.6 8.7,9 8.2,8.6 8.8,8.6" />
-                          <polygon points="15,8 15.2,8.6 15.8,8.6 15.3,9 15.5,9.6 15,9.2 14.5,9.6 14.7,9 14.2,8.6 14.8,8.6" />
-                          <polygon points="10.5,6 10.6,6.4 11,6.4 10.7,6.7 10.8,7.1 10.5,6.9 10.2,7.1 10.3,6.7 10,6.4 10.4,6.4" />
-                          <polygon points="13.5,6 13.6,6.4 14,6.4 13.7,6.7 13.8,7.1 13.5,6.9 13.2,7.1 13.3,6.7 13,6.4 13.4,6.4" />
-                          <polygon points="12,5 12.1,5.4 12.5,5.4 12.2,5.7 12.3,6.1 12,5.9 11.7,6.1 11.8,5.7 11.5,5.4 11.9,5.4" />
+                          <polygon points="9,8 9.2,8.6 9.8,8.6 9.3,9 9.5,9.6 9,9.2 8.5,9.6 8.7,9 8.2,8.6 8.8,8.6"></polygon>
+                          <polygon points="15,8 15.2,8.6 15.8,8.6 15.3,9 15.5,9.6 15,9.2 14.5,9.6 14.7,9 14.2,8.6 14.8,8.6"></polygon>
+                          <polygon points="10.5,6 10.6,6.4 11,6.4 10.7,6.7 10.8,7.1 10.5,6.9 10.2,7.1 10.3,6.7 10,6.4 10.4,6.4"></polygon>
+                          <polygon points="13.5,6 13.6,6.4 14,6.4 13.7,6.7 13.8,7.1 13.5,6.9 13.2,7.1 13.3,6.7 13,6.4 13.4,6.4"></polygon>
+                          <polygon points="12,5 12.1,5.4 12.5,5.4 12.2,5.7 12.3,6.1 12,5.9 11.7,6.1 11.8,5.7 11.5,5.4 11.9,5.4"></polygon>
                         </g>
                       </svg>
                     </div>
@@ -155,7 +131,14 @@ const Index = () => {
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         <div className="relative flex items-center gap-2">
-                          <TrophyIcon className="w-4 h-4 hidden sm:inline" color="#1e293b" />
+                          <svg className="w-4 h-4 hidden sm:inline" fill="#1e293b" viewBox="0 0 24 24">
+                            <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z"/>
+                            <circle cx="12" cy="8" r="1.5" fill="#f97316"/>
+                            <circle cx="8.5" cy="10.5" r="0.8" fill="#f97316"/>
+                            <circle cx="15.5" cy="10.5" r="0.8" fill="#f97316"/>
+                            <circle cx="7" cy="13.5" r="0.6" fill="#f97316"/>
+                            <circle cx="17" cy="13.5" r="0.6" fill="#f97316"/>
+                          </svg>
                           <span className="hidden sm:inline">Dashboard Elite</span>
                           <span className="sm:hidden">Dashboard</span>
                         </div>
@@ -182,7 +165,14 @@ const Index = () => {
                       >
                         <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         <div className="relative flex items-center gap-2">
-                          <TrophyIcon className="w-4 h-4 hidden sm:inline" color="#1e293b" />
+                           <svg className="w-4 h-4 hidden sm:inline" fill="#1e293b" viewBox="0 0 24 24">
+                            <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z"/>
+                            <circle cx="12" cy="8" r="1.5" fill="#f97316"/>
+                            <circle cx="8.5" cy="10.5" r="0.8" fill="#f97316"/>
+                            <circle cx="15.5" cy="10.5" r="0.8" fill="#f97316"/>
+                            <circle cx="7" cy="13.5" r="0.6" fill="#f97316"/>
+                            <circle cx="17" cy="13.5" r="0.6" fill="#f97316"/>
+                          </svg>
                           <span className="hidden sm:inline">Cadastrar Elite</span>
                           <span className="sm:hidden">Cadastrar</span>
                         </div>
@@ -270,7 +260,14 @@ const Index = () => {
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <div className="relative flex items-center justify-center gap-2">
-                    <TrophyIcon className="w-5 h-5" color="#1e293b" />
+                    <svg className="w-5 h-5" fill="#1e293b" viewBox="0 0 24 24">
+                      <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z"/>
+                      <circle cx="12" cy="8" r="1.5" fill="#f97316"/>
+                      <circle cx="8.5" cy="10.5" r="0.8" fill="#f97316"/>
+                      <circle cx="15.5" cy="10.5" r="0.8" fill="#f97316"/>
+                      <circle cx="7" cy="13.5" r="0.6" fill="#f97316"/>
+                      <circle cx="17" cy="13.5" r="0.6" fill="#f97316"/>
+                    </svg>
                     <span>Tornar-se um Afiliado Elite</span>
                       </div>
                     </button>
@@ -314,7 +311,14 @@ const Index = () => {
                         <div className="flex items-center justify-between">
                           <div>
                             <h3 className="text-white font-bold text-xs lg:text-base flex items-center gap-1 lg:gap-2">
-                              <TrophyIcon className="w-3 h-3 lg:w-4 lg:h-4" color="#f97316" />
+                              <svg className="w-3 h-3 lg:w-4 lg:h-4" fill="#f97316" viewBox="0 0 24 24">
+                                <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z"/>
+                                <circle cx="12" cy="8" r="1.5" fill="#fbbf24"/>
+                                <circle cx="8.5" cy="10.5" r="0.8" fill="#fbbf24"/>
+                                <circle cx="15.5" cy="10.5" r="0.8" fill="#fbbf24"/>
+                                <circle cx="7" cy="13.5" r="0.6" fill="#fbbf24"/>
+                                <circle cx="17" cy="13.5" r="0.6" fill="#fbbf24"/>
+                              </svg>
                               <span className="hidden sm:inline">Olá, Afiliado Elite!</span>
                               <span className="sm:hidden">Elite Dashboard</span>
                             </h3>
@@ -346,7 +350,14 @@ const Index = () => {
                           <div className="bg-gradient-to-r from-orange-500/10 to-orange-600/5 rounded-lg p-1.5 lg:p-2.5 border border-orange-500/20">
                             <div className="flex items-center gap-1.5 lg:gap-2.5">
                               <div className="w-5 h-5 lg:w-7 lg:h-7 bg-orange-400 rounded flex items-center justify-center">
-                                <TrophyIcon className="w-3 h-3 lg:w-4 lg:h-4" color="#1e293b" />
+                                <svg className="w-3 h-3 lg:w-4 lg:h-4" fill="#1e293b" viewBox="0 0 24 24">
+                                  <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z"/>
+                                  <circle cx="12" cy="8" r="1.5" fill="#f97316"/>
+                                  <circle cx="8.5" cy="10.5" r="0.8" fill="#f97316"/>
+                                  <circle cx="15.5" cy="10.5" r="0.8" fill="#f97316"/>
+                                  <circle cx="7" cy="13.5" r="0.6" fill="#f97316"/>
+                                  <circle cx="17" cy="13.5" r="0.6" fill="#f97316"/>
+                                </svg>
                               </div>
                               <div>
                                 <div className="text-white text-xs lg:text-sm font-medium">
@@ -380,7 +391,14 @@ const Index = () => {
                         {/* Performance Chart Compacto */}
                         <div className="bg-gradient-to-r from-purple-500/10 to-purple-600/5 rounded-lg p-1.5 lg:p-2.5 border border-purple-500/20">
                           <div className="text-white text-xs lg:text-sm font-medium mb-1 lg:mb-2 flex items-center gap-1 lg:gap-2">
-                            <TrophyIcon className="w-2 h-2 lg:w-3 lg:h-3" color="#f97316" />
+                            <svg className="w-2 h-2 lg:w-3 lg:h-3" fill="#f97316" viewBox="0 0 24 24">
+                              <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z"/>
+                              <circle cx="12" cy="8" r="1.5" fill="#fbbf24"/>
+                              <circle cx="8.5" cy="10.5" r="0.8" fill="#fbbf24"/>
+                              <circle cx="15.5" cy="10.5" r="0.8" fill="#fbbf24"/>
+                              <circle cx="7" cy="13.5" r="0.6" fill="#fbbf24"/>
+                              <circle cx="17" cy="13.5" r="0.6" fill="#fbbf24"/>
+                            </svg>
                             <span className="hidden sm:inline">Performance Elite (7 dias)</span>
                             <span className="sm:hidden">Performance</span>
                           </div>

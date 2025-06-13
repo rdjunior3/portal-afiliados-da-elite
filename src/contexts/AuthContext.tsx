@@ -67,6 +67,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       console.log('🚀 [Auth] Iniciando verificação de sessão...');
 
+      // ✨ NOVA FUNCIONALIDADE: Limpar tokens da URL automaticamente
+      const currentUrl = window.location.href;
+      if (currentUrl.includes('access_token=') || currentUrl.includes('refresh_token=')) {
+        console.log('🧹 [Auth] Removendo tokens da URL por segurança...');
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+
       try {
         // 1. Obter a sessão inicial de forma mais rigorosa
         const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
@@ -82,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         if (initialSession?.user) {
-          console.log('✅ [Auth] Sessão inicial encontrada para:', initialSession.user.email);
+          console.log('✅ [Auth] Sessão inicial encontrada para:', maskSensitiveData(initialSession.user.email));
           
           // Verificação adicional: sessão não expirada
           const now = Math.floor(Date.now() / 1000);
@@ -104,7 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const userProfile = await fetchProfile(currentUser.id);
             setProfile(userProfile);
             if (userProfile) {
-              console.log('✅ [Auth] Perfil inicial carregado para:', userProfile.email);
+              console.log('✅ [Auth] Perfil inicial carregado para:', maskSensitiveData(userProfile.email));
             } else {
                console.warn('⚠️ [Auth] Perfil não encontrado para a sessão inicial.');
             }
@@ -134,7 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // 4. Configurar o listener para MUDANÇAS de estado de autenticação
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, currentSession) => {
-          console.log(`🔄 [Auth] Evento de mudança de estado: ${event}`, currentSession?.user?.email);
+          console.log(`🔄 [Auth] Evento de mudança de estado: ${event}`, maskSensitiveData(currentSession?.user?.email));
           
           if (event === 'SIGNED_OUT' || !currentSession) {
             // Limpeza imediata para logout
@@ -161,7 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   );
               }
               setProfile(userProfile);
-              console.log('✅ [Auth] Perfil atualizado via listener para:', userProfile?.email);
+              console.log('✅ [Auth] Perfil atualizado via listener para:', maskSensitiveData(userProfile?.email));
             } catch (error) {
               console.error('💥 [Auth] Falha crítica ao buscar/criar perfil no listener. O perfil pode estar desatualizado:', error);
               // Em caso de erro (ex: timeout), não limpamos o perfil. 
