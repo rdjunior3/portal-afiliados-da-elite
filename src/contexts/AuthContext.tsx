@@ -67,6 +67,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       console.log('🚀 [Auth] Iniciando verificação de sessão...');
 
+      // ✨ NOVA FUNCIONALIDADE: Detectar callback OAuth
+      const urlParams = new URLSearchParams(window.location.search);
+      const isOAuthCallback = urlParams.has('code') || window.location.hash.includes('access_token');
+      
+      if (isOAuthCallback) {
+        console.log('🔗 [Auth] Callback OAuth detectado, aguardando processamento...');
+      }
+
       // ✨ NOVA FUNCIONALIDADE: Limpar tokens da URL automaticamente
       const currentUrl = window.location.href;
       if (currentUrl.includes('access_token=') || currentUrl.includes('refresh_token=')) {
@@ -113,6 +121,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setProfile(userProfile);
             if (userProfile) {
               console.log('✅ [Auth] Perfil inicial carregado para:', maskSensitiveData(userProfile.email));
+              
+              // CORREÇÃO: Redirecionamento imediato se for callback OAuth e usuário admin
+              if (isOAuthCallback && userProfile.role === 'admin') {
+                console.log('🚀 [Auth] Callback OAuth + Admin detectado, redirecionando imediatamente...');
+                setTimeout(() => navigate('/dashboard'), 100);
+              }
             } else {
                console.warn('⚠️ [Auth] Perfil não encontrado para a sessão inicial.');
             }
@@ -474,8 +488,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Limpar qualquer sessão antiga que possa estar causando conflito
       await supabase.auth.signOut();
       
-      const redirectUrl = `${window.location.origin}/dashboard`;
-      console.log('🔗 [signInWithGoogle] URL de redirecionamento:', redirectUrl);
+      // Detectar se estamos em localhost ou produção
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const baseUrl = isLocalhost ? 'http://localhost:5173' : 'https://www.afiliadosdaelite.com.br';
+      const redirectUrl = `${baseUrl}/dashboard`;
+      
+      console.log('🔗 [signInWithGoogle] Configuração:', {
+        hostname: window.location.hostname,
+        origin: window.location.origin,
+        baseUrl,
+        redirectUrl,
+        isLocalhost
+      });
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
