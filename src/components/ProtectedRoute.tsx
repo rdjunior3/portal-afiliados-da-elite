@@ -26,7 +26,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     isVerified: profile?.is_verified,
     emailConfirmed: user?.email_confirmed_at,
     requireAdmin,
-    requireModerator
+    requireModerator,
+    currentPath: location.pathname
   });
   
   // Mostrar loading enquanto verifica autenticação
@@ -99,6 +100,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   console.log('✅ [ProtectedRoute] Acesso autorizado para:', profile?.email || user?.email);
+
+  // 🚀 CORREÇÃO ADICIONAL: Redirecionamento automático de admins da página inicial
+  React.useEffect(() => {
+    if (!loading && profile?.role === 'admin' && location.pathname === '/') {
+      console.log('🎯 [ProtectedRoute] Admin detectado na página inicial, redirecionando...');
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 100);
+    }
+  }, [loading, profile, location.pathname]);
+
   return <>{children}</>;
 };
 

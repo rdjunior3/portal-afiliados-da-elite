@@ -122,10 +122,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (userProfile) {
               console.log('✅ [Auth] Perfil inicial carregado para:', maskSensitiveData(userProfile.email));
               
-              // CORREÇÃO: Redirecionamento imediato se for callback OAuth e usuário admin
-              if (isOAuthCallback && userProfile.role === 'admin') {
-                console.log('🚀 [Auth] Callback OAuth + Admin detectado, redirecionando imediatamente...');
-                setTimeout(() => navigate('/dashboard'), 100);
+              // 🚀 CORREÇÃO CRÍTICA: Redirecionamento robusto para admins
+              if (userProfile.role === 'admin') {
+                const currentPath = window.location.pathname;
+                console.log('🎯 [Auth] Admin detectado na inicialização:', {
+                  userEmail: maskSensitiveData(userProfile.email),
+                  currentPath,
+                  isOAuthCallback,
+                  shouldRedirect: currentPath === '/' || currentPath === '/login' || isOAuthCallback
+                });
+                
+                // Redirecionar se estiver na página inicial, login ou callback OAuth
+                if (currentPath === '/' || currentPath === '/login' || isOAuthCallback) {
+                  console.log('🚀 [Auth] Executando redirecionamento de admin...');
+                  setTimeout(() => navigate('/dashboard'), 200);
+                }
               }
             } else {
                console.warn('⚠️ [Auth] Perfil não encontrado para a sessão inicial.');
@@ -195,18 +206,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setProfile(userProfile);
               console.log('✅ [Auth] Perfil atualizado via listener para:', maskSensitiveData(userProfile?.email));
               
-              // CORREÇÃO: Redirecionamento automático para admins após login
-              if (event === 'SIGNED_IN' && userProfile?.role === 'admin') {
-                console.log('🔄 [Auth] Redirecionamento detectado para admin:', {
+              // 🚀 CORREÇÃO CRÍTICA: Redirecionamento robusto via listener
+              if (userProfile?.role === 'admin') {
+                const currentPath = window.location.pathname;
+                console.log('🎯 [Auth] Admin detectado no listener:', {
+                  event,
                   userEmail: maskSensitiveData(userProfile?.email),
-                  userRole: userProfile?.role,
-                  currentUrl: window.location.href,
-                  pathname: window.location.pathname
+                  currentPath,
+                  shouldRedirect: currentPath === '/' || currentPath === '/login'
                 });
-                setTimeout(() => {
-                  console.log('🚀 [Auth] Executando navigate para /dashboard');
-                  navigate('/dashboard');
-                }, 500);
+                
+                // Redirecionar admins que estão na página inicial ou login
+                if (currentPath === '/' || currentPath === '/login') {
+                  console.log('🚀 [Auth] Executando redirecionamento via listener...');
+                  setTimeout(() => navigate('/dashboard'), 300);
+                }
               }
             } catch (error) {
               console.error('💥 [Auth] Falha crítica ao buscar/criar perfil no listener. O perfil pode estar desatualizado:', error);
@@ -491,7 +505,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Detectar se estamos em localhost ou produção
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const baseUrl = isLocalhost ? 'http://localhost:5173' : 'https://www.afiliadosdaelite.com.br';
-      const redirectUrl = `${baseUrl}/dashboard`;
+      
+      // 🚀 CORREÇÃO CRÍTICA: Sempre redirecionar para a página inicial para capturar o callback
+      const redirectUrl = `${baseUrl}/`;
       
       console.log('🔗 [signInWithGoogle] Configuração:', {
         hostname: window.location.hostname,
