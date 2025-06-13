@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { productService } from '@/services';
 import { PaginationParams } from '@/types';
 import { queryOptimization } from '@/utils/performance';
+import { useToast } from '@/hooks/use-toast';
 
 export const useProducts = (params?: PaginationParams) => {
   return useQuery({
@@ -39,5 +40,31 @@ export const useProductsByCategory = (categoryId: string, params?: PaginationPar
     queryFn: () => productService.getProductsByCategory(categoryId, params),
     enabled: !!categoryId,
     staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+};
+
+export const useDeleteProduct = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: (productId: string) => productService.deleteProduct(productId),
+    onSuccess: (response) => {
+      // Invalidar cache dos produtos para atualizar a lista
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      
+      toast({
+        title: "Produto arquivado",
+        description: "O produto foi arquivado com sucesso.",
+      });
+    },
+    onError: (error: any) => {
+      console.error('Erro ao deletar produto:', error);
+      toast({
+        title: "Erro ao arquivar",
+        description: "Não foi possível arquivar o produto. Tente novamente.",
+        variant: "destructive",
+      });
+    },
   });
 }; 

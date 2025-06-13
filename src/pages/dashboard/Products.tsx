@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useProducts, useCategories } from '@/hooks/useProducts';
+import { useProducts, useCategories, useDeleteProduct } from '@/hooks/useProducts';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,16 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { ProductCard } from '@/components/ProductCard';
 import CreateProductModal from '@/components/modals/CreateProductModal';
 import TrophyIcon from '@/components/ui/TrophyIcon';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // O tipo agora vem implicitamente do hook useProducts
 type ProductWithOffers = ReturnType<typeof useProducts>['data']['data']['data'][0];
@@ -21,19 +31,28 @@ const ProductsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
 
   // Usar os hooks para buscar dados
   const { data: productsData, isLoading: isLoadingProducts } = useProducts({});
   const { data: categoriesData } = useCategories();
+  const deleteProductMutation = useDeleteProduct();
 
   const products = productsData?.data?.data || [];
   const categories = categoriesData?.data || [];
 
   const handleDeleteProduct = (productId: string) => {
-    // Lógica para deletar o produto.
-    // TODO: Chamar o serviço de produto para deletar e depois invalidar a query para atualizar a lista.
-    console.log(`(Admin) Deletar produto: ${productId}`);
-    toast({ title: "Funcionalidade de exclusão a ser implementada." });
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      setProductToDelete({ id: productId, name: product.name });
+    }
+  };
+
+  const confirmDeleteProduct = () => {
+    if (productToDelete) {
+      deleteProductMutation.mutate(productToDelete.id);
+      setProductToDelete(null);
+    }
   };
 
   // Lógica de filtro no lado do cliente
@@ -133,6 +152,40 @@ const ProductsPage = () => {
         isOpen={showCreateModal} 
         onClose={() => setShowCreateModal(false)} 
       />
+
+      {/* Dialog de confirmação de exclusão */}
+      <AlertDialog open={!!productToDelete} onOpenChange={() => setProductToDelete(null)}>
+        <AlertDialogContent className="bg-slate-800 border-slate-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">
+              Confirmar Exclusão
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-300">
+              Tem certeza que deseja arquivar o produto <strong>"{productToDelete?.name}"</strong>?
+              <br />
+              <br />
+              Esta ação irá:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Remover o produto da vitrine pública</li>
+                <li>Manter os dados para fins históricos</li>
+                <li>Permitir restauração futura se necessário</li>
+              </ul>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-slate-700 text-white hover:bg-slate-600">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDeleteProduct}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleteProductMutation.isPending}
+            >
+              {deleteProductMutation.isPending ? 'Arquivando...' : 'Confirmar Exclusão'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

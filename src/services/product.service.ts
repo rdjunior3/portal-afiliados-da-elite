@@ -59,6 +59,33 @@ export class ProductService extends ApiService {
     }
   }
 
+  async deleteProduct(id: string): Promise<ApiResponse<{ message: string }>> {
+    try {
+      console.log('🗑️ [ProductService] Iniciando exclusão do produto:', id);
+      
+      // Arquivar produto ao invés de deletar permanentemente
+      const { error } = await supabase
+        .from('products')
+        .update({ 
+          status: 'archived',
+          is_active: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) {
+        console.error('❌ [ProductService] Erro ao arquivar produto:', error);
+        throw error;
+      }
+
+      console.log('✅ [ProductService] Produto arquivado com sucesso');
+      return this.handleSuccess({ message: 'Produto arquivado com sucesso' });
+    } catch (error) {
+      console.error('💥 [ProductService] Erro na exclusão:', error);
+      return this.handleError(error);
+    }
+  }
+
   async getCategories(): Promise<ApiResponse<Category[]>> {
     try {
       const { data, error } = await supabase
