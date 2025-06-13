@@ -5,6 +5,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { AuthModal } from '@/components/auth/AuthModal';
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -38,7 +40,27 @@ const Index = () => {
 
     // Initialize animations
     setTimeout(animateCounters, 1000);
-  }, []);
+
+    // ✨ DEBUG: Log para detectar quando o usuário chega na página inicial
+    console.log('🏠 [Index] Página inicial carregada', {
+      url: window.location.href,
+      hasUser: !!user,
+      isLoading: loading,
+      search: window.location.search,
+      hash: window.location.hash
+    });
+    
+    // Detectar possível callback OAuth na página inicial
+    const hasOAuthParams = window.location.search.includes('code=') || 
+                          window.location.hash.includes('access_token');
+    
+    if (hasOAuthParams) {
+      console.log('🔗 [Index] Parâmetros OAuth detectados na página inicial!', {
+        search: window.location.search,
+        hash: window.location.hash
+      });
+    }
+  }, [user, loading]);
 
   const handleAuthAction = (mode: 'login' | 'signup') => {
     if (user) {

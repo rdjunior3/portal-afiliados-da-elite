@@ -69,18 +69,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // ✨ NOVA FUNCIONALIDADE: Detectar callback OAuth
       const urlParams = new URLSearchParams(window.location.search);
-      const isOAuthCallback = urlParams.has('code') || window.location.hash.includes('access_token');
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const isOAuthCallback = urlParams.has('code') || urlParams.has('access_token') || 
+                              hashParams.has('access_token') || hashParams.has('refresh_token') ||
+                              window.location.hash.includes('access_token') || 
+                              window.location.hash.includes('refresh_token');
       
       if (isOAuthCallback) {
-        console.log('🔗 [Auth] Callback OAuth detectado, aguardando processamento...');
+        console.log('🔗 [Auth] Callback OAuth detectado!', {
+          url: window.location.href,
+          search: window.location.search,
+          hash: window.location.hash,
+          urlParams: Object.fromEntries(urlParams),
+          hashParams: Object.fromEntries(hashParams)
+        });
       }
+
+      // ✨ DEBUG: Log do estado atual da URL antes de qualquer manipulação
+      console.log('📍 [Auth] Estado da URL:', {
+        href: window.location.href,
+        origin: window.location.origin,
+        pathname: window.location.pathname,
+        search: window.location.search,
+        hash: window.location.hash
+      });
 
       // ✨ NOVA FUNCIONALIDADE: Limpar tokens da URL automaticamente
       const currentUrl = window.location.href;
       if (currentUrl.includes('access_token=') || currentUrl.includes('refresh_token=')) {
-        console.log('🧹 [Auth] Removendo tokens da URL por segurança...');
-        const cleanUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, document.title, cleanUrl);
+        console.log('🧹 [Auth] Tokens encontrados na URL, aguardando processamento...');
+        
+        // ✨ DEBUG: Dar tempo para o Supabase processar antes de limpar
+        setTimeout(() => {
+          console.log('🧹 [Auth] Removendo tokens da URL por segurança...');
+          const cleanUrl = window.location.origin + window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl);
+        }, 2000); // Aguarda 2 segundos para processamento
       }
 
       try {
@@ -164,72 +188,74 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
       console.log('🏁 [Auth] Inicialização completa.');
 
-      // 4. Configurar o listener para MUDANÇAS de estado de autenticação
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event, currentSession) => {
-          console.log(`🔄 [Auth] Evento de mudança de estado: ${event}`, {
-            userEmail: maskSensitiveData(currentSession?.user?.email),
-            hasSession: !!currentSession,
-            sessionExpiration: currentSession?.expires_at ? new Date(currentSession.expires_at * 1000).toISOString() : null
+      // ✨ LISTENER DE MUDANÇAS DE AUTENTICAÇÃO - com logs detalhados
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log(`🔄 [Auth] Evento de autenticação: ${event}`, {
+          event,
+          session: session ? {
+            user: session.user ? {
+              id: session.user.id,
+              email: session.user.email,
+              user_metadata: session.user.user_metadata,
+              app_metadata: session.user.app_metadata
+            } : null,
+            expires_at: session.expires_at,
+            access_token: session.access_token ? '***presente***' : 'ausente'
+          } : null,
+          timestamp: new Date().toISOString()
+        });
+
+        setUser(session?.user ?? null);
+        setSession(session);
+
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('✅ [Auth] Usuário logado com sucesso!', {
+            userId: session.user.id,
+            email: session.user.email,
+            provider: session.user.app_metadata?.provider || 'email'
           });
           
-          if (event === 'SIGNED_OUT' || !currentSession) {
-            // Limpeza imediata para logout
-            setUser(null);
-            setSession(null);
-            setProfile(null);
-            console.log('👋 [Auth] Usuário deslogado, perfil limpo.');
-            return;
-          }
-          
-          if (event === 'TOKEN_REFRESHED') {
-            console.log('🔄 [Auth] Token renovado com sucesso');
-            setSession(currentSession);
-            return;
-          }
-          
-          setUser(currentSession?.user ?? null);
-          setSession(currentSession);
-
-          if (currentSession) {
-            try {
-              let userProfile = await fetchProfile(currentSession.user.id);
-
-              // Só cria um perfil se ele REALMENTE não existir (null) após um SIGNED_IN
-              if (userProfile === null && event === 'SIGNED_IN') {
-                  console.log('🆕 [Auth] Perfil não encontrado após login, criando um novo...');
-                  userProfile = await createProfile(
-                    currentSession.user,
-                    currentSession.user.user_metadata?.full_name
-                  );
-              }
-              setProfile(userProfile);
-              console.log('✅ [Auth] Perfil atualizado via listener para:', maskSensitiveData(userProfile?.email));
-              
-              // 🚀 CORREÇÃO CRÍTICA: Redirecionamento robusto via listener
-              if (userProfile?.role === 'admin') {
-                const currentPath = window.location.pathname;
-                console.log('🎯 [Auth] Admin detectado no listener:', {
-                  event,
-                  userEmail: maskSensitiveData(userProfile?.email),
-                  currentPath,
-                  shouldRedirect: currentPath === '/' || currentPath === '/login'
-                });
-                
-                // Redirecionar admins que estão na página inicial ou login
-                if (currentPath === '/' || currentPath === '/login') {
-                  console.log('🚀 [Auth] Executando redirecionamento via listener...');
-                  setTimeout(() => navigate('/dashboard'), 300);
-                }
-              }
-            } catch (error) {
-              console.error('💥 [Auth] Falha crítica ao buscar/criar perfil no listener. O perfil pode estar desatualizado:', error);
-              // Em caso de erro (ex: timeout), não limpamos o perfil. 
-              // É melhor manter dados antigos do que nenhum dado.
+          try {
+            console.log('👤 [Auth] Buscando perfil do usuário...');
+            
+            // Buscar perfil existente
+            let userProfile = await fetchProfile(session.user.id);
+            
+            // Se não existe perfil, criar um novo (especialmente para login Google)
+            if (!userProfile && session.user.app_metadata?.provider === 'google') {
+              console.log('🔨 [Auth] Criando perfil para usuário Google...');
+              userProfile = await createProfile(session.user, session.user.user_metadata?.full_name);
             }
+            
+            if (userProfile) {
+              setProfile(userProfile);
+              console.log('✅ [Auth] Perfil carregado/criado:', maskSensitiveData(userProfile.email));
+            }
+            
+            // ✨ REDIRECIONAMENTO APÓS LOGIN GOOGLE
+            if (session.user.app_metadata?.provider === 'google') {
+              console.log('🌐 [Auth] Login Google detectado, redirecionando para dashboard...');
+              // Aguarda um pouco para garantir que o perfil foi carregado
+              setTimeout(() => {
+                navigate('/dashboard');
+              }, 500);
+            }
+          } catch (error) {
+            console.error('❌ [Auth] Erro ao carregar perfil após login:', error);
           }
         }
-      );
+
+        if (event === 'SIGNED_OUT') {
+          console.log('👋 [Auth] Usuário deslogado');
+          setProfile(null);
+        }
+
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('🔄 [Auth] Token renovado');
+        }
+
+        setLoading(false);
+      });
 
       return () => {
         console.log('🧹 [Auth] Limpando listener de autenticação.');
@@ -238,7 +264,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     initializeAndListen();
-  }, []);
+  }, [navigate]);
 
   // Enhanced fetch profile with timeout and retry
   const fetchProfile = async (userId: string) => {
@@ -506,8 +532,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const baseUrl = isLocalhost ? 'http://localhost:5173' : 'https://www.afiliadosdaelite.com.br';
       
-      // 🚀 CORREÇÃO CRÍTICA: Sempre redirecionar para a página inicial para capturar o callback
-      const redirectUrl = `${baseUrl}/`;
+      // 🚀 CORREÇÃO CRÍTICA: Usar rota específica para callback OAuth
+      const redirectUrl = `${baseUrl}/auth/callback`;
       
       console.log('🔗 [signInWithGoogle] Configuração:', {
         hostname: window.location.hostname,

@@ -19,6 +19,25 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 
+// ✨ DEBUG: Componente para callback OAuth
+const OAuthCallback = () => {
+  console.log('🔗 [OAuthCallback] Processando callback OAuth...', {
+    url: window.location.href,
+    search: window.location.search,
+    hash: window.location.hash
+  });
+  
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-900">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-400 mx-auto"></div>
+        <h2 className="text-white text-xl mt-4">Processando login com Google...</h2>
+        <p className="text-slate-400 mt-2">Você será redirecionado em instantes.</p>
+      </div>
+    </div>
+  );
+};
+
 // Pages com lazy loading (componentes pesados)
 const Products = lazy(() => import('./pages/dashboard/Products'));
 const Reports = lazy(() => import('./pages/dashboard/Reports'));
@@ -50,6 +69,10 @@ export const createRouter = (queryClient: QueryClient) =>
         {
           path: 'signup',
           element: <Signup />
+        },
+        {
+          path: 'auth/callback',
+          element: <OAuthCallback />
         },
         {
           path: 'dashboard',
