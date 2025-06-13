@@ -142,7 +142,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // 4. Configurar o listener para MUDANÇAS de estado de autenticação
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, currentSession) => {
-          console.log(`🔄 [Auth] Evento de mudança de estado: ${event}`, maskSensitiveData(currentSession?.user?.email));
+          console.log(`🔄 [Auth] Evento de mudança de estado: ${event}`, {
+            userEmail: maskSensitiveData(currentSession?.user?.email),
+            hasSession: !!currentSession,
+            sessionExpiration: currentSession?.expires_at ? new Date(currentSession.expires_at * 1000).toISOString() : null
+          });
           
           if (event === 'SIGNED_OUT' || !currentSession) {
             // Limpeza imediata para logout
@@ -150,6 +154,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setSession(null);
             setProfile(null);
             console.log('👋 [Auth] Usuário deslogado, perfil limpo.');
+            return;
+          }
+          
+          if (event === 'TOKEN_REFRESHED') {
+            console.log('🔄 [Auth] Token renovado com sucesso');
+            setSession(currentSession);
             return;
           }
           
@@ -173,8 +183,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               
               // CORREÇÃO: Redirecionamento automático para admins após login
               if (event === 'SIGNED_IN' && userProfile?.role === 'admin') {
-                console.log('🔄 [Auth] Redirecionando admin para dashboard...');
-                navigate('/dashboard');
+                console.log('🔄 [Auth] Redirecionamento detectado para admin:', {
+                  userEmail: maskSensitiveData(userProfile?.email),
+                  userRole: userProfile?.role,
+                  currentUrl: window.location.href,
+                  pathname: window.location.pathname
+                });
+                setTimeout(() => {
+                  console.log('🚀 [Auth] Executando navigate para /dashboard');
+                  navigate('/dashboard');
+                }, 500);
               }
             } catch (error) {
               console.error('💥 [Auth] Falha crítica ao buscar/criar perfil no listener. O perfil pode estar desatualizado:', error);
@@ -453,29 +471,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     
     try {
+      // Limpar qualquer sessão antiga que possa estar causando conflito
+      await supabase.auth.signOut();
+      
+      const redirectUrl = `${window.location.origin}/dashboard`;
+      console.log('🔗 [signInWithGoogle] URL de redirecionamento:', redirectUrl);
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: redirectUrl,
           queryParams: {
             access_type: 'offline',
-            prompt: 'consent',
+            prompt: 'select_account', // Força seleção de conta
           }
         }
       });
 
       if (error) {
-        console.error('Erro detalhado do Google OAuth:', error);
+        console.error('❌ [signInWithGoogle] Erro detalhado:', error);
         toast({
           title: "Erro no login com Google",
           description: `Não foi possível conectar com o Google: ${error.message}`,
           variant: "destructive",
         });
+        setLoading(false);
+        return { error };
       }
 
+      console.log('✅ [signInWithGoogle] Redirecionamento iniciado para Google');
+      // Não resetamos o loading aqui pois o usuário será redirecionado
+      return { error: null };
+    } catch (error: any) {
+      console.error('💥 [signInWithGoogle] Erro inesperado:', error);
+      toast({
+        title: "Erro Inesperado no Google Login",
+        description: "Ocorreu um erro durante o login com Google. Tente novamente.",
+        variant: "destructive",
+      });
+      setLoading(false);
       return { error };
-    } finally {
-      // O listener cuidará da transição de estado, não precisa de setLoading aqui
     }
   };
 
