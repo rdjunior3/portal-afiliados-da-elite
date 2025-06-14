@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const useInitialSetup = () => {
   const { user, isAdmin } = useAuth();
+  const [isCreating, setIsCreating] = useState(false);
 
   // Se o usuário não for admin, o hook não faz nada.
   if (!isAdmin()) {
@@ -14,7 +15,7 @@ export const useInitialSetup = () => {
   // A lógica abaixo só será executada para administradores.
 
   // Verificar e criar sala "Comunidade da Elite" se necessário
-  const { data: eliteRoomExists } = useQuery({
+  const { data: eliteRoomExists, refetch } = useQuery({
     queryKey: ['elite-room-check'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -26,16 +27,34 @@ export const useInitialSetup = () => {
       if (error && error.code !== 'PGRST116') throw error;
       return !!data;
     },
-    enabled: !!user // A verificação isAdmin() já foi feita acima.
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000, // 5 minutos - evita múltiplas consultas
+    retry: false
   });
 
   // Criar sala "Comunidade da Elite" se não existir
   useEffect(() => {
     const createEliteRoom = async () => {
-      // A verificação de admin já foi feita no início do hook.
-      if (!user || eliteRoomExists) return;
+      // Verificações de segurança
+      if (!user || eliteRoomExists || isCreating) return;
 
+      setIsCreating(true);
+      
       try {
+        // Verificar novamente antes de criar (double-check)
+        const { data: existingRoom } = await supabase
+          .from('chat_rooms')
+          .select('id')
+          .eq('name', 'Comunidade da Elite')
+          .single();
+
+        if (existingRoom) {
+          console.log('✅ Sala "Comunidade da Elite" já existe');
+          refetch(); // Atualizar estado
+          return;
+        }
+
+        console.log('🚀 Criando sala "Comunidade da Elite"...');
         const { error } = await supabase
           .from('chat_rooms')
           .insert([{
@@ -45,15 +64,26 @@ export const useInitialSetup = () => {
           }]);
 
         if (error) {
-          console.error('Erro ao criar sala Comunidade da Elite:', error);
+          // Se for erro de conflito (409), significa que foi criada por outra instância
+          if (error.code === '23505') { // Unique constraint violation
+            console.log('✅ Sala já foi criada por outra instância');
+            refetch();
+          } else {
+            console.error('❌ Erro ao criar sala Comunidade da Elite:', error);
+          }
+        } else {
+          console.log('✅ Sala "Comunidade da Elite" criada com sucesso');
+          refetch();
         }
       } catch (error) {
-        console.error('Erro inesperado ao criar sala:', error);
+        console.error('💥 Erro inesperado ao criar sala:', error);
+      } finally {
+        setIsCreating(false);
       }
     };
 
     createEliteRoom();
-  }, [user, eliteRoomExists]);
+  }, [user, eliteRoomExists, isCreating, refetch]);
 
   return {
     isSetupComplete: eliteRoomExists !== undefined

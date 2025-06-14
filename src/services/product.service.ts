@@ -63,18 +63,39 @@ export class ProductService extends ApiService {
     try {
       console.log('🗑️ [ProductService] Iniciando exclusão do produto:', id);
       
+      // Primeiro, verificar se o produto existe
+      const { data: existingProduct, error: fetchError } = await supabase
+        .from('products')
+        .select('id, name, status')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) {
+        console.error('❌ [ProductService] Produto não encontrado:', fetchError);
+        throw new Error('Produto não encontrado');
+      }
+
+      console.log('🔍 [ProductService] Produto atual:', existingProduct);
+
       // Arquivar produto ao invés de deletar permanentemente
       const { error } = await supabase
         .from('products')
         .update({ 
-          status: 'archived',
+          status: 'archived' as const,
           is_active: false,
           updated_at: new Date().toISOString()
         })
         .eq('id', id);
 
       if (error) {
-        console.error('❌ [ProductService] Erro ao arquivar produto:', error);
+        console.error('❌ [ProductService] Erro ao arquivar produto:', {
+          error,
+          productId: id,
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
         throw error;
       }
 
