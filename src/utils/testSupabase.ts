@@ -1,65 +1,101 @@
 import { supabase } from '@/integrations/supabase/client';
 
+// Helper para timeout em promises
+const withTimeout = <T>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Timeout after ${timeoutMs}ms`)), timeoutMs)
+    )
+  ]);
+};
+
 export const testSupabaseConnection = async () => {
   console.log('🔗 [TestSupabase] Testando conexão...');
   
   try {
-    // 1. Teste básico de autenticação
+    // 1. Teste básico de autenticação COM TIMEOUT
     console.log('🔐 [TestSupabase] Verificando autenticação...');
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    const { data: { user }, error: authError } = await withTimeout(
+      supabase.auth.getUser(),
+      5000 // Timeout de 5 segundos
+    );
     
     if (authError) {
-      console.error('❌ [TestSupabase] Erro de autenticação:', authError.message);
-      return false;
+      console.error('❌ [TestSupabase] Erro de autenticação:', authError);
+      throw authError;
     }
     
-    if (user) {
-      console.log('✅ [TestSupabase] Usuário autenticado:', user.email);
-    } else {
-      console.warn('⚠️ [TestSupabase] Nenhum usuário autenticado');
-      return false;
+    if (!user) {
+      console.error('❌ [TestSupabase] Usuário não autenticado');
+      throw new Error('Usuário não autenticado');
     }
+    
+    console.log('✅ [TestSupabase] Usuário autenticado:', user.email);
 
-    // 2. Teste simples de leitura na tabela profiles
+    // 2. Teste de leitura das tabelas principais com TIMEOUT
     console.log('📊 [TestSupabase] Testando leitura de dados...');
-    const { data: profiles, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, email')
-      .limit(1);
     
-    if (profileError) {
-      console.error('❌ [TestSupabase] Erro ao ler profiles:', profileError.message);
-      return false;
-    }
-    
-    console.log('✅ [TestSupabase] Profiles acessíveis:', profiles?.length || 0);
+    const [profilesResult, productsResult, categoriesResult, eliteTipsResult] = await Promise.all([
+      withTimeout(supabase.from('profiles').select('id').limit(1), 3000),
+      withTimeout(supabase.from('products').select('id').limit(1), 3000),
+      withTimeout(supabase.from('categories').select('id').limit(1), 3000),
+      withTimeout(supabase.from('elite_tips').select('id').limit(1), 3000)
+    ]);
 
-    // 3. Teste de leitura nas principais tabelas (sem insert)
-    const tables = ['products', 'categories', 'elite_tips'];
+    // Verificar resultados
+    if (profilesResult.error) throw new Error(`Profiles: ${profilesResult.error.message}`);
+    if (productsResult.error) throw new Error(`Products: ${productsResult.error.message}`);
+    if (categoriesResult.error) throw new Error(`Categories: ${categoriesResult.error.message}`);
+    if (eliteTipsResult.error) throw new Error(`Elite Tips: ${eliteTipsResult.error.message}`);
+
+    console.log('✅ [TestSupabase] Profiles acessíveis:', profilesResult.data?.length || 0);
+    console.log('✅ [TestSupabase] products acessível:', productsResult.data?.length || 0, 'registros');
+    console.log('✅ [TestSupabase] categories acessível:', categoriesResult.data?.length || 0, 'registros');
+    console.log('✅ [TestSupabase] elite_tips acessível:', eliteTipsResult.data?.length || 0, 'registros');
+
+    // 3. Verificar storage buckets
+    console.log('🪣 [TestSupabase] Verificando buckets...');
     
-    for (const table of tables) {
-      try {
-        const { data, error } = await supabase
-          .from(table)
-          .select('id')
-          .limit(1);
+    const { data: buckets, error: bucketsError } = await withTimeout(
+      supabase.storage.listBuckets(),
+      3000
+    );
+    
+    if (bucketsError) {
+      console.warn('⚠️ [TestSupabase] Erro ao verificar buckets:', bucketsError.message);
+    } else {
+      const productImagesBucket = buckets?.find(b => b.id === 'product-images');
+      if (productImagesBucket) {
+        console.log('✅ [TestSupabase] Bucket product-images encontrado');
+      } else {
+        console.warn('⚠️ [TestSupabase] Bucket product-images não encontrado');
         
-        if (error) {
-          console.warn(`⚠️ [TestSupabase] Problema com ${table}:`, error.message);
+        // Tentar criar o bucket
+        console.log('🔨 [TestSupabase] Tentando criar bucket...');
+        const { error: createError } = await withTimeout(
+          supabase.storage.createBucket('product-images', {
+            public: true,
+            fileSizeLimit: 52428800, // 50MB
+            allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+          }),
+          5000
+        );
+        
+        if (createError) {
+          console.warn('⚠️ [TestSupabase] Não foi possível criar bucket:', createError.message);
         } else {
-          console.log(`✅ [TestSupabase] ${table} acessível:`, data?.length || 0, 'registros');
+          console.log('✅ [TestSupabase] Bucket product-images criado com sucesso');
         }
-      } catch (err) {
-        console.warn(`⚠️ [TestSupabase] Erro inesperado em ${table}:`, err);
       }
     }
-    
+
     console.log('🎉 [TestSupabase] Teste de conexão concluído com sucesso!');
-    return true;
     
   } catch (error) {
-    console.error('💥 [TestSupabase] Erro geral:', error);
-    return false;
+    console.error('💥 [TestSupabase] Falha no teste de conexão:', error);
+    throw error;
   }
 };
 

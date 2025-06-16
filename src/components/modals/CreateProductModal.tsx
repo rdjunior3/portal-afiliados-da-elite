@@ -391,7 +391,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700" aria-describedby="create-product-description">
         <DialogHeader>
           <DialogTitle className="text-orange-400 flex items-center gap-2">
             <Plus className="w-5 h-5" />
@@ -403,6 +403,9 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
               </div>
             )}
           </DialogTitle>
+          <div id="create-product-description" className="sr-only">
+            Formulário para criar um novo produto de afiliação com nome, descrição, imagem e ofertas
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -648,7 +651,42 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                 Cancelar
               </Button>
               <Button 
-                onClick={() => createProductMutation.mutate({ ...formData, offers, tags })}
+                onClick={() => {
+                  // 🛡️ Prevenir múltiplos cliques
+                  if (createProductMutation.isPending || uploadingImage) {
+                    console.warn('⚠️ [CreateProduct] Operação já em andamento, ignorando clique');
+                    return;
+                  }
+                  
+                  // 🛡️ Validação crítica: verificar se há ofertas
+                  if (offers.length === 0) {
+                    toast({
+                      title: "❌ Oferta obrigatória",
+                      description: "Adicione pelo menos uma oferta antes de criar o produto.",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  
+                  // 🛡️ Validação de campos obrigatórios
+                  if (!formData.name || !formData.description || !formData.sales_page_url) {
+                    toast({
+                      title: "❌ Campos obrigatórios",
+                      description: "Preencha todos os campos obrigatórios (*)",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  
+                  console.log('✅ [CreateProduct] Iniciando criação com validação OK');
+                  console.log('📊 [CreateProduct] Dados:', { 
+                    nome: formData.name, 
+                    offersCount: offers.length,
+                    tagsCount: tags.length 
+                  });
+                  
+                  createProductMutation.mutate({ ...formData, offers, tags });
+                }}
                 disabled={createProductMutation.isPending || uploadingImage}
                 className="bg-orange-600 hover:bg-orange-700"
               >
