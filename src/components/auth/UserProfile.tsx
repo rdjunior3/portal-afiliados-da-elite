@@ -33,28 +33,21 @@ export const UserProfile: React.FC = () => {
 
   const handleSignOut = async () => {
     try {
-    const { error } = await signOut();
+      console.log('🚪 [UserProfile] Iniciando logout...');
+      const { error } = await signOut();
       
       if (error) {
-        console.error('Erro no logout:', error);
+        console.error('❌ [UserProfile] Erro no logout:', error);
+        // Se há erro, não força redirecionamento - deixa AuthContext lidar
+        return;
       }
       
-      // Força redirecionamento independente de erro
-      // Usa setTimeout para garantir que o processo de logout seja concluído
-      setTimeout(() => {
-        navigate('/', { replace: true });
-        // Força reload da página como backup
-        window.location.href = '/';
-      }, 300);
+      console.log('✅ [UserProfile] Logout delegado para AuthContext');
+      // AuthContext já gerencia o redirecionamento em signOut()
+      // Não fazemos redirecionamento duplo aqui
       
     } catch (error) {
-      console.error('Erro durante logout:', error);
-      
-      // Mesmo com erro, força redirecionamento
-      setTimeout(() => {
-        navigate('/', { replace: true });
-        window.location.href = '/';
-      }, 300);
+      console.error('💥 [UserProfile] Erro inesperado durante logout:', error);
     }
   };
 

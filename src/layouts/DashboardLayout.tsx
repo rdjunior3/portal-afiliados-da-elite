@@ -110,22 +110,18 @@ const DashboardLayout: React.FC = () => {
           description: "Não foi possível fazer logout. Tente novamente.",
           variant: "destructive",
         });
-      } else {
-        console.log('✅ [DashboardLayout] Logout bem-sucedido');
-        toast({
-          title: "Logout realizado",
-          description: "Até a próxima!",
-        });
-        
-        // O AuthContext já gerencia o redirecionamento
-        // Não fazemos redirecionamento manual aqui para evitar conflitos
+        return;
       }
       
+      console.log('✅ [DashboardLayout] Logout delegado para AuthContext');
+      // AuthContext já gerencia o redirecionamento e toast de sucesso
+      // Não duplicamos toasts ou redirecionamentos aqui
+      
     } catch (error) {
-      console.error('💥 [DashboardLayout] Erro durante logout:', error);
+      console.error('💥 [DashboardLayout] Erro inesperado durante logout:', error);
       toast({
-        title: "Sessão encerrada",
-        description: "Sua sessão foi encerrada por segurança.",
+        title: "Erro inesperado",
+        description: "Ocorreu um erro durante o logout.",
         variant: "destructive",
       });
     }

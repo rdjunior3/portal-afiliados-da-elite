@@ -1,9 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
 
 // Helper para timeout em promises
-const withTimeout = <T>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+const withTimeout = <T>(promise: Promise<T> | PromiseLike<T>, timeoutMs: number): Promise<T> => {
   return Promise.race([
-    promise,
+    Promise.resolve(promise),
     new Promise<T>((_, reject) =>
       setTimeout(() => reject(new Error(`Timeout after ${timeoutMs}ms`)), timeoutMs)
     )
@@ -19,7 +19,7 @@ export const testSupabaseConnection = async () => {
     
     const { data: { user }, error: authError } = await withTimeout(
       supabase.auth.getUser(),
-      5000 // Timeout de 5 segundos
+      10000 // Timeout de 10 segundos (aumentado devido aos problemas de conexão)
     );
     
     if (authError) {
@@ -38,22 +38,27 @@ export const testSupabaseConnection = async () => {
     console.log('📊 [TestSupabase] Testando leitura de dados...');
     
     const [profilesResult, productsResult, categoriesResult, eliteTipsResult] = await Promise.all([
-      withTimeout(supabase.from('profiles').select('id').limit(1), 3000),
-      withTimeout(supabase.from('products').select('id').limit(1), 3000),
-      withTimeout(supabase.from('categories').select('id').limit(1), 3000),
-      withTimeout(supabase.from('elite_tips').select('id').limit(1), 3000)
+      withTimeout(supabase.from('profiles').select('id').limit(1).then(r => r), 3000),
+      withTimeout(supabase.from('products').select('id').limit(1).then(r => r), 3000),
+      withTimeout(supabase.from('categories').select('id').limit(1).then(r => r), 3000),
+      withTimeout(supabase.from('elite_tips').select('id').limit(1).then(r => r), 3000)
     ]);
 
-    // Verificar resultados
-    if (profilesResult.error) throw new Error(`Profiles: ${profilesResult.error.message}`);
-    if (productsResult.error) throw new Error(`Products: ${productsResult.error.message}`);
-    if (categoriesResult.error) throw new Error(`Categories: ${categoriesResult.error.message}`);
-    if (eliteTipsResult.error) throw new Error(`Elite Tips: ${eliteTipsResult.error.message}`);
+    // Verificar resultados (com type assertion para PostgrestResponse)
+    const profiles = profilesResult as any;
+    const products = productsResult as any;
+    const categories = categoriesResult as any;
+    const eliteTips = eliteTipsResult as any;
+    
+    if (profiles.error) throw new Error(`Profiles: ${profiles.error.message}`);
+    if (products.error) throw new Error(`Products: ${products.error.message}`);
+    if (categories.error) throw new Error(`Categories: ${categories.error.message}`);
+    if (eliteTips.error) throw new Error(`Elite Tips: ${eliteTips.error.message}`);
 
-    console.log('✅ [TestSupabase] Profiles acessíveis:', profilesResult.data?.length || 0);
-    console.log('✅ [TestSupabase] products acessível:', productsResult.data?.length || 0, 'registros');
-    console.log('✅ [TestSupabase] categories acessível:', categoriesResult.data?.length || 0, 'registros');
-    console.log('✅ [TestSupabase] elite_tips acessível:', eliteTipsResult.data?.length || 0, 'registros');
+    console.log('✅ [TestSupabase] Profiles acessíveis:', profiles.data?.length || 0);
+    console.log('✅ [TestSupabase] products acessível:', products.data?.length || 0, 'registros');
+    console.log('✅ [TestSupabase] categories acessível:', categories.data?.length || 0, 'registros');
+    console.log('✅ [TestSupabase] elite_tips acessível:', eliteTips.data?.length || 0, 'registros');
 
     // 3. Verificar storage buckets
     console.log('🪣 [TestSupabase] Verificando buckets...');

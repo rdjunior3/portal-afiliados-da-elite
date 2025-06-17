@@ -496,7 +496,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(null);
       setProfile(null);
       
-      navigate('/login'); // Redireciona para a página de login
+      navigate('/', { replace: true }); // Redireciona para a página inicial
       
       console.log('✅ [signOut] Logout bem-sucedido e redirecionado.');
       toast({
@@ -515,8 +515,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       return { error };
     } finally {
-      // O loading será resolvido pela re-renderização na nova rota.
-      // Não definimos como `false` aqui para evitar piscar de conteúdo.
+      setLoading(false);
     }
   };
 

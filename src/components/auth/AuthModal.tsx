@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -168,7 +168,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 text-white shadow-2xl">
+      <DialogContent className="max-w-sm bg-slate-900/95 backdrop-blur-xl border border-slate-700/50 text-white shadow-2xl" aria-describedby="auth-modal-description">
+        <DialogDescription id="auth-modal-description" className="sr-only">
+          Modal de autenticação para login e cadastro no Portal Afiliados da Elite
+        </DialogDescription>
         <div className="relative overflow-hidden rounded-lg">
           {/* Animated background */}
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-blue-500/10" />

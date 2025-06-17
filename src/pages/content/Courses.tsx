@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { 
@@ -359,6 +359,9 @@ const Courses: React.FC = () => {
         <DialogContent className="bg-slate-900 border-slate-700">
           <DialogHeader>
             <DialogTitle className="text-orange-400">Criar Novo Módulo</DialogTitle>
+            <DialogDescription className="text-slate-300">
+              Crie um novo módulo de conteúdo para a plataforma de afiliados
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -412,6 +415,9 @@ const Courses: React.FC = () => {
         <DialogContent className="bg-slate-900 border-slate-700">
           <DialogHeader>
             <DialogTitle className="text-blue-400">Adicionar Nova Aula</DialogTitle>
+            <DialogDescription className="text-slate-300">
+              Adicione uma nova aula de vídeo a um módulo existente
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>

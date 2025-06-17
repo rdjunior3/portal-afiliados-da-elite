@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -65,6 +65,9 @@ const EliteTipsEditor = () => {
             <span className="text-lg">💡</span>
             Gerenciar Dicas Elite
           </DialogTitle>
+          <DialogDescription className="text-slate-300">
+            Interface para gerenciar as dicas que aparecem no dashboard dos usuários
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
