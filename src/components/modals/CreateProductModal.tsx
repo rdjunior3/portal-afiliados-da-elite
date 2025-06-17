@@ -403,9 +403,9 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
               </div>
             )}
           </DialogTitle>
-          <div id="create-product-description" className="sr-only">
+          <DialogDescription id="create-product-description" className="text-slate-300">
             Formulário para criar um novo produto de afiliação com nome, descrição, imagem e ofertas
-          </div>
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
