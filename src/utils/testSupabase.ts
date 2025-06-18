@@ -54,7 +54,7 @@ export const testSupabaseConnection = async () => {
     if (products.error) throw new Error(`Products: ${products.error.message}`);
     if (categories.error) throw new Error(`Categories: ${categories.error.message}`);
     if (eliteTips.error) throw new Error(`Elite Tips: ${eliteTips.error.message}`);
-
+    
     console.log('✅ [TestSupabase] Profiles acessíveis:', profiles.data?.length || 0);
     console.log('✅ [TestSupabase] products acessível:', products.data?.length || 0, 'registros');
     console.log('✅ [TestSupabase] categories acessível:', categories.data?.length || 0, 'registros');
@@ -95,7 +95,7 @@ export const testSupabaseConnection = async () => {
         }
       }
     }
-
+    
     console.log('🎉 [TestSupabase] Teste de conexão concluído com sucesso!');
     
   } catch (error) {

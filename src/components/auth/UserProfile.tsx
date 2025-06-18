@@ -34,7 +34,7 @@ export const UserProfile: React.FC = () => {
   const handleSignOut = async () => {
     try {
       console.log('🚪 [UserProfile] Iniciando logout...');
-      const { error } = await signOut();
+    const { error } = await signOut();
       
       if (error) {
         console.error('❌ [UserProfile] Erro no logout:', error);
