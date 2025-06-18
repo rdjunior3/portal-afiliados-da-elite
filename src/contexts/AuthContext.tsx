@@ -546,6 +546,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
+          scopes: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile',
           queryParams: {
             access_type: 'offline',
             prompt: 'select_account', // Força seleção de conta
