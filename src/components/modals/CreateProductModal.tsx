@@ -119,7 +119,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
         
         // Mostrar instruções específicas
         console.log('🔧 [Modal] INSTRUÇÕES DE CORREÇÃO:');
-        console.log('1. Acesse: https://supabase.com/dashboard/project/rbqzddsserknaedojuex/sql');
+        console.log('1. Acesse: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/sql');
         console.log('2. Execute o script: db_scripts/fix_critical_tables.sql');
         console.log('3. Execute o script: db_scripts/fix_storage_buckets.sql');
         console.log('4. Teste novamente a conexão');

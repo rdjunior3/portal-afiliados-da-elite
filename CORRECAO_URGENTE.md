@@ -31,7 +31,7 @@
 Você precisa executar estes scripts no **Supabase Dashboard**:
 
 ### **📍 PASSO 1: Criar Tabelas Críticas**
-1. Acesse: https://supabase.com/dashboard/project/rbqzddsserknaedojuex/sql
+1. Acesse: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/sql
 2. Execute o script: `db_scripts/fix_critical_tables.sql`
 
 ### **📍 PASSO 2: Configurar Storage**

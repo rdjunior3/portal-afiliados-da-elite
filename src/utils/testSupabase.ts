@@ -91,7 +91,7 @@ export const testSupabaseConnection = async () => {
         if (createError) {
           console.warn('⚠️ [TestSupabase] Não foi possível criar bucket:', createError.message);
           console.log('🔧 [TestSupabase] INSTRUÇÕES DE CORREÇÃO:');
-          console.log('1. Acesse: https://supabase.com/dashboard/project/rbqzddsserknaedojuex/sql');
+          console.log('1. Acesse: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/sql');
           console.log('2. Execute o script: db_scripts/correcao_bucket_urgente.sql');
           console.log('3. Teste novamente a conexão');
         } else {
@@ -129,7 +129,7 @@ export const createProductImagesBucket = async () => {
     
     console.warn('⚠️ [TestSupabase] Bucket product-images não encontrado');
     console.log('🔧 [TestSupabase] INSTRUÇÕES DE CORREÇÃO:');
-    console.log('1. Acesse: https://supabase.com/dashboard/project/rbqzddsserknaedojuex/sql');
+    console.log('1. Acesse: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/sql');
     console.log('2. Execute o script: db_scripts/correcao_bucket_urgente.sql');
     console.log('3. Recarregue a página e teste novamente');
     

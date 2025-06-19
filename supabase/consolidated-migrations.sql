@@ -1,7 +1,7 @@
 -- ========================================
 -- PORTAL AFILIADOS DA ELITE
 -- Migrações Consolidadas para Aplicação Manual
--- Projeto: rbqzddsserknaedojuex
+-- Projeto: vhociemaoccrkpcylpit
 -- ========================================
 
 -- ========================================

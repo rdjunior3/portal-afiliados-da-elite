@@ -7,8 +7,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Configurações do Supabase - PROJETO CORRETO
-const SUPABASE_URL = 'https://rbqzddsserknaedojuex.supabase.co';
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJicXpkZHNzZXJrbmFlZG9qdWV4Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODYyMTg2NiwiZXhwIjoyMDY0MTk3ODY2fQ.mGYUrl4_X52dLTt-LtwOwsGDTshaYgr5T6-lwix9VUY';
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://vhociemaoccrkpcylpit.supabase.co';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || (() => {
+  console.error('❌ ERRO: SUPABASE_SERVICE_KEY não encontrada nas variáveis de ambiente');
+  console.error('📝 Configure a variável SUPABASE_SERVICE_KEY com sua service role key');
+  process.exit(1);
+})();
 
 // Criar cliente do Supabase com service role
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
@@ -85,7 +89,7 @@ async function applyMigrations() {
 
     console.log('🎉 Processamento concluído!');
     console.log('\n📋 Próximos passos:');
-    console.log('1. Verificar tabelas criadas no dashboard: https://supabase.com/dashboard/project/rbqzddsserknaedojuex/editor');
+    console.log('1. Verificar tabelas criadas no dashboard: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/editor');
     console.log('2. Executar o projeto: npm run dev');
     console.log('3. Testar o dashboard em /dashboard');
 
