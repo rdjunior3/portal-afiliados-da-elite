@@ -1,10 +1,11 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { createBrowserRouter, Navigate, useNavigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
 import { Loading } from '@/components/ui/loading';
 import App from './App';
 import { QueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Componente de Loading para Suspense
 const LazyLoadingFallback = () => (
@@ -19,13 +20,54 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 
-// ✨ DEBUG: Componente para callback OAuth
+// 🔧 CORREÇÃO: Componente para callback OAuth com processamento real
 const OAuthCallback = () => {
-  console.log('🔗 [OAuthCallback] Processando callback OAuth...', {
-    url: window.location.href,
-    search: window.location.search,
-    hash: window.location.hash
-  });
+  
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
+  const [processed, setProcessed] = useState(false);
+  
+  useEffect(() => {
+    console.log('🔗 [OAuthCallback] Iniciando processamento do callback OAuth...', {
+      url: window.location.href,
+      search: window.location.search,
+      hash: window.location.hash,
+      hasUser: !!user,
+      isLoading: loading
+    });
+    
+    // Aguardar o AuthContext processar o callback
+    const processCallback = async () => {
+      if (processed) return;
+      
+      setProcessed(true);
+      
+      // Aguardar um tempo para o Supabase processar o token
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Verificar se o usuário foi autenticado
+      if (user && !loading) {
+        console.log('✅ [OAuthCallback] Usuário autenticado, redirecionando para dashboard...');
+        navigate('/dashboard', { replace: true });
+      } else if (!loading) {
+        console.log('❌ [OAuthCallback] Falha na autenticação, redirecionando para login...');
+        navigate('/login', { replace: true });
+      }
+    };
+    
+    // Processar após um pequeno delay para dar tempo ao AuthContext
+    const timer = setTimeout(processCallback, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [user, loading, navigate, processed]);
+  
+  // Se o usuário já está autenticado, redirecionar imediatamente
+  useEffect(() => {
+    if (user && !loading && !processed) {
+      console.log('🚀 [OAuthCallback] Usuário já autenticado, redirecionamento imediato...');
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, loading, navigate, processed]);
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-900">
