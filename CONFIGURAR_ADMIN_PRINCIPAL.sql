@@ -154,6 +154,7 @@ WHERE email = '04junior.silva09@gmail.com';
 DO $$
 DECLARE
     admin_count INTEGER;
+    admin_record RECORD;
 BEGIN
     SELECT COUNT(*) INTO admin_count 
     FROM profiles 
