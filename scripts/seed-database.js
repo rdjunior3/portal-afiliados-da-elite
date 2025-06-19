@@ -1,8 +1,25 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Configurações do Supabase
-const SUPABASE_URL = 'https://llimwudaqdwpfhgxcpxf.supabase.co';
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxsaW13dWRhcWR3cGZoZ3hjcHhmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzQxODc5NCwiZXhwIjoyMDYyOTk0Nzk0fQ.yP9ZI9WY61sYkMepyKMEKmVf2Obp-8tnVQLcwBNZc04';
+// 🔧 CORREÇÃO CRÍTICA: Usar variáveis de ambiente em vez de credenciais hardcoded
+// Para usar este script, defina as seguintes variáveis de ambiente:
+// VITE_SUPABASE_URL=https://vhociemaoccrkpcylpit.supabase.co
+// SUPABASE_SERVICE_ROLE_KEY=sua_service_key_aqui
+
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://vhociemaoccrkpcylpit.supabase.co';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Validação de segurança
+if (!SUPABASE_SERVICE_KEY) {
+  console.error('❌ ERRO: SUPABASE_SERVICE_ROLE_KEY não definido nas variáveis de ambiente');
+  console.error('📝 Configure a variável antes de executar este script');
+  process.exit(1);
+}
+
+if (!SUPABASE_URL.includes('vhociemaoccrkpcylpit')) {
+  console.error('❌ ERRO: URL do Supabase incorreta. Deve usar projeto vhociemaoccrkpcylpit');
+  console.error(`📍 URL atual: ${SUPABASE_URL}`);
+  process.exit(1);
+}
 
 // Criar cliente do Supabase com service role
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);

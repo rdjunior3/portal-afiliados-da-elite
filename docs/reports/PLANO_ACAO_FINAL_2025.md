@@ -131,7 +131,7 @@ TESTES INCLUÍDOS:
 ### **MÉTODO 1: Via SQL Editor (Recomendado)**
 ```bash
 1. 🌐 Acesse: https://supabase.com/dashboard
-2. 📊 Selecione seu projeto: rbqzddsserknaedojuex
+2. 📊 Selecione seu projeto: vhociemaoccrkpcylpit
 3. 📝 Vá em: SQL Editor
 4. 📋 Cole o conteúdo de fix_critical_issues.sql
 5. ▶️ Clique em "Run" 
@@ -218,10 +218,10 @@ TESTES INCLUÍDOS:
 ## 🔗 **LINKS IMPORTANTES**
 
 ### **📊 SUPABASE:**
-- **Dashboard**: https://supabase.com/dashboard/project/rbqzddsserknaedojuex
-- **SQL Editor**: https://supabase.com/dashboard/project/rbqzddsserknaedojuex/sql
-- **Storage**: https://supabase.com/dashboard/project/rbqzddsserknaedojuex/storage/buckets
-- **Logs**: https://supabase.com/dashboard/project/rbqzddsserknaedojuex/logs
+- **Dashboard**: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit
+- **SQL Editor**: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/sql
+- **Storage**: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/storage/buckets
+- **Logs**: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/logs
 
 ### **🔐 GITHUB:**
 - **Repositório**: https://github.com/rdjunior3/portal-afiliados-da-elite
