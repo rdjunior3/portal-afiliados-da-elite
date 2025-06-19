@@ -706,115 +706,88 @@ export type Database = {
           id: string
           category_id: string | null
           name: string
-          slug: string
+          slug: string | null
           short_description: string | null
           description: string | null
+          image_url: string | null
           thumbnail_url: string | null
-          images: string[] | null
-          video_url: string | null
-          price: number | null
+          price: number
           original_price: number | null
-          currency: string
+          currency: string | null
           commission_rate: number
           commission_amount: number | null
-          affiliate_link: string
-          tracking_pixel: string | null
-          vendor_name: string | null
-          vendor_email: string | null
-          vendor_website: string | null
-          conversion_flow: string | null
-          target_audience: string | null
-          keywords: string[] | null
-          tags: string[] | null
-          gravity_score: number
-          earnings_per_click: number
-          conversion_rate_avg: number
-          refund_rate: number
-          is_featured: boolean
-          is_exclusive: boolean
-          requires_approval: boolean
-          min_payout: number
-          status: 'active' | 'inactive' | 'pending' | 'archived'
-          launch_date: string | null
-          end_date: string | null
-          created_at: string
-          updated_at: string
+          sales_page_url: string
+          is_active: boolean | null
+          is_exclusive: boolean | null
+          is_featured: boolean | null
+          min_payout: number | null
+          requires_approval: boolean | null
+          status: string | null
+          gravity_score: number | null
+          earnings_per_click: number | null
+          conversion_rate_avg: number | null
+          refund_rate: number | null
+          total_sales: number | null
+          created_at: string | null
+          updated_at: string | null
         }
         Insert: {
           id?: string
           category_id?: string | null
           name: string
-          slug: string
+          slug?: string | null
           short_description?: string | null
           description?: string | null
+          image_url?: string | null
           thumbnail_url?: string | null
-          images?: string[] | null
-          video_url?: string | null
-          price?: number | null
+          price?: number
           original_price?: number | null
-          currency?: string
-          commission_rate: number
+          currency?: string | null
+          commission_rate?: number
           commission_amount?: number | null
-          affiliate_link: string
-          tracking_pixel?: string | null
-          vendor_name?: string | null
-          vendor_email?: string | null
-          vendor_website?: string | null
-          conversion_flow?: string | null
-          target_audience?: string | null
-          keywords?: string[] | null
-          tags?: string[] | null
-          gravity_score?: number
-          earnings_per_click?: number
-          conversion_rate_avg?: number
-          refund_rate?: number
-          is_featured?: boolean
-          is_exclusive?: boolean
-          requires_approval?: boolean
-          min_payout?: number
-          status?: 'active' | 'inactive' | 'pending' | 'archived'
-          launch_date?: string | null
-          end_date?: string | null
-          created_at?: string
-          updated_at?: string
+          sales_page_url: string
+          is_active?: boolean | null
+          is_exclusive?: boolean | null
+          is_featured?: boolean | null
+          min_payout?: number | null
+          requires_approval?: boolean | null
+          status?: string | null
+          gravity_score?: number | null
+          earnings_per_click?: number | null
+          conversion_rate_avg?: number | null
+          refund_rate?: number | null
+          total_sales?: number | null
+          created_at?: string | null
+          updated_at?: string | null
         }
         Update: {
           id?: string
           category_id?: string | null
           name?: string
-          slug?: string
+          slug?: string | null
           short_description?: string | null
           description?: string | null
+          image_url?: string | null
           thumbnail_url?: string | null
-          images?: string[] | null
-          video_url?: string | null
-          price?: number | null
+          price?: number
           original_price?: number | null
-          currency?: string
+          currency?: string | null
           commission_rate?: number
           commission_amount?: number | null
-          affiliate_link?: string
-          tracking_pixel?: string | null
-          vendor_name?: string | null
-          vendor_email?: string | null
-          vendor_website?: string | null
-          conversion_flow?: string | null
-          target_audience?: string | null
-          keywords?: string[] | null
-          tags?: string[] | null
-          gravity_score?: number
-          earnings_per_click?: number
-          conversion_rate_avg?: number
-          refund_rate?: number
-          is_featured?: boolean
-          is_exclusive?: boolean
-          requires_approval?: boolean
-          min_payout?: number
-          status?: 'active' | 'inactive' | 'pending' | 'archived'
-          launch_date?: string | null
-          end_date?: string | null
-          created_at?: string
-          updated_at?: string
+          sales_page_url?: string
+          is_active?: boolean | null
+          is_exclusive?: boolean | null
+          is_featured?: boolean | null
+          min_payout?: number | null
+          requires_approval?: boolean | null
+          status?: string | null
+          gravity_score?: number | null
+          earnings_per_click?: number | null
+          conversion_rate_avg?: number | null
+          refund_rate?: number | null
+          total_sales?: number | null
+          created_at?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
