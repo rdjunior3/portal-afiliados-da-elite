@@ -187,13 +187,27 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
       const fileName = `product-${Date.now()}.${fileExt}`;
       
       console.log('📸 [UploadImage] Nome do arquivo:', fileName);
+      console.log('📸 [UploadImage] Tentando upload para bucket product-images...');
       
-      const { error: uploadError } = await supabase.storage
+      // Timeout de 30 segundos para o upload
+      const uploadPromise = supabase.storage
         .from('product-images')
         .upload(fileName, file);
+        
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout: Upload demorou mais de 30 segundos')), 30000);
+      });
+      
+      const { error: uploadError } = await Promise.race([uploadPromise, timeoutPromise]) as any;
 
       if (uploadError) {
         console.error('❌ [UploadImage] Erro no upload:', uploadError);
+        
+        // Verificar se é erro de bucket não encontrado
+        if (uploadError.message?.includes('bucket') || uploadError.message?.includes('not found')) {
+          throw new Error(`BUCKET NÃO ENCONTRADO! Execute o script FIX_BUCKET_AGORA.sql no Supabase Dashboard: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/sql`);
+        }
+        
         throw new Error(`Erro no upload: ${uploadError.message}`);
       }
 
