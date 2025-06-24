@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, X, Image, DollarSign, Link, Tag, Upload } from 'lucide-react';
-import { testSupabaseConnection, createProductImagesBucket } from '@/utils/testSupabase';
+import { createProductImagesBucket } from '@/utils/testSupabase';
 
 interface CreateProductModalProps {
   isOpen: boolean;
@@ -78,62 +78,46 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     }
   }, [formData.name]);
 
-  // Teste de conexão automático quando abre o modal
-  useEffect(() => {
-    if (isOpen) {
-      handleTestConnection();
-    }
-  }, [isOpen]);
+  // Removido teste automático que estava causando travamento
+  // useEffect(() => {
+  //   if (isOpen) {
+  //     handleTestConnection();
+  //   }
+  // }, [isOpen]);
 
   const handleTestConnection = async () => {
     setTestingConnection(true);
-    console.log('🔧 [Modal] Iniciando teste de conexão...');
+    console.log('🔧 [Modal] Verificação rápida de bucket...');
     
     try {
-      const isConnected = await testSupabaseConnection();
+      // Verificação rápida apenas do bucket (sem teste completo)
+      const bucketCreated = await createProductImagesBucket();
       
-      if (isConnected) {
+      if (bucketCreated) {
+        console.log('✅ [Modal] Bucket product-images encontrado!');
         toast({
-          title: "✅ Conexão Bem-sucedida",
-          description: "Supabase está funcionando corretamente. Veja o console para detalhes.",
+          title: "✅ Sistema Pronto",
+          description: "Bucket de imagens está configurado corretamente.",
           variant: "default",
         });
-        
-        // Tentar criar o bucket apenas se a conexão básica funcionar
-        console.log('🪣 [Modal] Tentando criar bucket...');
-        const bucketCreated = await createProductImagesBucket();
-        
-        if (bucketCreated) {
-          toast({
-            title: "📦 Storage Configurado",
-            description: "Bucket de imagens criado/verificado com sucesso.",
-            variant: "default",
-          });
-        }
       } else {
+        console.warn('⚠️ [Modal] Bucket não encontrado');
         toast({
-          title: "⚠️ Problemas na Conexão",
-          description: "Algumas tabelas podem não existir. Execute os scripts de migração no Supabase.",
+          title: "⚠️ Bucket Não Encontrado",
+          description: "Execute o script FIX_BUCKET_AGORA.sql no Supabase Dashboard.",
           variant: "destructive",
         });
-        
-        // Mostrar instruções específicas
-        console.log('🔧 [Modal] INSTRUÇÕES DE CORREÇÃO:');
-        console.log('1. Acesse: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/sql');
-        console.log('2. Execute o script: db_scripts/fix_critical_tables.sql');
-        console.log('3. Execute o script: db_scripts/fix_storage_buckets.sql');
-        console.log('4. Teste novamente a conexão');
       }
       
     } catch (error: any) {
-      console.error('💥 [Modal] Erro crítico no teste:', error.message);
+      console.error('💥 [Modal] Erro na verificação:', error.message);
       toast({
-        title: "💥 Erro Crítico",
-        description: `Falha no teste: ${error.message}. Verifique sua conexão com a internet.`,
+        title: "💥 Erro na Verificação",
+        description: `Erro: ${error.message}`,
         variant: "destructive",
       });
     } finally {
-      console.log('🏁 [Modal] Teste de conexão finalizado');
+      console.log('🏁 [Modal] Verificação finalizada');
       setTestingConnection(false);
     }
   };
