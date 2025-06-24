@@ -67,6 +67,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       console.log('🚀 [Auth] Iniciando verificação de sessão...');
 
+      // ⏰ TIMEOUT DE SEGURANÇA CRÍTICO
+      const emergencyTimeout = setTimeout(() => {
+        console.error('🚨 [Auth] TIMEOUT DE EMERGÊNCIA - Forçando loading = false');
+        setLoading(false);
+      }, 8000); // 8 segundos máximo
+
       // ✨ NOVA FUNCIONALIDADE: Detectar callback OAuth
       const urlParams = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -185,6 +191,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfile(null);
       }
       
+      // Limpar timeout de emergência
+      clearTimeout(emergencyTimeout);
       setLoading(false);
       console.log('🏁 [Auth] Inicialização completa.');
 

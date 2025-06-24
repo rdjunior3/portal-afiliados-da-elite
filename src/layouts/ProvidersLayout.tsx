@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { ThemeProvider } from 'next-themes';
@@ -11,11 +11,28 @@ import { LoadingScreen } from '@/components/ui/loading';
  * Ele deve ser um filho do AuthProvider para usar o hook useAuth.
  */
 const AuthLoadingGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Agora usamos o hook useAuth a partir de um componente filho do AuthProvider.
   const { loading } = useAuth();
+  const [timeoutReached, setTimeoutReached] = useState(false);
 
-  if (loading) {
+  // Timeout de segurança para evitar loading infinito
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading) {
+        console.warn('⚠️ [AuthLoadingGate] Timeout atingido, forçando carregamento');
+        setTimeoutReached(true);
+      }
+    }, 10000); // 10 segundos
+
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  // Se o timeout foi atingido, continuar independente do loading
+  if (loading && !timeoutReached) {
     return <LoadingScreen message="Carregando sessão..." />;
+  }
+
+  if (timeoutReached && loading) {
+    console.log('🚨 [AuthLoadingGate] Timeout de carregamento - continuando sem auth');
   }
 
   return <>{children}</>;
