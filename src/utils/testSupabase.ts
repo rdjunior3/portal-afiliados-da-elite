@@ -19,7 +19,7 @@ export const testSupabaseConnection = async () => {
     
     const { data: { user }, error: authError } = await withTimeout(
       supabase.auth.getUser(),
-      10000 // Timeout de 10 segundos (aumentado devido aos problemas de conexão)
+      10000 // Timeout de 10 segundos
     );
     
     if (authError) {
@@ -44,7 +44,7 @@ export const testSupabaseConnection = async () => {
       withTimeout(supabase.from('elite_tips').select('id').limit(1).then(r => r), 3000)
     ]);
 
-    // Verificar resultados (com type assertion para PostgrestResponse)
+    // Verificar resultados
     const profiles = profilesResult as any;
     const products = productsResult as any;
     const categories = categoriesResult as any;
@@ -56,11 +56,11 @@ export const testSupabaseConnection = async () => {
     if (eliteTips.error) throw new Error(`Elite Tips: ${eliteTips.error.message}`);
     
     console.log('✅ [TestSupabase] Profiles acessíveis:', profiles.data?.length || 0);
-    console.log('✅ [TestSupabase] products acessível:', products.data?.length || 0, 'registros');
-    console.log('✅ [TestSupabase] categories acessível:', categories.data?.length || 0, 'registros');
-    console.log('✅ [TestSupabase] elite_tips acessível:', eliteTips.data?.length || 0, 'registros');
+    console.log('✅ [TestSupabase] Products acessíveis:', products.data?.length || 0, 'registros');
+    console.log('✅ [TestSupabase] Categories acessíveis:', categories.data?.length || 0, 'registros');
+    console.log('✅ [TestSupabase] Elite_tips acessíveis:', eliteTips.data?.length || 0, 'registros');
 
-    // 3. Verificar storage buckets
+    // 3. Verificar storage buckets (sem tentar criar)
     console.log('🪣 [TestSupabase] Verificando buckets...');
     
     const { data: buckets, error: bucketsError } = await withTimeout(
@@ -76,27 +76,10 @@ export const testSupabaseConnection = async () => {
         console.log('✅ [TestSupabase] Bucket product-images encontrado');
       } else {
         console.warn('⚠️ [TestSupabase] Bucket product-images não encontrado');
-        
-        // Tentar criar o bucket
-        console.log('🔨 [TestSupabase] Tentando criar bucket...');
-        const { error: createError } = await withTimeout(
-          supabase.storage.createBucket('product-images', {
-            public: true,
-            fileSizeLimit: 52428800, // 50MB
-            allowedMimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-          }),
-          5000
-        );
-        
-        if (createError) {
-          console.warn('⚠️ [TestSupabase] Não foi possível criar bucket:', createError.message);
-          console.log('🔧 [TestSupabase] INSTRUÇÕES DE CORREÇÃO:');
-          console.log('1. Acesse: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/sql');
-          console.log('2. Execute o script: db_scripts/correcao_bucket_urgente.sql');
-          console.log('3. Teste novamente a conexão');
-        } else {
-          console.log('✅ [TestSupabase] Bucket product-images criado com sucesso');
-        }
+        console.log('🔧 [TestSupabase] INSTRUÇÕES DE CORREÇÃO:');
+        console.log('1. Acesse: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/sql');
+        console.log('2. Execute o script: CORRECAO_COMPLETA_URGENTE.sql');
+        console.log('3. Recarregue a página e teste novamente');
       }
     }
     
@@ -112,7 +95,7 @@ export const createProductImagesBucket = async () => {
   console.log('🪣 [TestSupabase] Verificando bucket product-images...');
   
   try {
-    // Verificar se o bucket já existe
+    // Apenas verificar se o bucket existe
     const { data: buckets, error: listError } = await supabase.storage.listBuckets();
     
     if (listError) {
@@ -130,7 +113,7 @@ export const createProductImagesBucket = async () => {
     console.warn('⚠️ [TestSupabase] Bucket product-images não encontrado');
     console.log('🔧 [TestSupabase] INSTRUÇÕES DE CORREÇÃO:');
     console.log('1. Acesse: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/sql');
-    console.log('2. Execute o script: db_scripts/correcao_bucket_urgente.sql');
+    console.log('2. Execute o script: CORRECAO_COMPLETA_URGENTE.sql');
     console.log('3. Recarregue a página e teste novamente');
     
     return false;

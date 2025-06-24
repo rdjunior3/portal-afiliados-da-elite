@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,13 +6,12 @@ import { useAuth } from '@/contexts/AuthContext';
 export const useInitialSetup = () => {
   const { user, isAdmin } = useAuth();
   const [isCreating, setIsCreating] = useState(false);
+  const lastExecutionRef = useRef<string | null>(null);
 
-  // Se o usuário não for admin, o hook não faz nada.
-  if (!isAdmin()) {
-    return { isSetupComplete: true }; // Retorna como completo para não bloquear nada.
+  // Se o usuário não for admin, o hook não faz nada
+  if (!isAdmin() || !user) {
+    return { isSetupComplete: true };
   }
-
-  // A lógica abaixo só será executada para administradores.
 
   // Verificar e criar sala "Comunidade da Elite" se necessário
   const { data: eliteRoomExists, refetch } = useQuery({
@@ -24,24 +23,41 @@ export const useInitialSetup = () => {
         .eq('name', 'Comunidade da Elite')
         .single();
       
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error && error.code !== 'PGRST116') {
+        console.error('❌ [InitialSetup] Erro ao verificar sala:', error);
+        return null;
+      }
+      
       return !!data;
     },
-    enabled: !!user,
-    staleTime: 5 * 60 * 1000, // 5 minutos - evita múltiplas consultas
-    retry: false
+    enabled: !!user && isAdmin(),
+    staleTime: 10 * 60 * 1000, // 10 minutos
+    retry: 1, // Apenas 1 retry
+    refetchOnWindowFocus: false, // Não revalidar ao focar janela
+    refetchOnReconnect: false, // Não revalidar ao reconectar
+    gcTime: 15 * 60 * 1000, // Cache por 15 minutos
   });
 
   // Criar sala "Comunidade da Elite" se não existir
   useEffect(() => {
     const createEliteRoom = async () => {
-      // Verificações de segurança
-      if (!user || eliteRoomExists || isCreating) return;
+      // Verificações de segurança rigorosas
+      if (!user || !isAdmin() || eliteRoomExists || isCreating) {
+        return;
+      }
 
+      // Evitar execuções duplicadas para o mesmo usuário
+      const currentExecution = `${user.id}-${Date.now()}`;
+      if (lastExecutionRef.current === user.id) {
+        console.log('⏳ [InitialSetup] Execução já feita para este usuário');
+        return;
+      }
+
+      lastExecutionRef.current = user.id;
       setIsCreating(true);
       
       try {
-        // Verificar novamente antes de criar (double-check)
+        // Double-check antes de criar
         const { data: existingRoom } = await supabase
           .from('chat_rooms')
           .select('id')
@@ -49,12 +65,13 @@ export const useInitialSetup = () => {
           .single();
 
         if (existingRoom) {
-          console.log('✅ Sala "Comunidade da Elite" já existe');
-          refetch(); // Atualizar estado
+          console.log('✅ [InitialSetup] Sala "Comunidade da Elite" já existe');
+          await refetch();
           return;
         }
 
-        console.log('🚀 Criando sala "Comunidade da Elite"...');
+        console.log('🚀 [InitialSetup] Criando sala "Comunidade da Elite"...');
+        
         const { error } = await supabase
           .from('chat_rooms')
           .insert([{
@@ -64,28 +81,42 @@ export const useInitialSetup = () => {
           }]);
 
         if (error) {
-          // Se for erro de conflito (409), significa que foi criada por outra instância
-          if (error.code === '23505') { // Unique constraint violation
-            console.log('✅ Sala já foi criada por outra instância');
-            refetch();
+          // Se for erro de conflito, significa que foi criada por outra instância
+          if (error.code === '23505') {
+            console.log('✅ [InitialSetup] Sala já foi criada por outra instância');
           } else {
-            console.error('❌ Erro ao criar sala Comunidade da Elite:', error);
+            console.error('❌ [InitialSetup] Erro ao criar sala:', error);
+            // Reset para permitir nova tentativa
+            lastExecutionRef.current = null;
           }
         } else {
-          console.log('✅ Sala "Comunidade da Elite" criada com sucesso');
-          refetch();
+          console.log('✅ [InitialSetup] Sala "Comunidade da Elite" criada com sucesso');
         }
+
+        // Refetch para atualizar o estado
+        await refetch();
+        
       } catch (error) {
-        console.error('💥 Erro inesperado ao criar sala:', error);
+        console.error('💥 [InitialSetup] Erro inesperado:', error);
+        // Reset para permitir nova tentativa
+        lastExecutionRef.current = null;
       } finally {
         setIsCreating(false);
       }
     };
 
-    createEliteRoom();
-  }, [user, eliteRoomExists, isCreating, refetch]);
+    // Aguardar um pouco antes de executar para evitar race conditions
+    const timeoutId = setTimeout(() => {
+      if (eliteRoomExists === false) { // Explicitamente false, não undefined
+        createEliteRoom();
+      }
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+    
+  }, [user?.id, eliteRoomExists, isCreating]); // Dependências mais específicas
 
   return {
-    isSetupComplete: eliteRoomExists !== undefined
+    isSetupComplete: eliteRoomExists !== undefined && eliteRoomExists !== null
   };
 }; 

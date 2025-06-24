@@ -29,8 +29,8 @@ const OAuthCallback = () => {
   
   useEffect(() => {
     console.log('🔗 [OAuthCallback] Iniciando processamento do callback OAuth...', {
-      url: window.location.href,
-      search: window.location.search,
+    url: window.location.href,
+    search: window.location.search,
       hash: window.location.hash,
       hasUser: !!user,
       isLoading: loading
