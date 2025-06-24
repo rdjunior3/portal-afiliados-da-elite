@@ -244,11 +244,16 @@ const ChatPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Subscribe to real-time messages
+  // Subscribe to real-time messages - OTIMIZADO
   useEffect(() => {
-    if (!selectedRoom) return;
+    if (!selectedRoom || !user) return;
 
-    const channel = supabase.channel(`messages-${selectedRoom.id}`)
+    const channel = supabase.channel(`messages-${selectedRoom.id}`, {
+      config: {
+        broadcast: { self: true },
+        presence: { key: user.id }
+      }
+    })
       .on('postgres_changes', 
         {
           event: 'INSERT',
@@ -260,12 +265,16 @@ const ChatPage = () => {
           queryClient.invalidateQueries({ queryKey: ['messages', selectedRoom.id] });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('📡 [Realtime] Conectado à sala:', selectedRoom.name);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [selectedRoom, queryClient]);
+  }, [selectedRoom, queryClient, user]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();

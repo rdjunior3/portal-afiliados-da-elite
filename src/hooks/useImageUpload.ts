@@ -156,14 +156,14 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       console.log(`📤 [Enhanced Upload] Enviando para: ${options.bucket}/${filePath}`);
       setUploadProgress(50);
 
-      // Usar a nova função com timeout estendido e retry
-      const response = await withRetry(async () => {
-        setUploadProgress(prev => Math.min(prev + 10, 90));
-        return await supabaseWithTimeout.storage.upload(options.bucket, filePath, file, {
+      // UPLOAD OTIMIZADO - sem retry excessivo para evitar loops
+      setUploadProgress(75);
+      const response = await supabase.storage
+        .from(options.bucket)
+        .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
         });
-      }, 3, 2000); // 3 retries, 2s delay
 
       if (response.error) {
         console.error('❌ [uploadImage] Erro detalhado do upload:', response.error);
