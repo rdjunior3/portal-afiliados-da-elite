@@ -115,15 +115,28 @@ const Login = () => {
   };
 
   const handleGoogleSignIn = async () => {
+    // ⚠️ PROTEÇÃO ANTI-LOOP: Verificar se já está carregando
+    if (loading) {
+      console.warn('🚫 [handleGoogleSignIn] Login já em andamento, ignorando clique');
+      return;
+    }
+    
     setLoading(true);
     try {
+      console.log('🔘 [handleGoogleSignIn] Iniciando processo de login Google');
       const { error } = await signInWithGoogle();
       if (!error) {
-        // O Google OAuth já redireciona automaticamente
-        console.log('Login Google: Sucesso, redirecionamento automático');
+        console.log('✅ [handleGoogleSignIn] Sucesso, aguardando redirecionamento Google');
+        // Não reseta loading aqui pois o Google vai redirecionar
+        return;
+      } else {
+        console.error('❌ [handleGoogleSignIn] Erro no login Google:', error);
       }
+    } catch (error) {
+      console.error('💥 [handleGoogleSignIn] Erro inesperado:', error);
     } finally {
-      setLoading(false);
+      // Só reseta loading se houve erro
+      setTimeout(() => setLoading(false), 1000);
     }
   };
 

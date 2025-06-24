@@ -529,11 +529,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     console.log('🌐 [signInWithGoogle] Tentando login com Google...');
+    
+    // ⚠️ PROTEÇÃO ANTI-LOOP: Verificar se já há um processo de login Google em andamento
+    if (loading) {
+      console.warn('🚫 [signInWithGoogle] Login já em andamento, ignorando tentativa duplicata');
+      return { error: new Error('Login já em andamento') };
+    }
+    
     setLoading(true);
     
     try {
-      // Limpar qualquer sessão antiga que possa estar causando conflito
-      await supabase.auth.signOut();
+      // ✅ REMOVIDO: signOut() que causava loop
+      // O Google OAuth vai criar uma nova sessão automaticamente
       
       // Detectar se estamos em localhost ou produção
       const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
