@@ -98,13 +98,13 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     }
   }, [uploadedImageUrl]);
 
-  // Calcular comissão automaticamente se não for valor fixo
+  // Calcular comissão automaticamente
   useEffect(() => {
-    if (formData.price > 0 && formData.commission_rate > 0 && formData.commission_amount === 0) {
+    if (formData.price > 0 && formData.commission_rate > 0) {
       const calculatedCommission = (formData.price * formData.commission_rate) / 100;
       setFormData(prev => ({ ...prev, commission_amount: parseFloat(calculatedCommission.toFixed(2)) }));
     }
-  }, [formData.price, formData.commission_rate, formData.commission_amount]);
+  }, [formData.price, formData.commission_rate]);
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -177,24 +177,12 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
         
         console.log('🎯 [CreateProduct] Executando INSERT na tabela products...');
 
-        // Criar produto com timeout
-        const insertPromise = supabase
+        // Criar produto
+        const { data: product, error: productError } = await supabase
           .from('products')
           .insert([insertData])
           .select()
           .single();
-
-        console.log('⏰ [CreateProduct] Aguardando resposta do INSERT...');
-        
-        // Timeout de 10 segundos para detectar se está travando
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Timeout: INSERT demorou mais de 10 segundos')), 10000);
-        });
-
-        const { data: product, error: productError } = await Promise.race([
-          insertPromise,
-          timeoutPromise
-        ]) as any;
 
         console.log('🔍 [CreateProduct] Resultado do INSERT:', { product, error: productError });
 
@@ -537,7 +525,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                 onChange={(e) => setFormData({...formData, commission_amount: parseFloat(e.target.value) || 0})}
                 className="bg-slate-800 border-slate-600 text-white"
                 placeholder="Calculado automaticamente"
-                disabled={formData.price > 0 && formData.commission_rate > 0}
+                readOnly={formData.price > 0 && formData.commission_rate > 0}
               />
             </div>
           </div>
