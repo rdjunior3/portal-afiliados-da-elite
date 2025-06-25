@@ -11,6 +11,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, X, Image, DollarSign, Link, Tag, Upload, Loader2, AlertTriangle } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import CreateCategoryModal from './CreateCategoryModal';
 
 interface CreateProductModalProps {
   isOpen: boolean;
@@ -45,6 +46,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
   const [newTag, setNewTag] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
   // Hook de upload otimizado
   const {
@@ -357,6 +359,12 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     resetUpload();
   };
 
+  const handleCategoryCreated = (category: any) => {
+    // Atualizar formData com a nova categoria selecionada
+    setFormData(prev => ({ ...prev, category_id: category.id }));
+    setShowCategoryModal(false);
+  };
+
   const addTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim().toLowerCase())) {
       setTags([...tags, newTag.trim().toLowerCase()]);
@@ -378,10 +386,10 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-cyan-400 flex items-center gap-2">
             <Plus className="h-6 w-6" />
-            Criar Novo Produto Elite
+            Cadastrar Novo Produto
           </DialogTitle>
           <DialogDescription className="text-slate-300">
-            Adicione um novo produto ao catálogo da Elite com informações detalhadas e ofertas.
+            Adicione um novo produto para ser promovido pelos afiliados.
           </DialogDescription>
         </DialogHeader>
 
@@ -396,13 +404,25 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   className="bg-slate-800 border-slate-600 text-white"
-                  placeholder="Ex: Curso de Marketing Digital Elite"
+                  placeholder="Ex: Curso de Marketing Digital"
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="category" className="text-slate-200">Categoria *</Label>
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="category" className="text-slate-200">Categoria *</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCategoryModal(true)}
+                    className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-600 hover:text-white"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Nova
+                  </Button>
+                </div>
                 <Select value={formData.category_id} onValueChange={(value) => setFormData({...formData, category_id: value})}>
                   <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
                     <SelectValue placeholder="Selecione uma categoria" />
@@ -611,6 +631,13 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
           </DialogFooter>
         </form>
       </DialogContent>
+
+      {/* Modal de criação de categoria */}
+      <CreateCategoryModal 
+        isOpen={showCategoryModal} 
+        onClose={() => setShowCategoryModal(false)}
+        onCategoryCreated={handleCategoryCreated}
+      />
     </Dialog>
   );
 };

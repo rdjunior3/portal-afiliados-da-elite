@@ -31,6 +31,8 @@ const ProductsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ProductWithOffers | null>(null);
   const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
 
   // Usar os hooks para buscar dados
@@ -45,6 +47,14 @@ const ProductsPage = () => {
     const product = products.find(p => p.id === productId);
     if (product) {
       setProductToDelete({ id: productId, name: product.name });
+    }
+  };
+
+  const handleEditProduct = (productId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      setEditingProduct(product);
+      setShowEditModal(true);
     }
   };
 
@@ -116,6 +126,7 @@ const ProductsPage = () => {
                     key={product.id}
                     product={product}
                     onDelete={handleDeleteProduct}
+                    onEdit={handleEditProduct}
                   />
                 ))}
           </div>
