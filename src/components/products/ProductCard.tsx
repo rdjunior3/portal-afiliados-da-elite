@@ -1,95 +1,236 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { Copy, Trash2 } from 'lucide-react';
-import { ProductWithOffers } from '@/types'; // Assuming you have this type from your previous setup
-import { useAffiliateLinks } from '@/hooks/useAffiliateLinks';
-import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/hooks/use-toast';
+import { 
+  ExternalLink, 
+  Copy, 
+  DollarSign, 
+  Percent, 
+  Tag,
+  Eye,
+  Heart,
+  Share2
+} from 'lucide-react';
 
-interface ProductCardProps {
-  product: ProductWithOffers;
-  onDelete: (productId: string) => void;
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  image_url: string;
+  affiliate_link: string;
+  price: number;
+  commission_rate: number;
+  commission_amount: number;
+  tags: string[];
+  category?: {
+    name: string;
+    color: string;
+  };
+  is_active: boolean;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete }) => {
-  const { toast } = useToast();
-  const { links, loading: linksLoading, error: linksError } = useAffiliateLinks(product.id);
-  const { user, profile } = useAuth();
+interface ProductCardProps {
+  product: Product;
+  variant?: 'default' | 'compact' | 'featured';
+}
 
-  // Verificar se o usuário é admin
-  const isAdmin = profile?.role === 'admin';
+export const ProductCard: React.FC<ProductCardProps> = ({ 
+  product, 
+  variant = 'default' 
+}) => {
+  const [imageError, setImageError] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const handleCopyLink = (url: string) => {
-    if (!url) {
-      toast({ title: "Link indisponível", variant: "destructive" });
-      return;
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(product.affiliate_link);
+      setCopied(true);
+      toast({
+        title: "Link copiado! 📋",
+        description: "O link de afiliação foi copiado para sua área de transferência.",
+      });
+      
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast({
+        title: "Erro ao copiar",
+        description: "Não foi possível copiar o link. Tente novamente.",
+        variant: "destructive",
+      });
     }
-    navigator.clipboard.writeText(url);
-    toast({ title: "Link de promoção copiado!" });
   };
 
-  // Decide which link to use: affiliate link if available, otherwise affiliate_link
-  const getOfferLink = (offerId: string, defaultLink: string) => {
-    const affiliateLink = links.find(link => link.offer_id === offerId);
-    return affiliateLink ? affiliateLink.affiliate_url : defaultLink;
+  const handleVisitProduct = () => {
+    window.open(product.affiliate_link, '_blank', 'noopener,noreferrer');
   };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(price);
+  };
+
+  const cardClass = variant === 'compact' ? 'h-80' : variant === 'featured' ? 'h-96' : 'h-auto';
 
   return (
-    <Card key={product.id} className="bg-slate-800 border-slate-700 flex flex-col group relative">
-      {isAdmin && (
-        <div className="absolute top-2 right-2 z-10">
-          <Button 
-            variant="destructive" 
-            size="sm" 
-            onClick={() => onDelete(product.id)}
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
+    <Card className={`group hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-slate-900 to-slate-800 border-slate-600 overflow-hidden ${cardClass}`}>
+      {/* Imagem do Produto */}
+      <div className="relative h-48 overflow-hidden">
+        {!imageError ? (
+          <img
+            src={product.image_url}
+            alt={product.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div className="w-full h-full bg-slate-700 flex items-center justify-center">
+            <Tag className="h-12 w-12 text-slate-400" />
+          </div>
+        )}
+        
+        {/* Overlay com ações rápidas */}
+        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={handleVisitProduct}
+            className="bg-white/10 hover:bg-white/20 text-white border-white/20"
           >
-            <Trash2 className="h-4 w-4" />
+            <Eye className="h-4 w-4 mr-1" />
+            Ver
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={handleCopyLink}
+            className="bg-orange-500/80 hover:bg-orange-500 text-white border-orange-400"
+          >
+            {copied ? (
+              <>✓ Copiado</>
+            ) : (
+              <>
+                <Copy className="h-4 w-4 mr-1" />
+                Link
+              </>
+            )}
           </Button>
         </div>
-      )}
 
-      <CardHeader>
-        <CardTitle className="text-white">{product.name}</CardTitle>
-        <CardDescription>{product.short_description}</CardDescription>
+        {/* Badge da categoria */}
+        {product.category && (
+          <div className="absolute top-3 left-3">
+            <Badge 
+              className="text-xs font-medium"
+              style={{ 
+                backgroundColor: product.category.color + '20',
+                color: product.category.color,
+                borderColor: product.category.color + '40'
+              }}
+            >
+              {product.category.name}
+            </Badge>
+          </div>
+        )}
+
+        {/* Badge de destaque */}
+        {variant === 'featured' && (
+          <div className="absolute top-3 right-3">
+            <Badge className="bg-gradient-to-r from-orange-500 to-amber-500 text-white">
+              ⭐ Destaque
+            </Badge>
+          </div>
+        )}
+      </div>
+
+      <CardHeader className="pb-2">
+        <div className="flex items-start justify-between">
+          <h3 className="font-semibold text-white text-lg leading-tight line-clamp-2 group-hover:text-orange-400 transition-colors">
+            {product.name}
+          </h3>
+        </div>
       </CardHeader>
-      <CardContent className="flex-grow space-y-4">
-        <p className="text-sm text-slate-300 line-clamp-3">{product.description}</p>
-        <h4 className="font-semibold text-white">Ofertas Disponíveis:</h4>
-        <div className="space-y-2">
-          {product.offers && product.offers.length > 0 ? (
-            product.offers.map((offer) => (
-              <div key={offer.id} className="p-3 bg-slate-700/50 rounded-lg border border-slate-600 flex justify-between items-center">
-                <div>
-                  <p className="font-medium text-white">{offer.name}</p>
-                  <div className="text-xs text-slate-300">
-                    <span>Preço: <span className="text-green-400">R$ {offer.price.toFixed(2)}</span></span>
-                    <span className="mx-2">|</span>
-                    <span>Comissão: <span className="text-orange-400">{offer.commission_rate}%</span></span>
-                  </div>
-                </div>
-                <Button size="sm" onClick={() => handleCopyLink(getOfferLink(offer.id, offer.affiliate_link || ''))}>
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-            ))
-          ) : (
-            <div className="p-3 bg-slate-700/50 rounded-lg border border-slate-600 flex justify-between items-center">
-              <div>
-                <p className="font-medium text-white">Oferta Padrão</p>
-                <div className="text-xs text-slate-300">
-                  <span>Preço: <span className="text-green-400">R$ {product.default_offer_price?.toFixed(2) || 'N/A'}</span></span>
-                  <span className="mx-2">|</span>
-                  <span>Comissão: <span className="text-orange-400">{product.default_offer_commission_rate || 0}%</span></span>
-                </div>
-              </div>
-              <Button size="sm" onClick={() => handleCopyLink(product.default_offer_affiliate_link || '')}>
-                <Copy className="h-4 w-4" />
-              </Button>
+
+      <CardContent className="space-y-4">
+        {/* Descrição */}
+        <p className="text-slate-300 text-sm line-clamp-2 leading-relaxed">
+          {product.description}
+        </p>
+
+        {/* Tags */}
+        {product.tags && product.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {product.tags.slice(0, 3).map((tag, index) => (
+              <Badge 
+                key={index} 
+                variant="outline" 
+                className="text-xs bg-slate-800 text-slate-300 border-slate-600"
+              >
+                {tag}
+              </Badge>
+            ))}
+            {product.tags.length > 3 && (
+              <Badge variant="outline" className="text-xs bg-slate-800 text-slate-400 border-slate-600">
+                +{product.tags.length - 3}
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {/* Informações de preço e comissão */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-slate-800/50 rounded-lg p-3">
+            <div className="flex items-center gap-1 text-slate-400 mb-1">
+              <DollarSign className="h-3 w-3" />
+              <span className="text-xs font-medium">Preço</span>
             </div>
-          )}
+            <p className="text-white font-semibold">{formatPrice(product.price)}</p>
+          </div>
+
+          <div className="bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-lg p-3">
+            <div className="flex items-center gap-1 text-emerald-400 mb-1">
+              <Percent className="h-3 w-3" />
+              <span className="text-xs font-medium">Comissão</span>
+            </div>
+            <p className="text-emerald-400 font-semibold">
+              {formatPrice(product.commission_amount)}
+            </p>
+            <p className="text-emerald-300 text-xs">
+              {product.commission_rate.toFixed(1)}%
+            </p>
+          </div>
+        </div>
+
+        {/* Botões de ação */}
+        <div className="flex gap-2">
+          <Button
+            onClick={handleCopyLink}
+            className="flex-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white border-0"
+          >
+            {copied ? (
+              <>
+                <span className="mr-2">✓</span>
+                Copiado!
+              </>
+            ) : (
+              <>
+                <Copy className="h-4 w-4 mr-2" />
+                Pegar Link
+              </>
+            )}
+          </Button>
+
+          <Button
+            variant="outline"
+            size="default"
+            onClick={handleVisitProduct}
+            className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Button>
         </div>
       </CardContent>
     </Card>

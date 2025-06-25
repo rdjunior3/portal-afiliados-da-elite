@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, X, Image, DollarSign, Link, Tag, Upload, Loader2 } from 'lucide-react';
+import { Plus, X, Image, DollarSign, Link, Tag, Upload, Loader2, AlertTriangle } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 
 interface CreateProductModalProps {
@@ -35,10 +35,12 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     description: '',
     category_id: '',
     image_url: '',
-    sales_page_url: ''
+    affiliate_link: '', // Link de afiliação externo principal
+    price: 0,
+    commission_rate: 10, // Percentual padrão
+    commission_amount: 0 // Valor fixo opcional
   });
 
-  const [offers, setOffers] = useState<ProductOffer[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -96,34 +98,33 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     }
   }, [uploadedImageUrl]);
 
-  // Upload de imagem otimizado
+  // Calcular comissão automaticamente se não for valor fixo
+  useEffect(() => {
+    if (formData.price > 0 && formData.commission_rate > 0 && formData.commission_amount === 0) {
+      const calculatedCommission = (formData.price * formData.commission_rate) / 100;
+      setFormData(prev => ({ ...prev, commission_amount: parseFloat(calculatedCommission.toFixed(2)) }));
+    }
+  }, [formData.price, formData.commission_rate, formData.commission_amount]);
+
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     console.log('📸 [CreateProduct] Iniciando upload otimizado de:', file.name);
-
-    setImageFile(file);
     
-    // Criar preview local
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setImagePreview(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    // Upload usando hook otimizado
     try {
-      const imageUrl = await uploadImage(file);
-      if (imageUrl) {
-        console.log('✅ [CreateProduct] Upload concluído:', imageUrl);
-        toast({
-          title: "Imagem carregada! ✅",
-          description: "Agora você pode continuar com o cadastro do produto.",
-          variant: "default",
-        });
-      }
-    } catch (error: any) {
+      setImageFile(file);
+      
+      // Preview local
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Upload para Supabase
+      await uploadImage(file);
+    } catch (error) {
       console.error('❌ [CreateProduct] Erro no upload:', error);
       toast({
         title: "Erro no upload",
@@ -147,53 +148,84 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
       console.log('🚀 [CreateProduct] Iniciando criação de produto:', productData);
       console.log('✅ [CreateProduct] Validações passaram');
 
-      // Criar produto
-      const { data: product, error: productError } = await supabase
-        .from('products')
-        .insert([{
+      try {
+        console.log('🔧 [CreateProduct] Preparando dados para INSERT...');
+        
+        const insertData = {
           name: productData.name,
           description: productData.description,
           category_id: productData.category_id,
           image_url: productData.image_url,
-          sales_page_url: productData.sales_page_url,
+          affiliate_link: productData.affiliate_link,
+          price: productData.price,
+          commission_rate: productData.commission_rate,
+          commission_amount: productData.commission_amount,
           tags: productData.tags || [],
           is_active: true
-        }])
-        .select()
-        .single();
+        };
+        
+        console.log('📋 [CreateProduct] Dados preparados:', insertData);
+        console.log('🎯 [CreateProduct] Executando INSERT na tabela products...');
 
-      if (productError) {
-        console.error('❌ [CreateProduct] Erro ao criar produto:', productError);
-        throw productError;
-      }
+        // Criar produto
+        const { data: product, error: productError } = await supabase
+          .from('products')
+          .insert([insertData])
+          .select()
+          .single();
 
-      console.log('✅ [CreateProduct] Produto criado:', product);
+        console.log('🔍 [CreateProduct] Resultado do INSERT:', { product, error: productError });
 
-      // Criar ofertas associadas
-      if (productData.offers && productData.offers.length > 0) {
-        const offersData = productData.offers.map((offer: ProductOffer) => ({
-          product_id: product.id,
-          name: offer.name,
-          description: offer.description,
-          price: offer.price,
-          commission_rate: offer.commission_rate,
-          promotion_url: offer.promotion_url,
-          is_active: true
-        }));
-
-        const { error: offersError } = await supabase
-          .from('product_offers')
-          .insert(offersData);
-
-        if (offersError) {
-          console.error('❌ [CreateProduct] Erro ao criar ofertas:', offersError);
-          throw offersError;
+        if (productError) {
+          console.error('❌ [CreateProduct] Erro ao criar produto:', productError);
+          console.error('🔍 [CreateProduct] Detalhes do erro:', JSON.stringify(productError, null, 2));
+          throw productError;
         }
 
-        console.log('✅ [CreateProduct] Ofertas criadas');
-      }
+        if (!product) {
+          console.error('❌ [CreateProduct] Produto não foi retornado após INSERT');
+          throw new Error('Produto não foi criado corretamente');
+        }
 
-      return product;
+        console.log('✅ [CreateProduct] Produto criado com sucesso:', product);
+
+        // Criar ofertas associadas
+        if (productData.offers && productData.offers.length > 0) {
+          console.log('🏷️ [CreateProduct] Criando ofertas associadas...');
+          const offersData = productData.offers.map((offer: ProductOffer) => ({
+            product_id: product.id,
+            name: offer.name,
+            description: offer.description,
+            price: offer.price,
+            commission_rate: offer.commission_rate,
+            promotion_url: offer.promotion_url,
+            is_active: true
+          }));
+
+          console.log('📋 [CreateProduct] Dados das ofertas:', offersData);
+
+          const { error: offersError } = await supabase
+            .from('product_offers')
+            .insert(offersData);
+
+          if (offersError) {
+            console.error('❌ [CreateProduct] Erro ao criar ofertas:', offersError);
+            throw offersError;
+          }
+
+          console.log('✅ [CreateProduct] Ofertas criadas com sucesso');
+        } else {
+          console.log('ℹ️ [CreateProduct] Nenhuma oferta para criar');
+        }
+
+        console.log('🎉 [CreateProduct] Processo de criação concluído!');
+        return product;
+        
+      } catch (error) {
+        console.error('💥 [CreateProduct] Erro crítico durante criação:', error);
+        console.error('🔍 [CreateProduct] Stack trace:', error instanceof Error ? error.stack : 'N/A');
+        throw error;
+      }
     },
     onSuccess: () => {
       console.log('🎉 [CreateProduct] Produto criado com sucesso!');
@@ -256,10 +288,45 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
       return;
     }
 
+    if (!formData.affiliate_link.trim()) {
+      toast({
+        title: "Link de afiliação obrigatório",
+        description: "Por favor, informe o link de afiliação do produto.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.affiliate_link.startsWith('http://') && !formData.affiliate_link.startsWith('https://')) {
+      toast({
+        title: "Link inválido",
+        description: "O link de afiliação deve começar com http:// ou https://",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.price <= 0) {
+      toast({
+        title: "Preço obrigatório",
+        description: "Por favor, informe um preço válido para o produto.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.commission_rate < 0 || formData.commission_rate > 100) {
+      toast({
+        title: "Taxa de comissão inválida",
+        description: "A taxa de comissão deve estar entre 0% e 100%.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     createProductMutation.mutate({
       ...formData,
-      tags,
-      offers
+      tags
     });
   };
 
@@ -269,36 +336,16 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
       description: '',
       category_id: '',
       image_url: '',
-      sales_page_url: ''
+      affiliate_link: '',
+      price: 0,
+      commission_rate: 10,
+      commission_amount: 0
     });
-    setOffers([]);
     setTags([]);
     setNewTag('');
     setImageFile(null);
     setImagePreview('');
     resetUpload();
-  };
-
-  const addOffer = () => {
-    const newOffer: ProductOffer = {
-      id: `temp-${Date.now()}`,
-      name: '',
-      description: '',
-      price: 0,
-      commission_rate: 0,
-      promotion_url: ''
-    };
-    setOffers([...offers, newOffer]);
-  };
-
-  const updateOffer = (id: string, field: keyof ProductOffer, value: string | number) => {
-    setOffers(offers.map(offer => 
-      offer.id === id ? { ...offer, [field]: value } : offer
-    ));
-  };
-
-  const removeOffer = (id: string) => {
-    setOffers(offers.filter(offer => offer.id !== id));
   };
 
   const addTag = () => {
@@ -362,13 +409,14 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
               </div>
 
               <div>
-                <Label htmlFor="sales_page_url" className="text-slate-200">Link da Página de Vendas</Label>
+                <Label htmlFor="affiliate_link" className="text-slate-200">Link de Afiliação *</Label>
                 <Input
-                  id="sales_page_url"
-                  value={formData.sales_page_url}
-                  onChange={(e) => setFormData({...formData, sales_page_url: e.target.value})}
+                  id="affiliate_link"
+                  value={formData.affiliate_link}
+                  onChange={(e) => setFormData({...formData, affiliate_link: e.target.value})}
                   className="bg-slate-800 border-slate-600 text-white"
                   placeholder="https://exemplo.com/produto"
+                  required
                 />
               </div>
             </div>
@@ -422,6 +470,89 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
             />
           </div>
 
+          {/* Informações de Preço e Comissão */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="price" className="text-slate-200">Preço do Produto (R$) *</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.price}
+                onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value) || 0})}
+                className="bg-slate-800 border-slate-600 text-white"
+                placeholder="0.00"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="commission_rate" className="text-slate-200">Taxa de Comissão (%)</Label>
+              <Input
+                id="commission_rate"
+                type="number"
+                step="0.01"
+                min="0"
+                max="100"
+                value={formData.commission_rate}
+                onChange={(e) => setFormData({...formData, commission_rate: parseFloat(e.target.value) || 0})}
+                className="bg-slate-800 border-slate-600 text-white"
+                placeholder="10.00"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="commission_amount" className="text-slate-200">Valor da Comissão (R$)</Label>
+              <Input
+                id="commission_amount"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.commission_amount}
+                onChange={(e) => setFormData({...formData, commission_amount: parseFloat(e.target.value) || 0})}
+                className="bg-slate-800 border-slate-600 text-white"
+                placeholder="Calculado automaticamente"
+                disabled={formData.price > 0 && formData.commission_rate > 0}
+              />
+            </div>
+          </div>
+
+          {/* Preview da Comissão */}
+          {formData.price > 0 && formData.commission_rate > 0 && (
+            <div className="p-4 bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-lg border border-green-700">
+              <div className="flex items-center gap-2 text-green-400">
+                <DollarSign className="h-5 w-5" />
+                <span className="font-medium">
+                  Comissão por venda: R$ {formData.commission_amount.toFixed(2)} ({formData.commission_rate}% de R$ {formData.price.toFixed(2)})
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Validações do formulário */}
+          <div className="space-y-3">
+            {/* Validação do link de afiliação */}
+            {formData.affiliate_link && !formData.affiliate_link.startsWith('http') && (
+              <div className="p-3 bg-yellow-900/30 rounded border border-yellow-600">
+                <div className="flex items-center gap-2 text-yellow-400">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span className="text-sm">Link de afiliação deve começar com http:// ou https://</span>
+                </div>
+              </div>
+            )}
+
+            {/* Validação de preço */}
+            {formData.price <= 0 && (
+              <div className="p-3 bg-red-900/30 rounded border border-red-600">
+                <div className="flex items-center gap-2 text-red-400">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span className="text-sm">Preço deve ser maior que zero</span>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Tags */}
           <div>
             <Label className="text-slate-200">Tags do Produto</Label>
@@ -444,75 +575,6 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
               <Button type="button" onClick={addTag} variant="outline" className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
                 <Plus className="h-4 w-4" />
               </Button>
-            </div>
-          </div>
-
-          {/* Ofertas */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <Label className="text-slate-200">Ofertas do Produto</Label>
-              <Button type="button" onClick={addOffer} variant="outline" size="sm" className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Oferta
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              {offers.map((offer) => (
-                <div key={offer.id} className="p-4 bg-slate-800 rounded-lg border border-slate-600">
-                  <div className="flex justify-between items-start mb-3">
-                    <h4 className="text-slate-200 font-medium">Oferta #{offers.indexOf(offer) + 1}</h4>
-                    <Button type="button" onClick={() => removeOffer(offer.id)} variant="ghost" size="sm" className="text-red-400 hover:text-red-300 hover:bg-red-900/20">
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input
-                      value={offer.name}
-                      onChange={(e) => updateOffer(offer.id, 'name', e.target.value)}
-                      className="bg-slate-700 border-slate-600 text-white"
-                      placeholder="Nome da oferta"
-                    />
-                    <Input
-                      value={offer.promotion_url}
-                      onChange={(e) => updateOffer(offer.id, 'promotion_url', e.target.value)}
-                      className="bg-slate-700 border-slate-600 text-white"
-                      placeholder="URL da promoção"
-                    />
-                    <Input
-                      type="number"
-                      value={offer.price}
-                      onChange={(e) => updateOffer(offer.id, 'price', parseFloat(e.target.value) || 0)}
-                      className="bg-slate-700 border-slate-600 text-white"
-                      placeholder="Preço (R$)"
-                    />
-                    <Input
-                      type="number"
-                      value={offer.commission_rate}
-                      onChange={(e) => updateOffer(offer.id, 'commission_rate', parseFloat(e.target.value) || 0)}
-                      className="bg-slate-700 border-slate-600 text-white"
-                      placeholder="Comissão (%)"
-                    />
-                  </div>
-
-                  <Textarea
-                    value={offer.description}
-                    onChange={(e) => updateOffer(offer.id, 'description', e.target.value)}
-                    className="bg-slate-700 border-slate-600 text-white mt-3"
-                    placeholder="Descrição da oferta..."
-                    rows={2}
-                  />
-
-                  {offer.price > 0 && offer.commission_rate > 0 && (
-                    <div className="mt-3 p-2 bg-green-900/20 rounded border border-green-700">
-                      <span className="text-green-400 text-sm">
-                        💰 Comissão: R$ {calculateCommission(offer.price, offer.commission_rate)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))}
             </div>
           </div>
 

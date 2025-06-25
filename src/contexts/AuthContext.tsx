@@ -67,12 +67,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       console.log('🚀 [Auth] Iniciando verificação de sessão...');
 
-      // ⏰ TIMEOUT DE SEGURANÇA CRÍTICO
-      const emergencyTimeout = setTimeout(() => {
-        console.error('🚨 [Auth] TIMEOUT DE EMERGÊNCIA - Forçando loading = false');
-        setLoading(false);
-      }, 8000); // 8 segundos máximo
-
       // ✨ NOVA FUNCIONALIDADE: Detectar callback OAuth
       const urlParams = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -80,9 +74,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                               hashParams.has('access_token') || hashParams.has('refresh_token') ||
                               window.location.hash.includes('access_token') || 
                               window.location.hash.includes('refresh_token');
+
+      // ⏰ TIMEOUT DE SEGURANÇA CRÍTICO - AJUSTADO PARA OAUTH
+      const timeoutDuration = isOAuthCallback ? 15000 : 8000; // 15s para OAuth, 8s normal
+      const emergencyTimeout = setTimeout(() => {
+        console.error(`🚨 [Auth] TIMEOUT DE EMERGÊNCIA (${timeoutDuration/1000}s) - Forçando loading = false`);
+        if (isOAuthCallback) {
+          console.log('🔄 [Auth] OAuth callback timeout - Aguardando processamento adicional...');
+        }
+        setLoading(false);
+      }, timeoutDuration);
       
       if (isOAuthCallback) {
-        console.log('🔗 [Auth] Callback OAuth detectado!', {
+        console.log('🔗 [Auth] Callback OAuth detectado - Timeout estendido para 15s!', {
           url: window.location.href,
           search: window.location.search,
           hash: window.location.hash,
@@ -110,7 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.log('🧹 [Auth] Removendo tokens da URL por segurança...');
           const cleanUrl = window.location.origin + window.location.pathname;
           window.history.replaceState({}, document.title, cleanUrl);
-        }, 2000); // Aguarda 2 segundos para processamento
+        }, 3000); // Aguarda 3 segundos para processamento (aumentado de 2s)
       }
 
       try {

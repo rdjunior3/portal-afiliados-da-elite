@@ -22,49 +22,66 @@ import Dashboard from './pages/Dashboard';
 
 // 🔧 CORREÇÃO: Componente para callback OAuth com processamento real
 const OAuthCallback = () => {
-  
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [processed, setProcessed] = useState(false);
+  const [attempts, setAttempts] = useState(0);
   
   useEffect(() => {
     console.log('🔗 [OAuthCallback] Iniciando processamento do callback OAuth...', {
-    url: window.location.href,
-    search: window.location.search,
+      url: window.location.href,
+      search: window.location.search,
       hash: window.location.hash,
       hasUser: !!user,
-      isLoading: loading
+      isLoading: loading,
+      attempts
     });
     
     // Aguardar o AuthContext processar o callback
     const processCallback = async () => {
       if (processed) return;
       
+      // Dar mais tempo para processamento se ainda está loading
+      if (loading && attempts < 8) {
+        console.log(`🔄 [OAuthCallback] Ainda processando... tentativa ${attempts + 1}/8`);
+        setAttempts(prev => prev + 1);
+        return;
+      }
+      
       setProcessed(true);
       
-      // Aguardar um tempo para o Supabase processar o token
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Aguardar um tempo adicional para o Supabase processar o token
+      if (attempts <= 3) {
+        console.log('⏳ [OAuthCallback] Aguardando processamento adicional...');
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
       
       // Verificar se o usuário foi autenticado
       if (user && !loading) {
         console.log('✅ [OAuthCallback] Usuário autenticado, redirecionando para dashboard...');
         navigate('/dashboard', { replace: true });
-      } else if (!loading) {
-        console.log('❌ [OAuthCallback] Falha na autenticação, redirecionando para login...');
+      } else if (!loading && attempts >= 6) {
+        console.log('❌ [OAuthCallback] Falha na autenticação após múltiplas tentativas, redirecionando para login...');
         navigate('/login', { replace: true });
+      } else if (!loading) {
+        console.log('🔄 [OAuthCallback] Sem usuário mas loading finalizado, tentando novamente...');
+        setAttempts(prev => prev + 1);
+        setProcessed(false);
       }
     };
     
-    // Processar após um pequeno delay para dar tempo ao AuthContext
-    const timer = setTimeout(processCallback, 1000);
+    // Processar após um delay progressivo baseado nas tentativas
+    const delay = Math.min(1000 + (attempts * 500), 3000); // 1s a 3s
+    const timer = setTimeout(processCallback, delay);
     
     return () => clearTimeout(timer);
-  }, [user, loading, navigate, processed]);
+  }, [user, loading, navigate, processed, attempts]);
   
   // Se o usuário já está autenticado, redirecionar imediatamente
   useEffect(() => {
     if (user && !loading && !processed) {
       console.log('🚀 [OAuthCallback] Usuário já autenticado, redirecionamento imediato...');
+      setProcessed(true);
       navigate('/dashboard', { replace: true });
     }
   }, [user, loading, navigate, processed]);
@@ -74,7 +91,14 @@ const OAuthCallback = () => {
       <div className="text-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-400 mx-auto"></div>
         <h2 className="text-white text-xl mt-4">Processando login com Google...</h2>
-        <p className="text-slate-400 mt-2">Você será redirecionado em instantes.</p>
+        <p className="text-slate-400 mt-2">
+          {attempts > 0 ? `Tentativa ${attempts + 1}... Aguarde.` : 'Você será redirecionado em instantes.'}
+        </p>
+        {attempts > 4 && (
+          <p className="text-yellow-400 mt-2 text-sm">
+            ⏳ Processamento demorou mais que o esperado. Aguarde...
+          </p>
+        )}
       </div>
     </div>
   );
