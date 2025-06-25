@@ -35,7 +35,7 @@ import {
 import BrandIcon from '@/components/ui/BrandIcon';
 
 const DashboardLayout: React.FC = () => {
-  const { signOut, profile, user, isAdmin } = useAuth();
+  const { signOut, profile, user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -98,6 +98,12 @@ const DashboardLayout: React.FC = () => {
   ];
 
   const handleSignOut = async () => {
+    // 🛡️ PROTEÇÃO: Evitar cliques duplos durante o processo de logout
+    if (loading) {
+      console.log('🚫 [DashboardLayout] Logout já em andamento, ignorando clique duplo');
+      return;
+    }
+
     try {
       console.log('🚪 [DashboardLayout] Iniciando logout...');
       
@@ -471,10 +477,11 @@ const DashboardLayout: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={handleSignOut}
-                  className="w-full justify-start text-red-300 hover:text-red-200 hover:bg-red-500/20 transition-all duration-200 h-8 lg:h-9 text-xs lg:text-sm"
+              disabled={loading}
+                  className="w-full justify-start text-red-300 hover:text-red-200 hover:bg-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 h-8 lg:h-9 text-xs lg:text-sm"
             >
                   <LogOut className="h-3 w-3 lg:h-4 lg:w-4 mr-2 lg:mr-3" />
-                  Sair da Conta
+                  {loading ? 'Saindo...' : 'Sair da Conta'}
                 </Button>
               </>
             ) : (
@@ -492,8 +499,9 @@ const DashboardLayout: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   onClick={handleSignOut}
-                  className="w-full justify-center text-red-300 hover:text-red-200 hover:bg-red-500/20 transition-all duration-200 p-2 lg:p-3"
-                  title="Sair da Conta"
+                  disabled={loading}
+                  className="w-full justify-center text-red-300 hover:text-red-200 hover:bg-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 p-2 lg:p-3"
+                  title={loading ? "Saindo..." : "Sair da Conta"}
                 >
                   <LogOut className="h-3 w-3 lg:h-4 lg:w-4" />
             </Button>
@@ -635,8 +643,9 @@ const DashboardLayout: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
-                className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 h-8 w-8 p-0"
-                title="Sair"
+                disabled={loading}
+                className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 disabled:opacity-50 disabled:cursor-not-allowed h-8 w-8 p-0"
+                title={loading ? "Saindo..." : "Sair"}
               >
                 <LogOut className="h-5 w-5" />
               </Button>

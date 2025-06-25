@@ -258,8 +258,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         if (event === 'SIGNED_OUT') {
-          console.log('👋 [Auth] Usuário deslogado');
+          console.log('👋 [Auth] Usuário deslogado - processando evento SIGNED_OUT');
+          setUser(null);
+          setSession(null);
           setProfile(null);
+          setLoading(false);
+          console.log('✅ [Auth] Estados limpos após SIGNED_OUT');
         }
 
         if (event === 'TOKEN_REFRESHED') {
@@ -489,12 +493,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     console.log('👋 [signOut] Tentativa de logout...');
-    setLoading(true); // Inicia o carregamento para a transição
+    setLoading(true);
+    
+    // ⏰ TIMEOUT DE FALLBACK: Se o listener não resetar loading em 3 segundos, força reset
+    const fallbackTimeout = setTimeout(() => {
+      console.log('⚠️ [signOut] Timeout de fallback ativado - forçando limpeza de estados');
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setLoading(false);
+      navigate('/', { replace: true });
+    }, 3000);
+
     try {
+      console.log('🔄 [signOut] Executando supabase.auth.signOut()...');
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error('❌ [signOut] Erro:', error);
+        console.error('❌ [signOut] Erro no Supabase signOut:', error);
+        clearTimeout(fallbackTimeout); // Cancela timeout de fallback
+        setLoading(false);
         toast({
           title: "Erro ao sair",
           description: "Não foi possível fazer o logout. Tente novamente.",
@@ -503,14 +521,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error };
       }
       
-      // Limpeza manual imediata dos estados para garantir que a UI reaja
-      setUser(null);
-      setSession(null);
-      setProfile(null);
+      console.log('✅ [signOut] Supabase signOut executado com sucesso');
       
-      navigate('/', { replace: true }); // Redireciona para a página inicial
+      // 🚀 REDIRECIONAMENTO IMEDIATO: Não espera pelo listener
+      navigate('/', { replace: true });
+      console.log('🎯 [signOut] Redirecionamento efetuado');
       
-      console.log('✅ [signOut] Logout bem-sucedido e redirecionado.');
+      // ⏰ TIMEOUT REDUZIDO: Se listener não responder em 1.5s, força limpeza
+      setTimeout(() => {
+        if (loading) {
+          console.log('⚡ [signOut] Forçando limpeza após 1.5s - listener lento');
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+          setLoading(false);
+        }
+        clearTimeout(fallbackTimeout); // Limpa timeout de fallback
+      }, 1500);
+      
       toast({
         title: "Você saiu!",
         description: "Até a próxima!",
@@ -520,14 +548,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { error: null };
     } catch (error: any) {
       console.error('💥 [signOut] Erro inesperado:', error);
+      clearTimeout(fallbackTimeout); // Cancela timeout de fallback
+      setLoading(false);
       toast({
         title: "Erro Inesperado",
         description: "Ocorreu um erro ao tentar sair.",
         variant: "destructive",
       });
       return { error };
-    } finally {
-      setLoading(false);
     }
   };
 

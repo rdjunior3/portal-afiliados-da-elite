@@ -11,23 +11,47 @@ import { LoadingScreen } from '@/components/ui/loading';
  * Ele deve ser um filho do AuthProvider para usar o hook useAuth.
  */
 const AuthLoadingGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { loading } = useAuth();
+  const { loading, user } = useAuth();
   const [timeoutReached, setTimeoutReached] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Timeout de segurança para evitar loading infinito
+  // Detectar se é carregamento inicial ou logout
   useEffect(() => {
+    if (!loading && isInitialLoad) {
+      setIsInitialLoad(false);
+    }
+  }, [loading, isInitialLoad]);
+
+  // Timeout de segurança para evitar loading infinito - APENAS no carregamento inicial
+  useEffect(() => {
+    // ✅ OTIMIZAÇÃO: Não bloquear durante logout (quando user estava presente e agora loading=true)
+    const isLogoutProcess = !isInitialLoad && !user && loading;
+    
+    if (isLogoutProcess) {
+      console.log('🚪 [AuthLoadingGate] Processo de logout detectado - não bloqueando');
+      return; // Não criar timeout durante logout
+    }
+
     const timer = setTimeout(() => {
-      if (loading) {
+      if (loading && isInitialLoad) {
         console.warn('⚠️ [AuthLoadingGate] Timeout atingido, forçando carregamento');
         setTimeoutReached(true);
       }
-    }, 10000); // 10 segundos
+    }, 8000); // ⚡ REDUZIDO: 8 segundos em vez de 10
 
     return () => clearTimeout(timer);
-  }, [loading]);
+  }, [loading, isInitialLoad, user]);
 
-  // Se o timeout foi atingido, continuar independente do loading
-  if (loading && !timeoutReached) {
+  // ✅ OTIMIZAÇÃO: Se é processo de logout, não mostrar loading screen
+  const isLogoutProcess = !isInitialLoad && !user && loading;
+  
+  if (isLogoutProcess) {
+    console.log('🔄 [AuthLoadingGate] Logout em andamento - permitindo renderização');
+    return <>{children}</>;
+  }
+
+  // Se o timeout foi atingido OU não é carregamento inicial, continuar
+  if ((loading && !timeoutReached && isInitialLoad)) {
     return <LoadingScreen message="Carregando sessão..." />;
   }
 

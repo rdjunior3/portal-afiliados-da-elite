@@ -123,16 +123,34 @@ const ChatPage = () => {
   const { data: rooms = [], isLoading: isLoadingRooms, isError: isErrorRooms } = useQuery({
     queryKey: ['chat-rooms'],
     queryFn: async () => {
+      console.log('🔍 [ChatRooms] Iniciando busca de salas de chat...');
+      console.log('🔍 [ChatRooms] Usuário autenticado:', !!user);
+      console.log('🔍 [ChatRooms] Profile carregado:', !!profile);
+      console.log('🔍 [ChatRooms] User ID:', user?.id);
+      
       const { data, error } = await supabase
         .from('chat_rooms')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
       
+      console.log('🔍 [ChatRooms] Resultado da query:', { data, error });
+      console.log('🔍 [ChatRooms] Número de salas encontradas:', data?.length || 0);
+      
       if (error) {
-        console.error("Erro ao buscar salas de chat (provavelmente RLS):", error);
+        console.error("❌ [ChatRooms] Erro ao buscar salas de chat:", error);
+        console.error("❌ [ChatRooms] Código do erro:", error.code);
+        console.error("❌ [ChatRooms] Mensagem:", error.message);
+        console.error("❌ [ChatRooms] Detalhes completos:", JSON.stringify(error, null, 2));
         return []; // Retorna array vazio em caso de erro
       }
+      
+      if (data && data.length > 0) {
+        console.log('✅ [ChatRooms] Salas carregadas com sucesso:', data.map(room => ({ id: room.id, name: room.name })));
+      } else {
+        console.log('⚠️ [ChatRooms] Nenhuma sala encontrada no banco de dados');
+      }
+      
       return data as ChatRoom[];
     }
   });
@@ -233,9 +251,17 @@ const ChatPage = () => {
 
   // Automatically select "Comunidade da Elite" room or first room
   useEffect(() => {
+    console.log('🔄 [ChatRooms] useEffect triggered:', { 
+      roomsLength: rooms?.length || 0, 
+      hasSelectedRoom: !!selectedRoom,
+      rooms: rooms?.map(r => ({ id: r.id, name: r.name })) || []
+    });
+    
     if (rooms && rooms.length > 0 && !selectedRoom) {
       const eliteRoom = rooms.find(room => room.name === 'Comunidade da Elite');
-      setSelectedRoom(eliteRoom || rooms[0]);
+      const roomToSelect = eliteRoom || rooms[0];
+      console.log('🎯 [ChatRooms] Selecionando sala automaticamente:', roomToSelect?.name);
+      setSelectedRoom(roomToSelect);
     }
   }, [rooms, selectedRoom]);
 
@@ -400,60 +426,71 @@ const ChatPage = () => {
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
           {isLoadingRooms ? (
             <div className="space-y-2">
+              {console.log('🔄 [ChatRooms] Carregando salas...')}
               {[1, 2, 3].map((i) => (
                 <div key={i} className="animate-pulse bg-slate-700/50 h-16 rounded-lg"></div>
               ))}
             </div>
           ) : (
             <>
-              {Array.isArray(rooms) && rooms.map((room) => (
-                <button
-                  key={room.id}
-                  onClick={() => setSelectedRoom(room)}
-                  className={cn(
-                    "w-full p-4 text-left rounded-lg transition-all duration-200 group",
-                    selectedRoom?.id === room.id
-                      ? "bg-gradient-to-r from-orange-500/30 to-orange-600/20 border border-orange-400/30"
-                      : "bg-slate-700/30 hover:bg-slate-700/50 border border-transparent"
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center",
-                      room.name === 'Comunidade da Elite' 
-                        ? "bg-gradient-to-r from-orange-400 to-orange-500" 
-                        : "bg-slate-600"
-                    )}>
-                      {room.name === 'Comunidade da Elite' ? (
-                        <Crown className="h-5 w-5 text-white" />
-                      ) : (
-                        <Hash className="h-5 w-5 text-slate-300" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className={cn(
-                          "font-semibold truncate",
-                          selectedRoom?.id === room.id ? "text-white" : "text-slate-200"
-                        )}>
-                          {room.name}
-                        </h3>
-                        {room.name === 'Comunidade da Elite' && (
-                          <Sparkles className="h-4 w-4 text-orange-400" />
+
+              {Array.isArray(rooms) && rooms.length > 0 ? (
+                rooms.map((room) => (
+                  <button
+                    key={room.id}
+                    onClick={() => setSelectedRoom(room)}
+                    className={cn(
+                      "w-full p-4 text-left rounded-lg transition-all duration-200 group",
+                      selectedRoom?.id === room.id
+                        ? "bg-gradient-to-r from-orange-500/30 to-orange-600/20 border border-orange-400/30"
+                        : "bg-slate-700/30 hover:bg-slate-700/50 border border-transparent"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center",
+                        room.name === 'Comunidade da Elite' 
+                          ? "bg-gradient-to-r from-orange-400 to-orange-500" 
+                          : "bg-slate-600"
+                      )}>
+                        {room.name === 'Comunidade da Elite' ? (
+                          <Crown className="h-5 w-5 text-white" />
+                        ) : (
+                          <Hash className="h-5 w-5 text-slate-300" />
                         )}
                       </div>
-                      {room.description && (
-                        <p className={cn(
-                          "text-sm truncate",
-                          selectedRoom?.id === room.id ? "text-orange-200" : "text-slate-400"
-                        )}>
-                          {room.description}
-                        </p>
-                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className={cn(
+                            "font-semibold truncate",
+                            selectedRoom?.id === room.id ? "text-white" : "text-slate-200"
+                          )}>
+                            {room.name}
+                          </h3>
+                          {room.name === 'Comunidade da Elite' && (
+                            <Sparkles className="h-4 w-4 text-orange-400" />
+                          )}
+                        </div>
+                        {room.description && (
+                          <p className={cn(
+                            "text-sm truncate",
+                            selectedRoom?.id === room.id ? "text-orange-200" : "text-slate-400"
+                          )}>
+                            {room.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <MessageSquare className="h-12 w-12 mx-auto text-slate-500 mb-4" />
+                  <p className="text-slate-400 text-sm">
+                    {isErrorRooms ? 'Erro ao carregar salas' : 'Nenhuma sala disponível'}
+                  </p>
+                </div>
+              )}
             </>
           )}
         </div>

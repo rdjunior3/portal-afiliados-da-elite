@@ -157,28 +157,52 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
           category_id: productData.category_id,
           image_url: productData.image_url,
           affiliate_link: productData.affiliate_link,
+          sales_page_url: productData.affiliate_link,
           price: productData.price,
           commission_rate: productData.commission_rate,
           commission_amount: productData.commission_amount,
           tags: productData.tags || [],
-          is_active: true
+          is_active: true,
+          slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+          currency: 'BRL'
         };
         
         console.log('📋 [CreateProduct] Dados preparados:', insertData);
+        console.log('🔍 [CreateProduct] Verificando se todos campos obrigatórios estão presentes...');
+        
+        // Log detalhado dos campos
+        Object.entries(insertData).forEach(([key, value]) => {
+          console.log(`   ${key}:`, typeof value, value);
+        });
+        
         console.log('🎯 [CreateProduct] Executando INSERT na tabela products...');
 
-        // Criar produto
-        const { data: product, error: productError } = await supabase
+        // Criar produto com timeout
+        const insertPromise = supabase
           .from('products')
           .insert([insertData])
           .select()
           .single();
 
+        console.log('⏰ [CreateProduct] Aguardando resposta do INSERT...');
+        
+        // Timeout de 10 segundos para detectar se está travando
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Timeout: INSERT demorou mais de 10 segundos')), 10000);
+        });
+
+        const { data: product, error: productError } = await Promise.race([
+          insertPromise,
+          timeoutPromise
+        ]) as any;
+
         console.log('🔍 [CreateProduct] Resultado do INSERT:', { product, error: productError });
 
         if (productError) {
           console.error('❌ [CreateProduct] Erro ao criar produto:', productError);
-          console.error('🔍 [CreateProduct] Detalhes do erro:', JSON.stringify(productError, null, 2));
+          console.error('🔍 [CreateProduct] Código do erro:', productError.code);
+          console.error('🔍 [CreateProduct] Mensagem:', productError.message);
+          console.error('🔍 [CreateProduct] Detalhes completos:', JSON.stringify(productError, null, 2));
           throw productError;
         }
 

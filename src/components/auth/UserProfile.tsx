@@ -32,6 +32,11 @@ export const UserProfile: React.FC = () => {
   if (!user) return null;
 
   const handleSignOut = async () => {
+    if (loading) {
+      console.log('🚫 [UserProfile] Logout já em andamento, ignorando clique duplo');
+      return;
+    }
+
     try {
       console.log('🚪 [UserProfile] Iniciando logout...');
     const { error } = await signOut();
@@ -239,11 +244,12 @@ export const UserProfile: React.FC = () => {
         <DropdownMenuSeparator className="bg-slate-700/50" />
         
         <DropdownMenuItem 
-          className="cursor-pointer hover:bg-red-500/10 focus:bg-red-500/10 text-red-400"
+          className="cursor-pointer hover:bg-red-500/10 focus:bg-red-500/10 text-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleSignOut}
+          disabled={loading}
         >
           <LogOut className="mr-2 h-4 w-4" />
-          <span>Sair</span>
+          <span>{loading ? 'Saindo...' : 'Sair'}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
