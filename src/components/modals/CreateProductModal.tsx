@@ -9,8 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, X, Image, DollarSign, Link, Tag, Upload } from 'lucide-react';
-import { createProductImagesBucket } from '@/utils/testSupabase';
+import { Plus, X, Image, DollarSign, Link, Tag, Upload, Loader2 } from 'lucide-react';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 interface CreateProductModalProps {
   isOpen: boolean;
@@ -43,8 +43,19 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
   const [newTag, setNewTag] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [testingConnection, setTestingConnection] = useState(false);
+
+  // Hook de upload otimizado
+  const {
+    uploadImage,
+    uploading: uploadingImage,
+    imageUrl: uploadedImageUrl,
+    uploadProgress,
+    resetUpload
+  } = useImageUpload({
+    bucket: 'product-images',
+    folder: 'products',
+    maxSizeInMB: 10
+  });
 
   // Buscar categorias
   const { data: categories } = useQuery({
@@ -78,202 +89,76 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     }
   }, [formData.name]);
 
-  // Removido teste automático que estava causando travamento
-  // useEffect(() => {
-  //   if (isOpen) {
-  //     handleTestConnection();
-  //   }
-  // }, [isOpen]);
-
-  const handleTestConnection = async () => {
-    setTestingConnection(true);
-    console.log('🔧 [Modal] Verificação rápida de bucket...');
-    
-    try {
-      // Verificação rápida apenas do bucket (sem teste completo)
-      const bucketCreated = await createProductImagesBucket();
-      
-      if (bucketCreated) {
-        console.log('✅ [Modal] Bucket product-images encontrado!');
-        toast({
-          title: "✅ Sistema Pronto",
-          description: "Bucket de imagens está configurado corretamente.",
-          variant: "default",
-        });
-      } else {
-        console.warn('⚠️ [Modal] Bucket não encontrado');
-        toast({
-          title: "⚠️ Bucket Não Encontrado",
-          description: "Execute o script FIX_BUCKET_AGORA.sql no Supabase Dashboard.",
-          variant: "destructive",
-        });
-      }
-      
-    } catch (error: any) {
-      console.error('💥 [Modal] Erro na verificação:', error.message);
-      toast({
-        title: "💥 Erro na Verificação",
-        description: `Erro: ${error.message}`,
-        variant: "destructive",
-      });
-    } finally {
-      console.log('🏁 [Modal] Verificação finalizada');
-      setTestingConnection(false);
+  // Atualizar URL da imagem quando upload concluir
+  useEffect(() => {
+    if (uploadedImageUrl) {
+      setFormData(prev => ({ ...prev, image_url: uploadedImageUrl }));
     }
-  };
+  }, [uploadedImageUrl]);
 
-  // Upload de imagem
+  // Upload de imagem otimizado
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validar tipo de arquivo
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Erro no arquivo",
-        description: "Por favor, selecione apenas arquivos de imagem.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validar tamanho (máximo 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "Arquivo muito grande",
-        description: "A imagem deve ter no máximo 5MB.",
-        variant: "destructive",
-      });
-      return;
-    }
+    console.log('📸 [CreateProduct] Iniciando upload otimizado de:', file.name);
 
     setImageFile(file);
     
-    // Criar preview
+    // Criar preview local
     const reader = new FileReader();
     reader.onload = (e) => {
       setImagePreview(e.target?.result as string);
     };
     reader.readAsDataURL(file);
-  };
 
-  // Upload para Supabase Storage
-  const uploadImageToSupabase = async (file: File): Promise<string> => {
-    setUploadingImage(true);
-    console.log('📸 [UploadImage] Iniciando upload:', { 
-      fileName: file.name, 
-      fileSize: file.size, 
-      fileType: file.type 
-    });
-    
+    // Upload usando hook otimizado
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `product-${Date.now()}.${fileExt}`;
-      
-      console.log('📸 [UploadImage] Nome do arquivo:', fileName);
-      console.log('📸 [UploadImage] Tentando upload para bucket product-images...');
-      
-      // Timeout de 30 segundos para o upload
-      const uploadPromise = supabase.storage
-        .from('product-images')
-        .upload(fileName, file);
-        
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout: Upload demorou mais de 30 segundos')), 30000);
-      });
-      
-      const { error: uploadError } = await Promise.race([uploadPromise, timeoutPromise]) as any;
-
-      if (uploadError) {
-        console.error('❌ [UploadImage] Erro no upload:', uploadError);
-        
-        // Verificar se é erro de bucket não encontrado
-        if (uploadError.message?.includes('bucket') || uploadError.message?.includes('not found')) {
-          throw new Error(`BUCKET NÃO ENCONTRADO! Execute o script FIX_BUCKET_AGORA.sql no Supabase Dashboard: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/sql`);
-        }
-        
-        throw new Error(`Erro no upload: ${uploadError.message}`);
+      const imageUrl = await uploadImage(file);
+      if (imageUrl) {
+        console.log('✅ [CreateProduct] Upload concluído:', imageUrl);
+        toast({
+          title: "Imagem carregada! ✅",
+          description: "Agora você pode continuar com o cadastro do produto.",
+          variant: "default",
+        });
       }
-
-      console.log('✅ [UploadImage] Upload concluído, obtendo URL pública...');
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(fileName);
-
-      console.log('🔗 [UploadImage] URL pública:', publicUrl);
-
-      if (!publicUrl) {
-        throw new Error('Não foi possível obter a URL pública da imagem');
-      }
-
-      return publicUrl;
     } catch (error: any) {
-      console.error('💥 [UploadImage] Erro geral:', error);
-      throw error;
-    } finally {
-      setUploadingImage(false);
+      console.error('❌ [CreateProduct] Erro no upload:', error);
+      toast({
+        title: "Erro no upload",
+        description: "Não foi possível fazer upload da imagem. Tente novamente.",
+        variant: "destructive",
+      });
     }
   };
 
   // Mutation para criar produto
   const createProductMutation = useMutation({
-    mutationFn: async (productData: typeof formData & { offers: ProductOffer[], tags: string[] }) => {
-      console.log('🚀 [CreateProduct] Iniciando criação de produto:', { 
-        name: productData.name, 
-        hasImageFile: !!imageFile,
-        offersCount: productData.offers.length,
-        tagsCount: productData.tags.length 
-      });
+    mutationFn: async (productData: any) => {
+      console.log('✅ [CreateProduct] Iniciando criação com validação OK');
+      console.log('📊 [CreateProduct] Dados:', productData);
 
-      // Validações
-      if (!productData.name.trim()) throw new Error('Nome do produto é obrigatório');
-      if (!productData.category_id) throw new Error('Categoria é obrigatória');
-      if (!productData.description.trim()) throw new Error('Descrição é obrigatória');
-      if (!productData.sales_page_url.trim()) throw new Error('Link para afiliação é obrigatório');
-      if (productData.offers.length === 0) throw new Error('Pelo menos uma oferta é obrigatória');
-
-      console.log('✅ [CreateProduct] Validações passaram');
-
-      // Upload da imagem se houver
-      let finalImageUrl = productData.image_url;
-      if (imageFile) {
-        console.log('📸 [CreateProduct] Fazendo upload da imagem...');
-        try {
-          finalImageUrl = await uploadImageToSupabase(imageFile);
-          console.log('✅ [CreateProduct] Upload da imagem concluído:', finalImageUrl);
-        } catch (error) {
-          console.error('❌ [CreateProduct] Erro no upload da imagem:', error);
-          throw new Error(`Erro no upload da imagem: ${error.message}`);
-        }
+      // Verificar se tem imagem
+      if (!productData.image_url) {
+        throw new Error('Imagem é obrigatória para criar um produto');
       }
 
-      // Usar tags já geradas automaticamente
-      const allTags = [...new Set(productData.tags)];
-      console.log('🏷️ [CreateProduct] Tags finais:', allTags);
+      console.log('🚀 [CreateProduct] Iniciando criação de produto:', productData);
+      console.log('✅ [CreateProduct] Validações passaram');
 
       // Criar produto
-      console.log('📦 [CreateProduct] Criando produto na tabela products...');
-      const productToInsert = {
-        name: productData.name.trim(),
-        description: productData.description.trim(),
-        category_id: productData.category_id,
-        image_url: finalImageUrl || null,
-        sales_page_url: productData.sales_page_url.trim(),
-        price: productData.offers[0]?.price || 0,
-        commission_rate: productData.offers[0]?.commission_rate || 10,
-        commission_amount: (productData.offers[0]?.price || 0) * ((productData.offers[0]?.commission_rate || 10) / 100),
-        is_active: true,
-        is_featured: false,
-        total_sales: 0,
-        status: 'active'
-      };
-
-      console.log('📦 [CreateProduct] Dados do produto:', productToInsert);
-
       const { data: product, error: productError } = await supabase
         .from('products')
-        .insert([productToInsert])
+        .insert([{
+          name: productData.name,
+          description: productData.description,
+          category_id: productData.category_id,
+          image_url: productData.image_url,
+          sales_page_url: productData.sales_page_url,
+          tags: productData.tags || [],
+          is_active: true
+        }])
         .select()
         .single();
 
@@ -282,25 +167,19 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
         throw productError;
       }
 
-      console.log('✅ [CreateProduct] Produto criado com sucesso:', product.id);
+      console.log('✅ [CreateProduct] Produto criado:', product);
 
-      // Criar ofertas
-      if (productData.offers.length > 0) {
-        console.log('💰 [CreateProduct] Criando ofertas...');
-        const offersData = productData.offers.map((offer, index) => ({
+      // Criar ofertas associadas
+      if (productData.offers && productData.offers.length > 0) {
+        const offersData = productData.offers.map((offer: ProductOffer) => ({
           product_id: product.id,
           name: offer.name,
           description: offer.description,
           price: offer.price,
           commission_rate: offer.commission_rate,
-          commission_amount: offer.price * (offer.commission_rate / 100),
           promotion_url: offer.promotion_url,
-          is_default: index === 0,
-          is_active: true,
-          sort_order: index
+          is_active: true
         }));
-
-        console.log('💰 [CreateProduct] Dados das ofertas:', offersData);
 
         const { error: offersError } = await supabase
           .from('product_offers')
@@ -311,22 +190,24 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
           throw offersError;
         }
 
-        console.log('✅ [CreateProduct] Ofertas criadas com sucesso');
+        console.log('✅ [CreateProduct] Ofertas criadas');
       }
 
-      console.log('🎉 [CreateProduct] Processo completo!');
       return product;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
+      console.log('🎉 [CreateProduct] Produto criado com sucesso!');
       toast({
-        title: "Produto criado com sucesso! 🎉",
-        description: "O produto foi adicionado à vitrine com todas as ofertas.",
+        title: "Produto criado! 🎉",
+        description: "O produto foi adicionado ao catálogo com sucesso.",
       });
-      onClose();
+      
+      queryClient.invalidateQueries({ queryKey: ['products'] });
       resetForm();
+      onClose();
     },
     onError: (error: any) => {
+      console.error('❌ [CreateProduct] Erro na criação:', error);
       toast({
         title: "Erro ao criar produto",
         description: error.message || "Não foi possível criar o produto. Tente novamente.",
@@ -334,6 +215,53 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
       });
     }
   });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validações básicas
+    if (!formData.name.trim()) {
+      toast({
+        title: "Nome obrigatório",
+        description: "Por favor, informe o nome do produto.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.description.trim()) {
+      toast({
+        title: "Descrição obrigatória",
+        description: "Por favor, informe a descrição do produto.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.category_id) {
+      toast({
+        title: "Categoria obrigatória",
+        description: "Por favor, selecione uma categoria.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.image_url) {
+      toast({
+        title: "Imagem obrigatória",
+        description: "Por favor, faça upload de uma imagem do produto.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createProductMutation.mutate({
+      ...formData,
+      tags,
+      offers
+    });
+  };
 
   const resetForm = () => {
     setFormData({
@@ -348,15 +276,16 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     setNewTag('');
     setImageFile(null);
     setImagePreview('');
+    resetUpload();
   };
 
   const addOffer = () => {
     const newOffer: ProductOffer = {
-      id: Date.now().toString(),
+      id: `temp-${Date.now()}`,
       name: '',
       description: '',
       price: 0,
-      commission_rate: 10,
+      commission_rate: 0,
       promotion_url: ''
     };
     setOffers([...offers, newOffer]);
@@ -373,8 +302,8 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
   };
 
   const addTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()]);
+    if (newTag.trim() && !tags.includes(newTag.trim().toLowerCase())) {
+      setTags([...tags, newTag.trim().toLowerCase()]);
       setNewTag('');
     }
   };
@@ -384,318 +313,232 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
   };
 
   const calculateCommission = (price: number, rate: number) => {
-    return (price * (rate / 100)).toFixed(2);
+    return (price * rate / 100).toFixed(2);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700" aria-describedby="create-product-description">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 to-slate-800 border-slate-600 text-white">
         <DialogHeader>
-          <DialogTitle className="text-orange-400 flex items-center gap-2">
-            <Plus className="w-5 h-5" />
-            Cadastrar Novo Produto
-            {testingConnection && (
-              <div className="flex items-center gap-2 text-xs text-blue-400">
-                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-400"></div>
-                Verificando conexão...
-              </div>
-            )}
+          <DialogTitle className="text-2xl font-bold text-cyan-400 flex items-center gap-2">
+            <Plus className="h-6 w-6" />
+            Criar Novo Produto Elite
           </DialogTitle>
-          <DialogDescription id="create-product-description" className="text-slate-300">
-            Formulário para criar um novo produto de afiliação com nome, descrição, imagem e ofertas
+          <DialogDescription className="text-slate-300">
+            Adicione um novo produto ao catálogo da Elite com informações detalhadas e ofertas.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Informações básicas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-slate-200">Nome do Produto *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Ex: Curso de Marketing Digital"
-                className="bg-slate-800 border-slate-700 text-slate-100"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="category" className="text-slate-200">Categoria *</Label>
-              <Select value={formData.category_id} onValueChange={(value) => setFormData({ ...formData, category_id: value })}>
-                <SelectTrigger className="bg-slate-800 border-slate-700 text-slate-100">
-                  <SelectValue placeholder="Selecione uma categoria" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  {categories?.map(category => (
-                    <SelectItem key={category.id} value={category.id} className="text-slate-100">
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Upload de Imagem */}
-          <div className="space-y-2">
-            <Label className="text-slate-200 flex items-center gap-2">
-              <Image className="w-4 h-4" />
-              Imagem do Produto (Ideal: 500x500px) *
-            </Label>
-            <div className="flex gap-4">
-              <div className="flex-1">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Informações Básicas */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name" className="text-slate-200">Nome do Produto *</Label>
                 <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="bg-slate-800 border-slate-700 text-slate-100"
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  className="bg-slate-800 border-slate-600 text-white"
+                  placeholder="Ex: Curso de Marketing Digital Elite"
+                  required
                 />
-                <p className="text-xs text-slate-400 mt-1">
-                  Formatos aceitos: JPG, PNG, GIF (máx. 5MB)
-                </p>
               </div>
-              {imagePreview && (
-                <div className="w-20 h-20 border border-slate-700 rounded-lg overflow-hidden">
-                  <img 
-                    src={imagePreview} 
-                    alt="Preview" 
-                    className="w-full h-full object-cover"
+
+              <div>
+                <Label htmlFor="category" className="text-slate-200">Categoria *</Label>
+                <Select value={formData.category_id} onValueChange={(value) => setFormData({...formData, category_id: value})}>
+                  <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                    <SelectValue placeholder="Selecione uma categoria" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-600">
+                    {categories?.map((category) => (
+                      <SelectItem key={category.id} value={category.id} className="text-white hover:bg-slate-700">
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="sales_page_url" className="text-slate-200">Link da Página de Vendas</Label>
+                <Input
+                  id="sales_page_url"
+                  value={formData.sales_page_url}
+                  onChange={(e) => setFormData({...formData, sales_page_url: e.target.value})}
+                  className="bg-slate-800 border-slate-600 text-white"
+                  placeholder="https://exemplo.com/produto"
+                />
+              </div>
+            </div>
+
+            {/* Upload de Imagem */}
+            <div className="space-y-4">
+              <div>
+                <Label className="text-slate-200">Imagem do Produto *</Label>
+                <div className="mt-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-upload"
                   />
+                  <label
+                    htmlFor="image-upload"
+                    className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-slate-600 rounded-lg cursor-pointer bg-slate-800 hover:bg-slate-700 transition-colors"
+                  >
+                    {uploadingImage ? (
+                      <div className="flex flex-col items-center space-y-2">
+                        <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+                        <span className="text-sm text-slate-300">Fazendo upload... {uploadProgress}%</span>
+                      </div>
+                    ) : imagePreview ? (
+                      <img src={imagePreview} alt="Preview" className="h-full w-full object-cover rounded-lg" />
+                    ) : (
+                      <div className="flex flex-col items-center space-y-2">
+                        <Upload className="h-10 w-10 text-slate-400" />
+                        <span className="text-sm text-slate-300">Clique para fazer upload</span>
+                        <span className="text-xs text-slate-400">PNG, JPG, WEBP até 10MB</span>
+                      </div>
+                    )}
+                  </label>
                 </div>
-              )}
-            </div>
-            {!imageFile && (
-              <div className="space-y-2">
-                <Label className="text-slate-300">Ou insira URL da imagem:</Label>
-                <Input
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  placeholder="https://exemplo.com/imagem.jpg"
-                  className="bg-slate-800 border-slate-700 text-slate-100"
-                />
               </div>
-            )}
+            </div>
           </div>
 
           {/* Descrição */}
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-slate-200">Descrição *</Label>
+          <div>
+            <Label htmlFor="description" className="text-slate-200">Descrição do Produto *</Label>
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Descreva o produto detalhadamente..."
-              className="bg-slate-800 border-slate-700 h-24 text-slate-100"
-            />
-          </div>
-
-          {/* Link para afiliação */}
-          <div className="space-y-2">
-            <Label htmlFor="sales_page_url" className="text-slate-200 flex items-center gap-2">
-              <Link className="w-4 h-4" />
-              Link para Afiliação *
-            </Label>
-            <Input
-              id="sales_page_url"
-              value={formData.sales_page_url}
-              onChange={(e) => setFormData({ ...formData, sales_page_url: e.target.value })}
-              placeholder="URL da página de vendas na plataforma terceira"
-              className="bg-slate-800 border-slate-700 text-slate-100"
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              className="bg-slate-800 border-slate-600 text-white min-h-[100px]"
+              placeholder="Descreva detalhadamente o produto, seus benefícios e características..."
+              required
             />
           </div>
 
           {/* Tags */}
-          <div className="space-y-2">
-            <Label className="text-slate-200 flex items-center gap-2">
-              <Tag className="w-4 h-4" />
-              Tags de Filtro (Geradas automaticamente do nome + Manuais)
-            </Label>
+          <div>
+            <Label className="text-slate-200">Tags do Produto</Label>
+            <div className="flex flex-wrap gap-2 mt-2 mb-3">
+              {tags.map((tag, index) => (
+                <Badge key={index} variant="secondary" className="bg-cyan-900 text-cyan-200 hover:bg-cyan-800">
+                  {tag}
+                  <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeTag(tag)} />
+                </Badge>
+              ))}
+            </div>
             <div className="flex gap-2">
               <Input
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
-                placeholder="Adicionar tag personalizada"
-                className="bg-slate-800 border-slate-700 text-slate-100"
-                onKeyPress={(e) => e.key === 'Enter' && addTag()}
+                className="bg-slate-800 border-slate-600 text-white"
+                placeholder="Adicionar tag..."
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
               />
-              <Button type="button" onClick={addTag} size="sm" className="bg-orange-600 hover:bg-orange-700">
-                Adicionar
+              <Button type="button" onClick={addTag} variant="outline" className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
+                <Plus className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag, index) => (
-                <Badge key={`${tag}-${index}`} variant="secondary" className="bg-slate-700 text-slate-200">
-                  {tag}
-                  <button onClick={() => removeTag(tag)} className="ml-1 text-red-400 hover:text-red-300">
-                    <X className="w-3 h-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-            {tags.length === 0 && formData.name && (
-              <p className="text-xs text-slate-400">
-                As tags serão geradas automaticamente quando você digitar o nome do produto
-              </p>
-            )}
           </div>
 
-          {/* Ofertas do produto */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-slate-300 flex items-center gap-2">
-                <DollarSign className="w-4 h-4" />
-                Ofertas do Produto *
-              </Label>
-              <Button type="button" onClick={addOffer} size="sm" className="bg-green-600 hover:bg-green-700">
-                <Plus className="w-4 h-4 mr-2" />
+          {/* Ofertas */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <Label className="text-slate-200">Ofertas do Produto</Label>
+              <Button type="button" onClick={addOffer} variant="outline" size="sm" className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
+                <Plus className="h-4 w-4 mr-2" />
                 Adicionar Oferta
               </Button>
             </div>
 
-            {offers.map((offer, index) => (
-              <div key={offer.id} className="border border-slate-700 rounded-lg p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium text-slate-300">Oferta {index + 1}</h4>
-                  {offers.length > 1 && (
-                    <Button
-                      type="button"
-                      onClick={() => removeOffer(offer.id)}
-                      size="sm"
-                      variant="destructive"
-                    >
-                      <X className="w-4 h-4" />
+            <div className="space-y-4">
+              {offers.map((offer) => (
+                <div key={offer.id} className="p-4 bg-slate-800 rounded-lg border border-slate-600">
+                  <div className="flex justify-between items-start mb-3">
+                    <h4 className="text-slate-200 font-medium">Oferta #{offers.indexOf(offer) + 1}</h4>
+                    <Button type="button" onClick={() => removeOffer(offer.id)} variant="ghost" size="sm" className="text-red-400 hover:text-red-300 hover:bg-red-900/20">
+                      <X className="h-4 w-4" />
                     </Button>
-                  )}
-                </div>
+                  </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Input
-                    value={offer.name}
-                    onChange={(e) => updateOffer(offer.id, 'name', e.target.value)}
-                    placeholder="Nome da oferta"
-                    className="bg-slate-800 border-slate-700"
-                  />
-                  <Input
-                    value={offer.description}
-                    onChange={(e) => updateOffer(offer.id, 'description', e.target.value)}
-                    placeholder="Descrição da oferta"
-                    className="bg-slate-800 border-slate-700"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-slate-400">Preço (R$)</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input
+                      value={offer.name}
+                      onChange={(e) => updateOffer(offer.id, 'name', e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white"
+                      placeholder="Nome da oferta"
+                    />
+                    <Input
+                      value={offer.promotion_url}
+                      onChange={(e) => updateOffer(offer.id, 'promotion_url', e.target.value)}
+                      className="bg-slate-700 border-slate-600 text-white"
+                      placeholder="URL da promoção"
+                    />
                     <Input
                       type="number"
                       value={offer.price}
                       onChange={(e) => updateOffer(offer.id, 'price', parseFloat(e.target.value) || 0)}
-                      placeholder="0.00"
-                      className="bg-slate-800 border-slate-700"
+                      className="bg-slate-700 border-slate-600 text-white"
+                      placeholder="Preço (R$)"
                     />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-slate-400">Comissão (%)</Label>
                     <Input
                       type="number"
                       value={offer.commission_rate}
                       onChange={(e) => updateOffer(offer.id, 'commission_rate', parseFloat(e.target.value) || 0)}
-                      placeholder="10"
-                      className="bg-slate-800 border-slate-700"
+                      className="bg-slate-700 border-slate-600 text-white"
+                      placeholder="Comissão (%)"
                     />
                   </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-slate-400">Afiliado recebe</Label>
-                    <div className="bg-green-900/50 border border-green-700 rounded px-3 py-2 text-green-300 text-sm font-medium">
-                      R$ {calculateCommission(offer.price, offer.commission_rate)}
+
+                  <Textarea
+                    value={offer.description}
+                    onChange={(e) => updateOffer(offer.id, 'description', e.target.value)}
+                    className="bg-slate-700 border-slate-600 text-white mt-3"
+                    placeholder="Descrição da oferta..."
+                    rows={2}
+                  />
+
+                  {offer.price > 0 && offer.commission_rate > 0 && (
+                    <div className="mt-3 p-2 bg-green-900/20 rounded border border-green-700">
+                      <span className="text-green-400 text-sm">
+                        💰 Comissão: R$ {calculateCommission(offer.price, offer.commission_rate)}
+                      </span>
                     </div>
-                  </div>
+                  )}
                 </div>
-
-                <Input
-                  value={offer.promotion_url}
-                  onChange={(e) => updateOffer(offer.id, 'promotion_url', e.target.value)}
-                  placeholder="URL específica desta oferta (opcional)"
-                  className="bg-slate-800 border-slate-700"
-                />
-              </div>
-            ))}
-
-            {offers.length === 0 && (
-              <div className="text-center py-8 text-slate-400">
-                <DollarSign className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p>Nenhuma oferta adicionada</p>
-                <p className="text-sm">Clique em "Adicionar Oferta" para começar</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <DialogFooter>
-          <div className="flex justify-between items-center w-full">
-            <Button 
-              variant="outline" 
-              onClick={handleTestConnection}
-              disabled={testingConnection}
-              className="border-slate-700 text-slate-300"
-              size="sm"
-            >
-              {testingConnection ? 'Testando...' : '🔧 Testar Conexão'}
-            </Button>
-            
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={onClose} className="border-slate-700">
-                Cancelar
-              </Button>
-              <Button 
-                onClick={() => {
-                  // 🛡️ Prevenir múltiplos cliques
-                  if (createProductMutation.isPending || uploadingImage) {
-                    console.warn('⚠️ [CreateProduct] Operação já em andamento, ignorando clique');
-                    return;
-                  }
-                  
-                  // 🛡️ Validação crítica: verificar se há ofertas
-                  if (offers.length === 0) {
-                    toast({
-                      title: "❌ Oferta obrigatória",
-                      description: "Adicione pelo menos uma oferta antes de criar o produto.",
-                      variant: "destructive",
-                    });
-                    return;
-                  }
-                  
-                  // 🛡️ Validação de campos obrigatórios
-                  if (!formData.name || !formData.description || !formData.sales_page_url) {
-                    toast({
-                      title: "❌ Campos obrigatórios",
-                      description: "Preencha todos os campos obrigatórios (*)",
-                      variant: "destructive",
-                    });
-                    return;
-                  }
-                  
-                  console.log('✅ [CreateProduct] Iniciando criação com validação OK');
-                  console.log('📊 [CreateProduct] Dados:', { 
-                    nome: formData.name, 
-                    offersCount: offers.length,
-                    tagsCount: tags.length 
-                  });
-                  
-                  createProductMutation.mutate({ ...formData, offers, tags });
-                }}
-                disabled={createProductMutation.isPending || uploadingImage}
-                className="bg-orange-600 hover:bg-orange-700"
-              >
-                {createProductMutation.isPending 
-                  ? (uploadingImage ? 'Enviando imagem...' : 'Criando...') 
-                  : 'Criar Produto'
-                }
-              </Button>
+              ))}
             </div>
           </div>
-        </DialogFooter>
+
+          <DialogFooter className="flex justify-between pt-6">
+            <Button type="button" onClick={onClose} variant="outline" className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
+              Cancelar
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={createProductMutation.isPending || uploadingImage || !formData.image_url}
+              className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white"
+            >
+              {createProductMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Criando...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Produto
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

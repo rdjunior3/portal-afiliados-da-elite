@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase, supabaseWithTimeout, withRetry } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface ImageUploadOptions {
@@ -18,82 +18,75 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
   const validateImage = (file: File): Promise<boolean> => {
     return new Promise((resolve) => {
-      console.log('🔍 [validateImage] Iniciando validação de:', file.name);
+      console.log('🔍 [validateImage] Validando:', file.name, `(${(file.size / 1024 / 1024).toFixed(1)}MB)`);
       
-      // Validar tipo de arquivo primeiro
+      // Validar tipo de arquivo
       if (!file.type.startsWith('image/')) {
-        console.error('❌ [validateImage] Tipo de arquivo inválido:', file.type);
+        console.error('❌ [validateImage] Tipo inválido:', file.type);
         toast({
           title: "Arquivo inválido",
-          description: "Por favor, selecione apenas arquivos de imagem (PNG, JPG, JPEG, WEBP)",
+          description: "Selecione apenas arquivos de imagem (PNG, JPG, JPEG, WEBP)",
           variant: "destructive",
         });
         resolve(false);
         return;
       }
 
-      // Validar tamanho do arquivo
-      const maxSize = (options.maxSizeInMB || 5) * 1024 * 1024;
+      // Validar tamanho
+      const maxSize = (options.maxSizeInMB || 10) * 1024 * 1024;
       if (file.size > maxSize) {
-        console.error('❌ [validateImage] Arquivo muito grande:', file.size, 'bytes');
+        console.error('❌ [validateImage] Arquivo muito grande:', file.size);
         toast({
           title: "Arquivo muito grande",
-          description: `O arquivo deve ter no máximo ${options.maxSizeInMB || 5}MB`,
+          description: `O arquivo deve ter no máximo ${options.maxSizeInMB || 10}MB`,
           variant: "destructive",
         });
         resolve(false);
         return;
       }
 
-      console.log('⏳ [validateImage] Validando dimensões da imagem...');
-
-      // Validar dimensões da imagem
+      console.log('✅ [validateImage] Validação básica OK');
+      
+      // Validação rápida de dimensões (opcional, não bloqueia upload)
       const img = new Image();
       const url = URL.createObjectURL(file);
       
-      // TIMEOUT AUMENTADO para validação - 20 segundos
-      const timeoutId = setTimeout(() => {
-        console.error('⏰ [validateImage] Timeout na validação (20s)');
+      const cleanup = () => {
         URL.revokeObjectURL(url);
-        toast({
-          title: "Timeout na validação",
-          description: "A validação da imagem demorou muito. Tente uma imagem menor ou verifique sua conexão.",
-          variant: "destructive",
-        });
-        resolve(false);
-      }, 20000); // Aumentado para 20 segundos
+      };
+
+      // Timeout curto para validação de dimensões (5s)
+      const timeoutId = setTimeout(() => {
+        console.warn('⏰ [validateImage] Timeout na validação de dimensões, mas permitindo upload');
+        cleanup();
+        resolve(true); // Permite upload mesmo com timeout
+      }, 5000);
 
       img.onload = () => {
         clearTimeout(timeoutId);
-        console.log('✅ [validateImage] Imagem carregada:', img.width, 'x', img.height);
-        URL.revokeObjectURL(url);
+        console.log('✅ [validateImage] Dimensões:', img.width, 'x', img.height);
+        cleanup();
         
-        const maxWidth = options.maxWidth || 2000;
-        const maxHeight = options.maxHeight || 2000;
+        const maxWidth = options.maxWidth || 4000;
+        const maxHeight = options.maxHeight || 4000;
         
         if (img.width > maxWidth || img.height > maxHeight) {
-          console.warn('⚠️ [validateImage] Imagem grande detectada');
+          console.warn('⚠️ [validateImage] Imagem muito grande, mas permitindo upload');
           toast({
             title: "Imagem grande detectada",
-            description: `Recomendamos imagens até ${options.maxWidth || 500}x${options.maxHeight || 500}px para melhor performance. A imagem será otimizada automaticamente.`,
+            description: "A imagem será otimizada automaticamente para melhor performance.",
             variant: "default",
           });
         }
 
-        console.log('✅ [validateImage] Validação concluída com sucesso');
         resolve(true);
       };
 
       img.onerror = () => {
         clearTimeout(timeoutId);
-        console.error('❌ [validateImage] Erro ao carregar imagem');
-        URL.revokeObjectURL(url);
-        toast({
-          title: "Arquivo inválido",
-          description: "O arquivo selecionado não é uma imagem válida ou está corrompido",
-          variant: "destructive",
-        });
-        resolve(false);
+        console.warn('⚠️ [validateImage] Erro ao carregar preview, mas permitindo upload');
+        cleanup();
+        resolve(true); // Permite upload mesmo com erro no preview
       };
 
       img.src = url;
@@ -103,11 +96,6 @@ export const useImageUpload = (options: ImageUploadOptions) => {
   const uploadImage = async (file: File): Promise<string | null> => {
     if (uploading) {
       console.warn('⚠️ [uploadImage] Upload já em andamento');
-      toast({
-        title: "Upload em andamento",
-        description: "Aguarde o upload atual terminar antes de enviar outra imagem.",
-        variant: "default",
-      });
       return null;
     }
 
@@ -115,7 +103,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       console.error('❌ [uploadImage] Bucket não configurado');
       toast({
         title: "Erro de configuração",
-        description: "Bucket de storage não configurado. Entre em contato com o administrador.",
+        description: "Bucket de storage não configurado.",
         variant: "destructive",
       });
       return null;
@@ -123,20 +111,16 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
     try {
       setUploading(true);
-      setUploadProgress(0);
+      setUploadProgress(10);
 
-      console.log('🚀 [uploadImage] Iniciando upload com timeout estendido:', {
+      console.log('🚀 [uploadImage] UPLOAD OTIMIZADO INICIADO:', {
         fileName: file.name,
-        fileSize: file.size,
+        fileSize: `${(file.size / 1024 / 1024).toFixed(1)}MB`,
         fileType: file.type,
-        bucket: options.bucket,
-        folder: options.folder
+        bucket: options.bucket
       });
 
-      // Validar imagem
-      console.log('🔍 [uploadImage] Validando imagem...');
-      setUploadProgress(10);
-      
+      // Validação rápida
       const isValid = await validateImage(file);
       if (!isValid) {
         console.error('❌ [uploadImage] Validação falhou');
@@ -144,79 +128,79 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       }
 
       setUploadProgress(25);
-      console.log('⚡ [uploadImage] UPLOAD COM TIMEOUT ESTENDIDO');
 
-      // Gerar nome único para o arquivo
+      // Gerar nome único e direto
       const timestamp = Date.now();
-      const random = Math.random().toString(36).substring(7);
+      const random = Math.random().toString(36).substring(2, 8);
       const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${timestamp}-${random}.${fileExt}`;
       const filePath = options.folder ? `${options.folder}/${fileName}` : fileName;
 
-      console.log(`📤 [Enhanced Upload] Enviando para: ${options.bucket}/${filePath}`);
+      console.log(`📤 [uploadImage] Enviando para: ${options.bucket}/${filePath}`);
       setUploadProgress(50);
 
-      // UPLOAD OTIMIZADO - sem retry excessivo para evitar loops
-      setUploadProgress(75);
-      const response = await supabase.storage
+      // UPLOAD DIRETO E OTIMIZADO
+      console.log('⚡ [uploadImage] Executando upload direto...');
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from(options.bucket)
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
         });
 
-      if (response.error) {
-        console.error('❌ [uploadImage] Erro detalhado do upload:', response.error);
+      if (uploadError) {
+        console.error('❌ [uploadImage] Erro no upload:', uploadError);
         
-        if (response.error.message?.includes('The resource was not found') || 
-            response.error.message?.includes('Bucket not found')) {
-          throw new Error(`Bucket '${options.bucket}' não configurado. Entre em contato com o administrador para configurar o upload de ${options.bucket === 'products' ? 'produtos' : 'imagens'}.`);
+        if (uploadError.message?.includes('Bucket not found') || 
+            uploadError.message?.includes('The resource was not found')) {
+          throw new Error(`Bucket '${options.bucket}' não encontrado. Execute o script SOLUCAO_UPLOAD_STORAGE_URGENTE.sql`);
         }
         
-        throw response.error;
+        if (uploadError.message?.includes('permission') || 
+            uploadError.message?.includes('policy')) {
+          throw new Error('Sem permissão para upload. Execute o script SOLUCAO_UPLOAD_STORAGE_URGENTE.sql para corrigir as políticas.');
+        }
+        
+        throw new Error(`Erro no upload: ${uploadError.message}`);
       }
 
-      console.log('✅ [uploadImage] Upload realizado com sucesso:', response.data);
-      setUploadProgress(95);
+      console.log('✅ [uploadImage] Upload realizado:', uploadData);
+      setUploadProgress(85);
 
       // Obter URL pública
-      const { data } = supabase.storage
+      const { data: urlData } = supabase.storage
         .from(options.bucket)
         .getPublicUrl(filePath);
 
-      const publicUrl = data.publicUrl;
-      console.log('🔗 [uploadImage] URL pública gerada:', publicUrl);
+      const publicUrl = urlData.publicUrl;
+      console.log('🔗 [uploadImage] URL pública:', publicUrl);
       
       setImageUrl(publicUrl);
       setUploadProgress(100);
 
       toast({
-        title: "Upload realizado! ✅",
-        description: "Imagem carregada com sucesso",
+        title: "Upload concluído! ✅",
+        description: `Imagem ${file.name} carregada com sucesso`,
       });
 
       return publicUrl;
+
     } catch (error: any) {
-      console.error('💥 [uploadImage] Erro completo no upload:', error);
+      console.error('💥 [uploadImage] Erro no upload:', error);
       
-      let errorMessage = "Não foi possível fazer o upload da imagem";
+      let errorMessage = "Erro inesperado no upload";
       
       if (error.message?.includes('Bucket not found')) {
-        errorMessage = `Bucket '${options.bucket}' não encontrado. Verifique as configurações do Supabase Storage.`;
-      } else if (error.message?.includes('The resource was not found')) {
-        errorMessage = `Serviço de storage não configurado para ${options.bucket}. Verifique as configurações do projeto Supabase.`;
-      } else if (error.message?.includes('JWT') || error.message?.includes('authentication')) {
-        errorMessage = "Erro de autenticação. Faça login novamente.";
-      } else if (error.message?.includes('permission') || error.message?.includes('unauthorized')) {
-        errorMessage = `Sem permissão para upload em ${options.bucket}. Verifique as políticas de storage.`;
+        errorMessage = `Bucket '${options.bucket}' não encontrado. Execute o script SOLUCAO_UPLOAD_STORAGE_URGENTE.sql`;
+      } else if (error.message?.includes('permission') || error.message?.includes('policy')) {
+        errorMessage = "Sem permissão para upload. Execute o script de correção de políticas.";
+      } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
+        errorMessage = "Erro de conexão. Verifique sua internet e tente novamente.";
       } else if (error.message?.includes('size') || error.message?.includes('large')) {
         errorMessage = "Arquivo muito grande para upload.";
       } else if (error.message?.includes('timeout')) {
-        errorMessage = "Upload demorou muito. Sua conexão pode estar lenta. Tente uma imagem menor ou verifique sua internet.";
-      } else if (error.message?.includes('network') || error.message?.includes('fetch')) {
-        errorMessage = "Erro de conexão. Verifique sua internet e tente novamente.";
-      } else if (error.message?.includes('mime') || error.message?.includes('type')) {
-        errorMessage = "Tipo de arquivo não permitido. Use apenas imagens PNG, JPG ou WEBP.";
+        errorMessage = "Upload demorou muito. Tente uma imagem menor.";
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -235,7 +219,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
   };
 
   const resetUpload = () => {
-    console.log('🔄 [resetUpload] Resetando estado do upload');
+    console.log('🔄 [resetUpload] Resetando estado');
     setImageUrl('');
     setUploadProgress(0);
   };
