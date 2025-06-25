@@ -57,6 +57,8 @@ CREATE POLICY "products_emergency_public_read" ON products
 -- 7. GARANTIR CAMPOS OBRIGATÓRIOS EXISTEM
 DO $$
 BEGIN
+    RAISE NOTICE '🔧 Verificando e ajustando estrutura da tabela products...';
+    
     -- Verificar e adicionar campos se necessário
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'image_url') THEN
         ALTER TABLE products ADD COLUMN image_url TEXT;
@@ -78,9 +80,26 @@ BEGIN
         ALTER TABLE products ADD COLUMN tags TEXT[] DEFAULT '{}';
     END IF;
     
+    -- Verificar campo slug
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'slug') THEN
+        RAISE NOTICE '➕ Adicionando campo slug...';
         ALTER TABLE products ADD COLUMN slug TEXT;
     END IF;
+    
+    -- Garantir que todos produtos tenham slug
+    UPDATE products SET slug = LOWER(REPLACE(REPLACE(REPLACE(name, ' ', '-'), '.', ''), '/', '-')) WHERE slug IS NULL OR slug = '';
+    
+    -- Verificar se slug já é NOT NULL, se não for, tornar NOT NULL
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'products' AND column_name = 'slug' AND is_nullable = 'YES'
+    ) THEN
+        RAISE NOTICE '🔧 Configurando slug como NOT NULL...';
+        ALTER TABLE products ALTER COLUMN slug SET NOT NULL;
+    END IF;
+    
+    -- Adicionar índice único se não existir
+    CREATE UNIQUE INDEX IF NOT EXISTS products_slug_unique ON products(slug);
     
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'products' AND column_name = 'currency') THEN
         ALTER TABLE products ADD COLUMN currency TEXT DEFAULT 'BRL';
@@ -105,6 +124,7 @@ BEGIN
         -- Tentar INSERT de teste
         INSERT INTO products (
             name, 
+            slug,
             description, 
             price, 
             commission_rate, 
@@ -115,6 +135,7 @@ BEGIN
         )
         VALUES (
             'TESTE RLS - DELETAR', 
+            'teste-rls-deletar',
             'Produto de teste para verificar se RLS está funcionando', 
             99.99, 
             50.0, 

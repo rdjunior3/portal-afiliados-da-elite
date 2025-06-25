@@ -156,12 +156,15 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
           description: productData.description,
           category_id: productData.category_id,
           image_url: productData.image_url,
+          affiliate_link: productData.affiliate_link,
           sales_page_url: productData.affiliate_link,
           price: productData.price,
           commission_rate: productData.commission_rate,
           commission_amount: productData.commission_amount,
+          tags: productData.tags || [],
           is_active: true,
-          slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+          slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+          currency: 'BRL'
         };
         
         console.log('📋 [CreateProduct] Dados preparados:', insertData);

@@ -161,7 +161,8 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
           commission_rate: productData.commission_rate,
           commission_amount: productData.commission_amount,
           is_active: true,
-          slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+          slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+          currency: 'BRL'
         };
         
         console.log('📋 [CreateProduct] Dados preparados:', insertData);
