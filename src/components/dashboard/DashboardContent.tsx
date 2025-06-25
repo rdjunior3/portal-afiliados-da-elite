@@ -17,7 +17,7 @@ import {
   TrendingDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import EliteTipsEditor from '@/components/EliteTipsEditor';
+import { EliteTipsEditor } from '@/components/business';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { User } from '@supabase/supabase-js';

@@ -1,6 +1,6 @@
 import { createBrowserRouter, Navigate, useNavigate } from 'react-router-dom';
 import { lazy, Suspense, useEffect, useState } from 'react';
-import ProtectedRoute from './components/ProtectedRoute';
+import { ProtectedRoute } from './components/guards';
 import DashboardLayout from './layouts/DashboardLayout';
 import { Loading } from '@/components/ui/loading';
 import App from './App';

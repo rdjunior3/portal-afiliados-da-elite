@@ -8,7 +8,7 @@ import { Search, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { ProductCard } from '@/components/ProductCard';
+import { ProductCard } from '@/components/business';
 import CreateProductModal from '@/components/modals/CreateProductModal';
 import TrophyIcon from '@/components/ui/TrophyIcon';
 import {
