@@ -249,7 +249,7 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Products Section */}
+          {/* Products Section */}
         <div className="lg:col-span-2">
           <Card className="bg-slate-900/60 border-slate-700/50 backdrop-blur-sm hover:border-slate-600/50 transition-all duration-500">
             <CardHeader>
@@ -291,7 +291,7 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
                           alt={product.name} 
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
                         />
-                      </div>
+                          </div>
                       <h3 className="text-xl font-bold text-white mb-3 group-hover:text-cyan-400 transition-colors duration-300">
                         {product.name}
                       </h3>
@@ -339,7 +339,7 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
                 <h3 className="text-2xl font-bold text-white mb-2">{getDisplayName()}</h3>
                 <Badge className="bg-gradient-to-r from-yellow-400/20 to-orange-400/20 text-yellow-300 border-yellow-400/30 mb-4 px-4 py-1 text-sm">
                   🏆 Membro Elite
-                </Badge>
+                  </Badge>
                 <p className="text-sm text-slate-400">
                   Membro desde {new Date(user.created_at || '').toLocaleDateString('pt-BR')}
                 </p>
@@ -352,8 +352,8 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
             <CardHeader>
               <CardTitle className="text-xl text-white flex items-center gap-3">
                 <Zap className="h-6 w-6 text-orange-400" />
-                Dicas Elite
-              </CardTitle>
+                  Dicas Elite
+                </CardTitle>
             </CardHeader>
             <CardContent>
               {tipsLoading ? (

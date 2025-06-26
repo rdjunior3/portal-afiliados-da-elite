@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, X, Image, DollarSign, Link, Tag, Upload, Loader2, AlertTriangle } from 'lucide-react';
+import { Plus, X, Image, DollarSign, Link, Tag, Upload, Loader2, AlertTriangle, Edit } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import CreateCategoryModal from './CreateCategoryModal';
 import ProductOffersManager from '@/components/product/ProductOffersManager';
@@ -41,6 +41,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
   const [imagePreview, setImagePreview] = useState<string>('');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [offers, setOffers] = useState<ProductOffer[]>([]);
+  const [showOffersManager, setShowOffersManager] = useState(false);
 
   // Hook de upload otimizado
   const {
@@ -356,6 +357,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     setImageFile(null);
     setImagePreview('');
     setOffers([]);
+    setShowOffersManager(false);
     resetUpload();
   };
 
@@ -382,105 +384,114 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-slate-900 to-slate-800 border-slate-600 text-white">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-cyan-400 flex items-center gap-2">
-            <Plus className="h-6 w-6" />
+      <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto bg-gradient-to-br from-slate-900/98 via-slate-800/98 to-slate-900/98 border border-slate-600/50 text-white backdrop-blur-md shadow-2xl">
+        <DialogHeader className="border-b border-slate-700/50 pb-6">
+          <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center">
+              <Plus className="h-6 w-6 text-white" />
+            </div>
             Cadastrar Novo Produto
           </DialogTitle>
-          <DialogDescription className="text-slate-300">
-            Adicione um novo produto para ser promovido pelos afiliados.
+          <DialogDescription className="text-slate-400 text-lg mt-2">
+            Configure seu produto com informações detalhadas e ofertas personalizadas para maximizar suas vendas.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Informações Básicas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name" className="text-slate-200">Nome do Produto *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="bg-slate-800 border-slate-600 text-white"
-                  placeholder="Ex: Curso de Marketing Digital"
-                  required
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label htmlFor="category" className="text-slate-200">Categoria *</Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowCategoryModal(true)}
-                    className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-600 hover:text-white"
-                  >
-                    <Plus className="h-3 w-3 mr-1" />
-                    Nova
-                  </Button>
-                </div>
-                <Select value={formData.category_id} onValueChange={(value) => setFormData({...formData, category_id: value})}>
-                  <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                    <SelectValue placeholder="Selecione uma categoria" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-600">
-                    {categories?.map((category) => (
-                      <SelectItem key={category.id} value={category.id} className="text-white hover:bg-slate-700">
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="affiliate_link" className="text-slate-200">Link de Afiliação *</Label>
-                <Input
-                  id="affiliate_link"
-                  value={formData.affiliate_link}
-                  onChange={(e) => setFormData({...formData, affiliate_link: e.target.value})}
-                  className="bg-slate-800 border-slate-600 text-white"
-                  placeholder="https://exemplo.com/produto"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Upload de Imagem */}
-            <div className="space-y-4">
-              <div>
-                <Label className="text-slate-200">Imagem do Produto *</Label>
-                <div className="mt-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    id="image-upload"
+        <form onSubmit={handleSubmit} className="space-y-8 pt-6">
+          {/* Informações Básicas com design elegante */}
+          <div className="bg-gradient-to-r from-slate-800/30 to-slate-700/30 rounded-2xl p-6 border border-slate-600/30">
+            <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+              <div className="w-2 h-6 bg-gradient-to-b from-orange-500 to-orange-600 rounded-full"></div>
+              Informações Básicas
+            </h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="name" className="text-slate-200">Nome do Produto *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="bg-slate-800 border-slate-600 text-white"
+                    placeholder="Ex: Curso de Marketing Digital"
+                    required
                   />
-                  <label
-                    htmlFor="image-upload"
-                    className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-slate-600 rounded-lg cursor-pointer bg-slate-800 hover:bg-slate-700 transition-colors"
-                  >
-                    {uploadingImage ? (
-                      <div className="flex flex-col items-center space-y-2">
-                        <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
-                        <span className="text-sm text-slate-300">Fazendo upload... {uploadProgress}%</span>
-                      </div>
-                    ) : imagePreview ? (
-                      <img src={imagePreview} alt="Preview" className="h-full w-full object-cover rounded-lg" />
-                    ) : (
-                      <div className="flex flex-col items-center space-y-2">
-                        <Upload className="h-10 w-10 text-slate-400" />
-                        <span className="text-sm text-slate-300">Clique para fazer upload</span>
-                        <span className="text-xs text-slate-400">PNG, JPG, WEBP até 10MB</span>
-                      </div>
-                    )}
-                  </label>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label htmlFor="category" className="text-slate-200">Categoria *</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowCategoryModal(true)}
+                      className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-600 hover:text-white"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Nova
+                    </Button>
+                  </div>
+                  <Select value={formData.category_id} onValueChange={(value) => setFormData({...formData, category_id: value})}>
+                    <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                      <SelectValue placeholder="Selecione uma categoria" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-600">
+                      {categories?.map((category) => (
+                        <SelectItem key={category.id} value={category.id} className="text-white hover:bg-slate-700">
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="affiliate_link" className="text-slate-200">Link de Afiliação *</Label>
+                  <Input
+                    id="affiliate_link"
+                    value={formData.affiliate_link}
+                    onChange={(e) => setFormData({...formData, affiliate_link: e.target.value})}
+                    className="bg-slate-800 border-slate-600 text-white"
+                    placeholder="https://exemplo.com/produto"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Upload de Imagem */}
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-slate-200">Imagem do Produto *</Label>
+                  <div className="mt-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <label
+                      htmlFor="image-upload"
+                      className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-slate-600 rounded-lg cursor-pointer bg-slate-800 hover:bg-slate-700 transition-colors"
+                    >
+                      {uploadingImage ? (
+                        <div className="flex flex-col items-center space-y-2">
+                          <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+                          <span className="text-sm text-slate-300">Fazendo upload... {uploadProgress}%</span>
+                        </div>
+                      ) : imagePreview ? (
+                        <img src={imagePreview} alt="Preview" className="h-full w-full object-cover rounded-lg" />
+                      ) : (
+                        <div className="flex flex-col items-center space-y-2">
+                          <Upload className="h-10 w-10 text-slate-400" />
+                          <span className="text-sm text-slate-300">Clique para fazer upload</span>
+                          <span className="text-xs text-slate-400">PNG, JPG, WEBP até 10MB</span>
+                        </div>
+                      )}
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -499,51 +510,69 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
             />
           </div>
 
-          {/* Informações de Preço e Comissão */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="price" className="text-slate-200">Preço do Produto (R$) *</Label>
-              <Input
-                id="price"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.price}
-                onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value) || 0})}
-                className="bg-slate-800 border-slate-600 text-white"
-                placeholder="0.00"
-                required
-              />
+          {/* Oferta Principal */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-slate-200 text-lg font-semibold">Oferta Principal</Label>
+              <Button
+                type="button"
+                onClick={() => setShowOffersManager(true)}
+                variant="outline"
+                size="sm"
+                className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-orange-500/50"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Ofertas
+              </Button>
             </div>
+            
+            <div className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 rounded-xl p-6 border border-slate-600/50">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="price" className="text-slate-200">Preço (R$) *</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.price}
+                    onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value) || 0})}
+                    className="bg-slate-800 border-slate-600 text-white"
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
 
-            <div>
-              <Label htmlFor="commission_rate" className="text-slate-200">Taxa de Comissão (%)</Label>
-              <Input
-                id="commission_rate"
-                type="number"
-                step="0.01"
-                min="0"
-                max="100"
-                value={formData.commission_rate}
-                onChange={(e) => setFormData({...formData, commission_rate: parseFloat(e.target.value) || 0})}
-                className="bg-slate-800 border-slate-600 text-white"
-                placeholder="10.00"
-              />
-            </div>
+                <div>
+                  <Label htmlFor="commission_rate" className="text-slate-200">Taxa de Comissão (%)</Label>
+                  <Input
+                    id="commission_rate"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="100"
+                    value={formData.commission_rate}
+                    onChange={(e) => setFormData({...formData, commission_rate: parseFloat(e.target.value) || 0})}
+                    className="bg-slate-800 border-slate-600 text-white"
+                    placeholder="10.00"
+                  />
+                </div>
 
-            <div>
-              <Label htmlFor="commission_amount" className="text-slate-200">Valor da Comissão (R$)</Label>
-              <Input
-                id="commission_amount"
-                type="number"
-                step="0.01"
-                min="0"
-                value={formData.commission_amount}
-                onChange={(e) => setFormData({...formData, commission_amount: parseFloat(e.target.value) || 0})}
-                className="bg-slate-800 border-slate-600 text-white"
-                placeholder="Calculado automaticamente"
-                readOnly={formData.price > 0 && formData.commission_rate > 0}
-              />
+                <div>
+                  <Label htmlFor="commission_amount" className="text-slate-200">Valor da Comissão (R$)</Label>
+                  <Input
+                    id="commission_amount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.commission_amount}
+                    onChange={(e) => setFormData({...formData, commission_amount: parseFloat(e.target.value) || 0})}
+                    className="bg-slate-800 border-slate-600 text-white"
+                    placeholder="Calculado automaticamente"
+                    readOnly={formData.price > 0 && formData.commission_rate > 0}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -607,15 +636,52 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
             </div>
           </div>
 
-          {/* Seção de Ofertas */}
-          <div className="space-y-4">
-            <div className="border-t border-slate-600 pt-6">
-              <ProductOffersManager
-                offers={offers}
-                onChange={setOffers}
-              />
+          {/* Seção de Ofertas Condicional */}
+          {showOffersManager && (
+            <div className="space-y-4">
+              <div className="border-t border-slate-600 pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-white">Ofertas Adicionais</h3>
+                  <Button
+                    type="button"
+                    onClick={() => setShowOffersManager(false)}
+                    variant="outline"
+                    size="sm"
+                    className="bg-red-600/20 border-red-500/50 text-red-400 hover:bg-red-600/30"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Fechar
+                  </Button>
+                </div>
+                <ProductOffersManager
+                  offers={offers}
+                  onChange={setOffers}
+                />
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Resumo das Ofertas */}
+          {offers.length > 0 && !showOffersManager && (
+            <div className="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 rounded-xl p-4 border border-blue-500/30">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-semibold text-blue-300">Ofertas Adicionais Configuradas</h4>
+                <Button
+                  type="button"
+                  onClick={() => setShowOffersManager(true)}
+                  variant="outline"
+                  size="sm"
+                  className="bg-blue-600/20 border-blue-500/50 text-blue-400 hover:bg-blue-600/30"
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  Editar
+                </Button>
+              </div>
+              <p className="text-sm text-slate-400">
+                {offers.length} {offers.length === 1 ? 'oferta adicional configurada' : 'ofertas adicionais configuradas'}
+              </p>
+            </div>
+          )}
 
           <DialogFooter className="flex justify-between pt-6">
             <Button type="button" onClick={onClose} variant="outline" className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
