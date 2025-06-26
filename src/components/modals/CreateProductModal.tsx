@@ -12,19 +12,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Plus, X, Image, DollarSign, Link, Tag, Upload, Loader2, AlertTriangle } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import CreateCategoryModal from './CreateCategoryModal';
+import ProductOffersManager from '@/components/product/ProductOffersManager';
+import { ProductOffer } from '@/types/product-offers.types';
 
 interface CreateProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-}
-
-interface ProductOffer {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  commission_rate: number;
-  promotion_url: string;
 }
 
 const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose }) => {
@@ -47,6 +40,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [offers, setOffers] = useState<ProductOffer[]>([]);
 
   // Hook de upload otimizado
   const {
@@ -206,11 +200,15 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
           const offersData = productData.offers.map((offer: ProductOffer) => ({
             product_id: product.id,
             name: offer.name,
-            description: offer.description,
+            description: offer.description || '',
             price: offer.price,
+            original_price: offer.original_price || null,
             commission_rate: offer.commission_rate,
-            promotion_url: offer.promotion_url,
-            is_active: true
+            commission_amount: offer.commission_amount || null,
+            affiliate_link: offer.affiliate_link,
+            is_default: offer.is_default || false,
+            is_active: offer.is_active !== false,
+            sort_order: offer.sort_order || 0
           }));
 
           console.log('📋 [CreateProduct] Dados das ofertas:', offersData);
@@ -337,7 +335,8 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
 
     createProductMutation.mutate({
       ...formData,
-      tags
+      tags,
+      offers
     });
   };
 
@@ -356,6 +355,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     setNewTag('');
     setImageFile(null);
     setImagePreview('');
+    setOffers([]);
     resetUpload();
   };
 
@@ -604,6 +604,16 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
               <Button type="button" onClick={addTag} variant="outline" className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
                 <Plus className="h-4 w-4" />
               </Button>
+            </div>
+          </div>
+
+          {/* Seção de Ofertas */}
+          <div className="space-y-4">
+            <div className="border-t border-slate-600 pt-6">
+              <ProductOffersManager
+                offers={offers}
+                onChange={setOffers}
+              />
             </div>
           </div>
 

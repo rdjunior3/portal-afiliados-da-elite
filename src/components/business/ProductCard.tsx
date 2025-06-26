@@ -89,7 +89,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onE
       </div>
 
       {/* Product Image */}
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative h-[500px] w-[500px] mx-auto overflow-hidden">
         {product.image_url && !imageError ? (
           <img 
             src={product.image_url} 
@@ -152,10 +152,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onE
                   <Button 
                     size="sm" 
                     variant="outline"
-                    className="ml-2 h-8 w-8 p-0 border-orange-500/50 hover:bg-orange-600 hover:border-orange-600 text-orange-400 hover:text-white"
+                    className="ml-2 px-3 h-8 border-orange-500/50 hover:bg-orange-600 hover:border-orange-600 text-orange-400 hover:text-white text-xs"
                     onClick={() => handleCopyLink(getOfferLink(offer.id, offer.affiliate_link || product.sales_page_url || ''))}
                   >
-                    <Copy className="h-3 w-3" />
+                    <Copy className="h-3 w-3 mr-1" />
+                    Me afiliar
                   </Button>
                 </div>
               ))}
@@ -181,7 +182,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onE
               onClick={() => handleCopyLink(product.sales_page_url || '')}
             >
               <Copy className="h-4 w-4 mr-1" />
-              Copiar
+              Me afiliar
             </Button>
           </div>
         )}
