@@ -436,52 +436,52 @@ const ChatPage = () => {
 
               {Array.isArray(rooms) && rooms.length > 0 ? (
                 rooms.map((room) => (
-                  <button
-                    key={room.id}
-                    onClick={() => setSelectedRoom(room)}
-                    className={cn(
-                      "w-full p-4 text-left rounded-lg transition-all duration-200 group",
-                      selectedRoom?.id === room.id
-                        ? "bg-gradient-to-r from-orange-500/30 to-orange-600/20 border border-orange-400/30"
-                        : "bg-slate-700/30 hover:bg-slate-700/50 border border-transparent"
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center",
-                        room.name === 'Comunidade da Elite' 
-                          ? "bg-gradient-to-r from-orange-400 to-orange-500" 
-                          : "bg-slate-600"
-                      )}>
-                        {room.name === 'Comunidade da Elite' ? (
-                          <Crown className="h-5 w-5 text-white" />
-                        ) : (
-                          <Hash className="h-5 w-5 text-slate-300" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className={cn(
-                            "font-semibold truncate",
-                            selectedRoom?.id === room.id ? "text-white" : "text-slate-200"
-                          )}>
-                            {room.name}
-                          </h3>
-                          {room.name === 'Comunidade da Elite' && (
-                            <Sparkles className="h-4 w-4 text-orange-400" />
-                          )}
-                        </div>
-                        {room.description && (
-                          <p className={cn(
-                            "text-sm truncate",
-                            selectedRoom?.id === room.id ? "text-orange-200" : "text-slate-400"
-                          )}>
-                            {room.description}
-                          </p>
-                        )}
-                      </div>
+                <button
+                  key={room.id}
+                  onClick={() => setSelectedRoom(room)}
+                  className={cn(
+                    "w-full p-4 text-left rounded-lg transition-all duration-200 group",
+                    selectedRoom?.id === room.id
+                      ? "bg-gradient-to-r from-orange-500/30 to-orange-600/20 border border-orange-400/30"
+                      : "bg-slate-700/30 hover:bg-slate-700/50 border border-transparent"
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-10 h-10 rounded-full flex items-center justify-center",
+                      room.name === 'Comunidade da Elite' 
+                        ? "bg-gradient-to-r from-orange-400 to-orange-500" 
+                        : "bg-slate-600"
+                    )}>
+                      {room.name === 'Comunidade da Elite' ? (
+                        <Crown className="h-5 w-5 text-white" />
+                      ) : (
+                        <Hash className="h-5 w-5 text-slate-300" />
+                      )}
                     </div>
-                  </button>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className={cn(
+                          "font-semibold truncate",
+                          selectedRoom?.id === room.id ? "text-white" : "text-slate-200"
+                        )}>
+                          {room.name}
+                        </h3>
+                        {room.name === 'Comunidade da Elite' && (
+                          <Sparkles className="h-4 w-4 text-orange-400" />
+                        )}
+                      </div>
+                      {room.description && (
+                        <p className={cn(
+                          "text-sm truncate",
+                          selectedRoom?.id === room.id ? "text-orange-200" : "text-slate-400"
+                        )}>
+                          {room.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </button>
                 ))
               ) : (
                 <div className="text-center py-8">

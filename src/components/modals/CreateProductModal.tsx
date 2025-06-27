@@ -9,15 +9,21 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, X, Image, DollarSign, Link, Tag, Upload, Loader2, AlertTriangle, Edit } from 'lucide-react';
+import { Plus, X, DollarSign, Upload, Loader2, AlertTriangle, Trash2, ExternalLink } from 'lucide-react';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import CreateCategoryModal from './CreateCategoryModal';
-import ProductOffersManager from '@/components/product/ProductOffersManager';
-import { ProductOffer } from '@/types/product-offers.types';
 
 interface CreateProductModalProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+interface ProductOffer {
+  id: string;
+  title: string;
+  price: number;
+  commission_rate: number;
+  commission_amount: number;
 }
 
 const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose }) => {
@@ -29,10 +35,10 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     description: '',
     category_id: '',
     image_url: '',
-    affiliate_link: '', // Link de afiliação externo principal
+    affiliate_link: '', // Link que direcionará para a afiliação do produto
     price: 0,
-    commission_rate: 10, // Percentual padrão
-    commission_amount: 0 // Valor fixo opcional
+    commission_rate: 10,
+    commission_amount: 0
   });
 
   const [tags, setTags] = useState<string[]>([]);
@@ -41,7 +47,8 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
   const [imagePreview, setImagePreview] = useState<string>('');
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [offers, setOffers] = useState<ProductOffer[]>([]);
-  const [showOffersManager, setShowOffersManager] = useState(false);
+  const [newOffer, setNewOffer] = useState({ title: '', price: 0, commission_rate: 10, commission_amount: 0 });
+  const [showNewOfferForm, setShowNewOfferForm] = useState(false);
 
   // Hook de upload otimizado
   const {
@@ -82,7 +89,6 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
         .filter(word => word.length > 0)
         .slice(0, 5);
       
-      // Merge com tags manuais, removendo duplicatas
       const manualTags = tags.filter(tag => !autoTags.includes(tag.toLowerCase()));
       setTags([...autoTags, ...manualTags]);
     }
@@ -95,7 +101,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     }
   }, [uploadedImageUrl]);
 
-  // Calcular comissão automaticamente
+  // Calcular comissão automaticamente para oferta principal
   useEffect(() => {
     if (formData.price > 0 && formData.commission_rate > 0) {
       const calculatedCommission = (formData.price * formData.commission_rate) / 100;
@@ -103,11 +109,19 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     }
   }, [formData.price, formData.commission_rate]);
 
+  // Calcular comissão automaticamente para nova oferta
+  useEffect(() => {
+    if (newOffer.price > 0 && newOffer.commission_rate > 0) {
+      const calculatedCommission = (newOffer.price * newOffer.commission_rate) / 100;
+      setNewOffer(prev => ({ ...prev, commission_amount: parseFloat(calculatedCommission.toFixed(2)) }));
+    }
+  }, [newOffer.price, newOffer.commission_rate]);
+
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    console.log('📸 [CreateProduct] Iniciando upload otimizado de:', file.name);
+    console.log('[CreateProduct] Iniciando upload de:', file.name);
     
     try {
       setImageFile(file);
@@ -122,7 +136,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
       // Upload para Supabase
       await uploadImage(file);
     } catch (error) {
-      console.error('❌ [CreateProduct] Erro no upload:', error);
+      console.error('[CreateProduct] Erro no upload:', error);
       toast({
         title: "Erro no upload",
         description: "Não foi possível fazer upload da imagem. Tente novamente.",
@@ -134,42 +148,30 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
   // Mutation para criar produto
   const createProductMutation = useMutation({
     mutationFn: async (productData: any) => {
-      console.log('✅ [CreateProduct] Iniciando criação com validação OK');
-      console.log('📊 [CreateProduct] Dados:', productData);
+      console.log('[CreateProduct] Iniciando criação de produto:', productData);
 
-      // Verificar se tem imagem
       if (!productData.image_url) {
         throw new Error('Imagem é obrigatória para criar um produto');
       }
 
-      console.log('🚀 [CreateProduct] Iniciando criação de produto:', productData);
-      console.log('✅ [CreateProduct] Validações passaram');
-
       try {
-        console.log('🔧 [CreateProduct] Preparando dados para INSERT...');
-        
         const insertData = {
           name: productData.name,
           description: productData.description,
           category_id: productData.category_id,
           image_url: productData.image_url,
+          affiliate_link: productData.affiliate_link,
           sales_page_url: productData.affiliate_link,
           price: productData.price,
           commission_rate: productData.commission_rate,
           commission_amount: productData.commission_amount,
+          tags: productData.tags || [],
           is_active: true,
-          slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+          slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+          currency: 'BRL'
         };
         
-        console.log('📋 [CreateProduct] Dados preparados:', insertData);
-        console.log('🔍 [CreateProduct] Verificando se todos campos obrigatórios estão presentes...');
-        
-        // Log detalhado dos campos
-        Object.entries(insertData).forEach(([key, value]) => {
-          console.log(`   ${key}:`, typeof value, value);
-        });
-        
-        console.log('🎯 [CreateProduct] Executando INSERT na tabela products...');
+        console.log('[CreateProduct] Dados preparados:', insertData);
 
         // Criar produto
         const { data: product, error: productError } = await supabase
@@ -178,81 +180,57 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
           .select()
           .single();
 
-        console.log('🔍 [CreateProduct] Resultado do INSERT:', { product, error: productError });
-
         if (productError) {
-          console.error('❌ [CreateProduct] Erro ao criar produto:', productError);
-          console.error('🔍 [CreateProduct] Código do erro:', productError.code);
-          console.error('🔍 [CreateProduct] Mensagem:', productError.message);
-          console.error('🔍 [CreateProduct] Detalhes completos:', JSON.stringify(productError, null, 2));
+          console.error('[CreateProduct] Erro ao criar produto:', productError);
           throw productError;
         }
 
-        if (!product) {
-          console.error('❌ [CreateProduct] Produto não foi retornado após INSERT');
-          throw new Error('Produto não foi criado corretamente');
-        }
-
-        console.log('✅ [CreateProduct] Produto criado com sucesso:', product);
+        console.log('[CreateProduct] Produto criado com sucesso:', product);
 
         // Criar ofertas associadas
         if (productData.offers && productData.offers.length > 0) {
-          console.log('🏷️ [CreateProduct] Criando ofertas associadas...');
-          const offersData = productData.offers.map((offer: ProductOffer) => ({
+          console.log('[CreateProduct] Criando ofertas associadas...');
+          
+          const offersData = productData.offers.map((offer: ProductOffer, index: number) => ({
             product_id: product.id,
-            name: offer.name,
-            description: offer.description || '',
+            name: offer.title,
             price: offer.price,
-            original_price: offer.original_price || null,
             commission_rate: offer.commission_rate,
-            commission_amount: offer.commission_amount || null,
-            affiliate_link: offer.affiliate_link,
-            is_default: offer.is_default || false,
-            is_active: offer.is_active !== false,
-            sort_order: offer.sort_order || 0
+            commission_amount: offer.commission_amount,
+            is_default: index === 0,
+            is_active: true,
+            sort_order: index
           }));
-
-          console.log('📋 [CreateProduct] Dados das ofertas:', offersData);
 
           const { error: offersError } = await supabase
             .from('product_offers')
             .insert(offersData);
 
           if (offersError) {
-            console.error('❌ [CreateProduct] Erro ao criar ofertas:', offersError);
-            throw offersError;
+            console.error('[CreateProduct] Erro ao criar ofertas:', offersError);
           }
-
-          console.log('✅ [CreateProduct] Ofertas criadas com sucesso');
-        } else {
-          console.log('ℹ️ [CreateProduct] Nenhuma oferta para criar');
         }
 
-        console.log('🎉 [CreateProduct] Processo de criação concluído!');
         return product;
-        
       } catch (error) {
-        console.error('💥 [CreateProduct] Erro crítico durante criação:', error);
-        console.error('🔍 [CreateProduct] Stack trace:', error instanceof Error ? error.stack : 'N/A');
+        console.error('[CreateProduct] Erro geral:', error);
         throw error;
       }
     },
     onSuccess: () => {
-      console.log('🎉 [CreateProduct] Produto criado com sucesso!');
       toast({
-        title: "Produto criado! 🎉",
-        description: "O produto foi adicionado ao catálogo com sucesso.",
+        title: "Produto criado com sucesso!",
+        description: "O produto foi adicionado ao catálogo e está disponível para os afiliados.",
       });
-      
       queryClient.invalidateQueries({ queryKey: ['products'] });
       resetForm();
       onClose();
     },
     onError: (error: any) => {
-      console.error('❌ [CreateProduct] Erro na criação:', error);
+      console.error('[CreateProduct] Erro na mutation:', error);
       toast({
         title: "Erro ao criar produto",
-        description: error.message || "Não foi possível criar o produto. Tente novamente.",
+        description: error.message || "Ocorreu um erro inesperado. Tente novamente.",
         variant: "destructive",
       });
     }
@@ -261,20 +239,10 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validações básicas
     if (!formData.name.trim()) {
       toast({
-        title: "Nome obrigatório",
-        description: "Por favor, informe o nome do produto.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!formData.description.trim()) {
-      toast({
-        title: "Descrição obrigatória",
-        description: "Por favor, informe a descrição do produto.",
+        title: "Campo obrigatório",
+        description: "Nome do produto é obrigatório.",
         variant: "destructive",
       });
       return;
@@ -282,8 +250,17 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
 
     if (!formData.category_id) {
       toast({
-        title: "Categoria obrigatória",
-        description: "Por favor, selecione uma categoria.",
+        title: "Campo obrigatório", 
+        description: "Selecione uma categoria para o produto.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.affiliate_link.trim()) {
+      toast({
+        title: "Campo obrigatório",
+        description: "Link de afiliação é obrigatório.",
         variant: "destructive",
       });
       return;
@@ -292,43 +269,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     if (!formData.image_url) {
       toast({
         title: "Imagem obrigatória",
-        description: "Por favor, faça upload de uma imagem do produto.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!formData.affiliate_link.trim()) {
-      toast({
-        title: "Link de afiliação obrigatório",
-        description: "Por favor, informe o link de afiliação do produto.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!formData.affiliate_link.startsWith('http://') && !formData.affiliate_link.startsWith('https://')) {
-      toast({
-        title: "Link inválido",
-        description: "O link de afiliação deve começar com http:// ou https://",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (formData.price <= 0) {
-      toast({
-        title: "Preço obrigatório",
-        description: "Por favor, informe um preço válido para o produto.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (formData.commission_rate < 0 || formData.commission_rate > 100) {
-      toast({
-        title: "Taxa de comissão inválida",
-        description: "A taxa de comissão deve estar entre 0% e 100%.",
+        description: "Faça upload de uma imagem para o produto.",
         variant: "destructive",
       });
       return;
@@ -357,12 +298,12 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     setImageFile(null);
     setImagePreview('');
     setOffers([]);
-    setShowOffersManager(false);
+    setNewOffer({ title: '', price: 0, commission_rate: 10, commission_amount: 0 });
+    setShowNewOfferForm(false);
     resetUpload();
   };
 
   const handleCategoryCreated = (category: any) => {
-    // Atualizar formData com a nova categoria selecionada
     setFormData(prev => ({ ...prev, category_id: category.id }));
     setShowCategoryModal(false);
   };
@@ -378,8 +319,36 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
-  const calculateCommission = (price: number, rate: number) => {
-    return (price * rate / 100).toFixed(2);
+  const addOffer = () => {
+    if (!newOffer.title.trim() || newOffer.price <= 0) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Preencha o título e o preço da oferta.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const offer: ProductOffer = {
+      id: `temp_${Date.now()}`,
+      title: newOffer.title,
+      price: newOffer.price,
+      commission_rate: newOffer.commission_rate,
+      commission_amount: newOffer.commission_amount
+    };
+
+    setOffers([...offers, offer]);
+    setNewOffer({ title: '', price: 0, commission_rate: 10, commission_amount: 0 });
+    setShowNewOfferForm(false);
+
+    toast({
+      title: "Oferta adicionada",
+      description: "A oferta foi adicionada com sucesso.",
+    });
+  };
+
+  const removeOffer = (offerId: string) => {
+    setOffers(offers.filter(offer => offer.id !== offerId));
   };
 
   return (
@@ -398,7 +367,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-8 pt-6">
-          {/* Informações Básicas com design elegante */}
+          {/* Informações Básicas */}
           <div className="bg-gradient-to-r from-slate-800/30 to-slate-700/30 rounded-2xl p-6 border border-slate-600/30">
             <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
               <div className="w-2 h-6 bg-gradient-to-b from-orange-500 to-orange-600 rounded-full"></div>
@@ -420,8 +389,8 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <Label htmlFor="category" className="text-slate-200">Categoria *</Label>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Label htmlFor="category" className="text-slate-200 flex-1">Categoria *</Label>
                     <Button
                       type="button"
                       variant="outline"
@@ -430,7 +399,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                       className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-600 hover:text-white"
                     >
                       <Plus className="h-3 w-3 mr-1" />
-                      Nova
+                      Nova Categoria
                     </Button>
                   </div>
                   <Select value={formData.category_id} onValueChange={(value) => setFormData({...formData, category_id: value})}>
@@ -448,7 +417,10 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                 </div>
 
                 <div>
-                  <Label htmlFor="affiliate_link" className="text-slate-200">Link de Afiliação *</Label>
+                  <Label htmlFor="affiliate_link" className="text-slate-200 flex items-center gap-2">
+                    Link de Afiliação *
+                    <ExternalLink className="h-4 w-4 text-slate-400" />
+                  </Label>
                   <Input
                     id="affiliate_link"
                     value={formData.affiliate_link}
@@ -457,6 +429,9 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                     placeholder="https://exemplo.com/produto"
                     required
                   />
+                  <p className="text-xs text-slate-400 mt-1">
+                    Este é o link que direcionará os usuários para a página de afiliação do produto
+                  </p>
                 </div>
               </div>
 
@@ -464,6 +439,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
               <div className="space-y-4">
                 <div>
                   <Label className="text-slate-200">Imagem do Produto *</Label>
+                  <p className="text-xs text-slate-400 mb-2">Dimensão ideal: 310x310px</p>
                   <div className="mt-2">
                     <input
                       type="file"
@@ -474,7 +450,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                     />
                     <label
                       htmlFor="image-upload"
-                      className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-slate-600 rounded-lg cursor-pointer bg-slate-800 hover:bg-slate-700 transition-colors"
+                      className="flex flex-col items-center justify-center w-full h-[310px] border-2 border-dashed border-slate-600 rounded-lg cursor-pointer bg-slate-800 hover:bg-slate-700 transition-colors"
                     >
                       {uploadingImage ? (
                         <div className="flex flex-col items-center space-y-2">
@@ -488,6 +464,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                           <Upload className="h-10 w-10 text-slate-400" />
                           <span className="text-sm text-slate-300">Clique para fazer upload</span>
                           <span className="text-xs text-slate-400">PNG, JPG, WEBP até 10MB</span>
+                          <span className="text-xs text-cyan-400">Dimensão ideal: 310x310px</span>
                         </div>
                       )}
                     </label>
@@ -510,23 +487,26 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
             />
           </div>
 
-          {/* Oferta Principal */}
+          {/* Ofertas */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label className="text-slate-200 text-lg font-semibold">Oferta Principal</Label>
+              <Label className="text-slate-200 text-lg font-semibold">Ofertas</Label>
               <Button
                 type="button"
-                onClick={() => setShowOffersManager(true)}
+                onClick={() => setShowNewOfferForm(true)}
                 variant="outline"
                 size="sm"
-                className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-orange-500/50"
+                className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-green-500/50"
+                disabled={showNewOfferForm}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Adicionar Ofertas
+                Adicionar Oferta
               </Button>
             </div>
             
+            {/* Oferta Principal */}
             <div className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 rounded-xl p-6 border border-slate-600/50">
+              <h4 className="text-white font-medium mb-4">Oferta Principal</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="price" className="text-slate-200">Preço (R$) *</Label>
@@ -574,15 +554,112 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                 </div>
               </div>
             </div>
+
+            {/* Formulário de Nova Oferta */}
+            {showNewOfferForm && (
+              <div className="bg-gradient-to-r from-green-900/20 to-emerald-900/20 rounded-xl p-6 border border-green-600/30">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-green-300 font-medium">Nova Oferta</h4>
+                  <Button
+                    type="button"
+                    onClick={() => setShowNewOfferForm(false)}
+                    variant="outline"
+                    size="sm"
+                    className="bg-red-600/20 border-red-500/50 text-red-400 hover:bg-red-600/30"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <Label className="text-green-200">Título da Oferta *</Label>
+                    <Input
+                      value={newOffer.title}
+                      onChange={(e) => setNewOffer({...newOffer, title: e.target.value})}
+                      className="bg-slate-800 border-slate-600 text-white"
+                      placeholder="Ex: Oferta Premium"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-green-200">Valor (R$) *</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={newOffer.price}
+                      onChange={(e) => setNewOffer({...newOffer, price: parseFloat(e.target.value) || 0})}
+                      className="bg-slate-800 border-slate-600 text-white"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-green-200">Comissão (%)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      max="100"
+                      value={newOffer.commission_rate}
+                      onChange={(e) => setNewOffer({...newOffer, commission_rate: parseFloat(e.target.value) || 0})}
+                      className="bg-slate-800 border-slate-600 text-white"
+                      placeholder="10.00"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <Button
+                      type="button"
+                      onClick={addOffer}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar
+                    </Button>
+                  </div>
+                </div>
+                {newOffer.price > 0 && newOffer.commission_rate > 0 && (
+                  <p className="text-green-400 text-sm mt-2">
+                    Comissão: R$ {newOffer.commission_amount.toFixed(2)}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Lista de Ofertas Adicionais */}
+            {offers.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-white font-medium">Ofertas Adicionais ({offers.length})</h4>
+                {offers.map((offer, index) => (
+                  <div key={offer.id} className="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 rounded-lg p-4 border border-blue-600/30">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h5 className="text-blue-300 font-medium">{offer.title}</h5>
+                        <p className="text-slate-400 text-sm">
+                          Preço: R$ {offer.price.toFixed(2)} • Comissão: {offer.commission_rate}% (R$ {offer.commission_amount.toFixed(2)})
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => removeOffer(offer.id)}
+                        variant="outline"
+                        size="sm"
+                        className="bg-red-600/20 border-red-500/50 text-red-400 hover:bg-red-600/30"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Preview da Comissão */}
+          {/* Preview da Comissão Principal */}
           {formData.price > 0 && formData.commission_rate > 0 && (
             <div className="p-4 bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-lg border border-green-700">
               <div className="flex items-center gap-2 text-green-400">
                 <DollarSign className="h-5 w-5" />
                 <span className="font-medium">
-                  Comissão por venda: R$ {formData.commission_amount.toFixed(2)} ({formData.commission_rate}% de R$ {formData.price.toFixed(2)})
+                  Comissão principal por venda: R$ {formData.commission_amount.toFixed(2)} ({formData.commission_rate}% de R$ {formData.price.toFixed(2)})
                 </span>
               </div>
             </div>
@@ -590,7 +667,6 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
 
           {/* Validações do formulário */}
           <div className="space-y-3">
-            {/* Validação do link de afiliação */}
             {formData.affiliate_link && !formData.affiliate_link.startsWith('http') && (
               <div className="p-3 bg-yellow-900/30 rounded border border-yellow-600">
                 <div className="flex items-center gap-2 text-yellow-400">
@@ -600,7 +676,6 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
               </div>
             )}
 
-            {/* Validação de preço */}
             {formData.price <= 0 && (
               <div className="p-3 bg-red-900/30 rounded border border-red-600">
                 <div className="flex items-center gap-2 text-red-400">
@@ -635,53 +710,6 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
               </Button>
             </div>
           </div>
-
-          {/* Seção de Ofertas Condicional */}
-          {showOffersManager && (
-            <div className="space-y-4">
-              <div className="border-t border-slate-600 pt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-white">Ofertas Adicionais</h3>
-                  <Button
-                    type="button"
-                    onClick={() => setShowOffersManager(false)}
-                    variant="outline"
-                    size="sm"
-                    className="bg-red-600/20 border-red-500/50 text-red-400 hover:bg-red-600/30"
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Fechar
-                  </Button>
-                </div>
-                <ProductOffersManager
-                  offers={offers}
-                  onChange={setOffers}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Resumo das Ofertas */}
-          {offers.length > 0 && !showOffersManager && (
-            <div className="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 rounded-xl p-4 border border-blue-500/30">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-semibold text-blue-300">Ofertas Adicionais Configuradas</h4>
-                <Button
-                  type="button"
-                  onClick={() => setShowOffersManager(true)}
-                  variant="outline"
-                  size="sm"
-                  className="bg-blue-600/20 border-blue-500/50 text-blue-400 hover:bg-blue-600/30"
-                >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Editar
-                </Button>
-              </div>
-              <p className="text-sm text-slate-400">
-                {offers.length} {offers.length === 1 ? 'oferta adicional configurada' : 'ofertas adicionais configuradas'}
-              </p>
-            </div>
-          )}
 
           <DialogFooter className="flex justify-between pt-6">
             <Button type="button" onClick={onClose} variant="outline" className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
@@ -718,4 +746,4 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
   );
 };
 
-export default CreateProductModal; 
+export default CreateProductModal;

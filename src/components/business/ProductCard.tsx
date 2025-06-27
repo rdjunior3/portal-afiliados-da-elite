@@ -161,7 +161,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onE
             <div className="text-xs text-slate-400 font-medium">
               {product.offers.length} {product.offers.length === 1 ? 'oferta disponível' : 'ofertas disponíveis'}
             </div>
-            <div className="space-y-2">
+        <div className="space-y-2">
               {product.offers.slice(0, 2).map((offer, index) => (
                 <div key={offer.id} className="flex items-center justify-between p-2 bg-slate-800/50 rounded-lg border border-slate-700/50">
                   <div className="flex-1 min-w-0">
@@ -212,4 +212,4 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onE
       </CardContent>
     </Card>
   );
-};
+}; 
