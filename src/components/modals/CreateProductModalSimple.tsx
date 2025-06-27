@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,6 +47,8 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
     }
   ]);
 
+  // Estado para forçar re-render do cálculo
+  const [calculationKey, setCalculationKey] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -103,22 +105,37 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
     }
   });
 
-  // Mutation para criar produto
+  // Mutation para criar produto - MELHORADA com debugging
   const createProductMutation = useMutation({
     mutationFn: async (productData: any) => {
+      console.log('🚀 Iniciando criação do produto:', productData);
+      console.log('📋 Ofertas a serem criadas:', offers);
+
+      // Validações antes do envio
+      if (!offers[0]?.price || isNaN(parseFloat(offers[0].price))) {
+        throw new Error('Preço da primeira oferta é obrigatório e deve ser um número válido');
+      }
+
+      if (!productData.name || !productData.sales_page_url) {
+        throw new Error('Nome e URL da página para afiliação são obrigatórios');
+      }
+
       // 1. Criar produto
       const insertData = {
-        name: productData.name,
+        name: productData.name.trim(),
         slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-        description: productData.description,
+        description: productData.description?.trim() || null,
         category_id: productData.category_id || null,
         price: parseFloat(offers[0].price) || 0,
         commission_rate: parseFloat(offers[0].commission_rate) || 0,
-        sales_page_url: productData.sales_page_url,
+        sales_page_url: productData.sales_page_url.trim(),
+        affiliate_link: productData.sales_page_url.trim(), // Campo adicional
         image_url: productData.image_url || null,
         currency: 'BRL',
         is_active: true
       };
+
+      console.log('📤 Dados do produto a serem inseridos:', insertData);
 
       const { data: product, error: productError } = await supabase
         .from('products')
@@ -126,45 +143,62 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
         .select()
         .single();
 
-      if (productError) throw productError;
-
-      // 2. Criar ofertas na tabela product_offers
-      const offersData = offers.map((offer, index) => ({
-        product_id: product.id,
-        name: offer.name,
-        price: parseFloat(offer.price) || 0,
-        commission_rate: parseFloat(offer.commission_rate) || 0,
-        commission_amount: (parseFloat(offer.price) || 0) * (parseFloat(offer.commission_rate) || 0) / 100,
-        is_default: index === 0, // Primeira oferta é sempre default
-        is_active: true,
-        sort_order: index + 1
-      }));
-
-      const { error: offersError } = await supabase
-        .from('product_offers')
-        .insert(offersData);
-
-      if (offersError) {
-        console.warn('Erro ao criar ofertas:', offersError);
-        // Não falha se as ofertas não forem criadas, produto já existe
+      if (productError) {
+        console.error('❌ Erro ao criar produto:', productError);
+        throw new Error(`Erro ao criar produto: ${productError.message}`);
       }
 
-      return product;
+      console.log('✅ Produto criado com sucesso:', product);
+
+      // 2. Criar ofertas na tabela product_offers
+      const offersData = offers.map((offer, index) => {
+        const price = parseFloat(offer.price) || 0;
+        const commissionRate = parseFloat(offer.commission_rate) || 0;
+        const commissionAmount = price * (commissionRate / 100);
+
+        return {
+          product_id: product.id,
+          name: offer.name.trim(),
+          price: price,
+          commission_rate: commissionRate,
+          commission_amount: commissionAmount,
+          is_default: index === 0, // Primeira oferta é sempre default
+          is_active: true,
+          sort_order: index + 1
+        };
+      });
+
+      console.log('📤 Dados das ofertas a serem inseridas:', offersData);
+
+      const { data: insertedOffers, error: offersError } = await supabase
+        .from('product_offers')
+        .insert(offersData)
+        .select();
+
+      if (offersError) {
+        console.error('⚠️ Erro ao criar ofertas (produto já foi criado):', offersError);
+        // Não falha se as ofertas não forem criadas, produto já existe
+      } else {
+        console.log('✅ Ofertas criadas com sucesso:', insertedOffers);
+      }
+
+      return { product, offers: insertedOffers };
     },
     onSuccess: (data) => {
+      console.log('🎉 Criação completa bem-sucedida:', data);
       toast({
         title: "Produto criado com sucesso!",
-        description: `O produto "${data.name}" foi adicionado à vitrine com ${offers.length} oferta(s).`,
+        description: `O produto "${data.product.name}" foi adicionado à vitrine com ${offers.length} oferta(s).`,
       });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       resetForm();
       onClose();
     },
     onError: (error: any) => {
-      console.error('Erro completo:', error);
+      console.error('💥 Erro na criação do produto:', error);
       toast({
         title: "Erro ao criar produto",
-        description: error.message || "Tente novamente ou entre em contato com o suporte.",
+        description: error.message || "Erro inesperado. Tente novamente ou contate o suporte.",
         variant: "destructive",
       });
     }
@@ -172,17 +206,30 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('📝 Formulário submetido');
+    console.log('📋 Dados do form:', formData);
+    console.log('🏷️ Ofertas:', offers);
     
-    if (!formData.name || !formData.sales_page_url) {
+    // Validações frontend
+    if (!formData.name?.trim()) {
       toast({
-        title: "Campos obrigatórios",
-        description: "Nome e URL da página para afiliação são obrigatórios.",
+        title: "Nome obrigatório",
+        description: "Digite o nome do produto.",
         variant: "destructive",
       });
       return;
     }
 
-    if (!offers[0].price || isNaN(parseFloat(offers[0].price))) {
+    if (!formData.sales_page_url?.trim()) {
+      toast({
+        title: "URL obrigatória",
+        description: "Digite a URL da página para afiliação.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!offers[0]?.price || isNaN(parseFloat(offers[0].price)) || parseFloat(offers[0].price) <= 0) {
       toast({
         title: "Preço inválido",
         description: "Digite um preço válido para a primeira oferta.",
@@ -194,6 +241,8 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
     setIsSubmitting(true);
     try {
       await createProductMutation.mutateAsync(formData);
+    } catch (error) {
+      console.error('❌ Erro no handleSubmit:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -207,13 +256,16 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
       image_url: '',
       sales_page_url: ''
     });
-    setOffers([{
-      id: '1',
-      name: 'Oferta Principal',
-      price: '',
-      commission_rate: '50',
-      is_default: true
-    }]);
+    setOffers([
+      {
+        id: '1',
+        name: 'Oferta Principal',
+        price: '',
+        commission_rate: '50',
+        is_default: true
+      }
+    ]);
+    setCalculationKey(prev => prev + 1);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -224,28 +276,36 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
     setOffers(prev => prev.map(offer => 
       offer.id === offerId ? { ...offer, [field]: value } : offer
     ));
-  };
-
-  const addNewOffer = () => {
-    const newOffer: ProductOffer = {
-      id: Date.now().toString(),
-      name: `Oferta ${offers.length + 1}`,
-      price: '',
-      commission_rate: '50',
-      is_default: false
-    };
-    setOffers(prev => [...prev, newOffer]);
-  };
-
-  const removeOffer = (offerId: string) => {
-    if (offers.length > 1) {
-      setOffers(prev => prev.filter(offer => offer.id !== offerId));
+    // Forçar re-render do cálculo quando preço ou comissão mudarem
+    if (field === 'price' || field === 'commission_rate') {
+      setCalculationKey(prev => prev + 1);
     }
   };
 
+  const addNewOffer = () => {
+    const newId = Date.now().toString();
+    setOffers(prev => [...prev, {
+      id: newId,
+      name: `Oferta ${prev.length + 1}`,
+      price: '',
+      commission_rate: '50',
+      is_default: false
+    }]);
+  };
+
+  const removeOffer = (offerId: string) => {
+    setOffers(prev => prev.filter(offer => offer.id !== offerId));
+  };
+
+  // Função de cálculo melhorada
   const calculateTotal = (price: string, commission: string): string => {
     const priceNum = parseFloat(price) || 0;
     const commissionNum = parseFloat(commission) || 0;
+    
+    if (priceNum === 0) {
+      return 'R$ 0,00';
+    }
+    
     const total = priceNum * (commissionNum / 100);
     return total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
@@ -262,6 +322,16 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
     createCategoryMutation.mutate(newCategoryName.trim());
   };
 
+  // Effect para debug do cálculo
+  useEffect(() => {
+    if (offers[0]) {
+      console.log('🔢 Cálculo atualizado:', {
+        offer1: offers[0],
+        calculation: calculateTotal(offers[0].price, offers[0].commission_rate)
+      });
+    }
+  }, [offers, calculationKey]);
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -276,7 +346,7 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Nome do Produto */}
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium text-slate-200">
@@ -292,23 +362,25 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
               />
             </div>
 
-            {/* Upload de Imagem */}
+            {/* Upload de Imagem - OTIMIZADO */}
             <div className="space-y-2">
               <Label className="text-sm font-medium text-slate-200">
                 Imagem do Produto (Recomendado 310x310px)
               </Label>
-              <ImageUpload
-                value={formData.image_url}
-                onChange={(url) => handleInputChange('image_url', url)}
-                bucket="product-images"
-                folder="products"
-                placeholder="Selecione uma imagem para o produto"
-                maxWidth={310}
-                maxHeight={310}
-                enableCrop={true}
-                cropAspect={1}
-                className="w-full"
-              />
+              <div className="max-h-48 overflow-hidden"> {/* Altura máxima reduzida */}
+                <ImageUpload
+                  value={formData.image_url}
+                  onChange={(url) => handleInputChange('image_url', url)}
+                  bucket="product-images"
+                  folder="products"
+                  placeholder="Selecione uma imagem para o produto"
+                  maxWidth={310}
+                  maxHeight={310}
+                  enableCrop={true}
+                  cropAspect={1}
+                  className="w-full"
+                />
+              </div>
             </div>
 
             {/* Descrição */}
@@ -321,8 +393,8 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 placeholder="Descreva os principais benefícios e características do produto..."
-                className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400 min-h-[80px]"
-                rows={3}
+                className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400 min-h-[60px]"
+                rows={2}
               />
             </div>
 
@@ -357,8 +429,8 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
               </div>
             </div>
 
-            {/* Ofertas */}
-            <div className="space-y-4">
+            {/* Ofertas - LAYOUT MELHORADO */}
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium text-slate-200">Ofertas</Label>
                 <Button
@@ -373,11 +445,11 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
                 </Button>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {offers.map((offer, index) => (
-                  <Card key={offer.id} className="bg-slate-700/50 border-slate-600">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-3">
+                  <Card key={`${offer.id}-${calculationKey}`} className="bg-slate-700/50 border-slate-600">
+                    <CardContent className="p-3">
+                      <div className="flex items-center justify-between mb-2">
                         <h4 className="text-sm font-medium text-orange-400">
                           {index === 0 ? 'Oferta Principal' : `Oferta ${index + 1}`}
                           {index === 0 && <span className="text-xs text-slate-400 ml-2">(Padrão)</span>}
@@ -388,21 +460,21 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
                             variant="ghost"
                             size="sm"
                             onClick={() => removeOffer(offer.id)}
-                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-6 w-6 p-0"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3 h-3" />
                           </Button>
                         )}
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
                         <div className="space-y-1">
                           <Label className="text-xs text-slate-300">Nome da Oferta</Label>
                           <Input
                             value={offer.name}
                             onChange={(e) => handleOfferChange(offer.id, 'name', e.target.value)}
                             placeholder="Ex: Básica, Premium"
-                            className="bg-slate-600 border-slate-500 text-white text-sm"
+                            className="bg-slate-600 border-slate-500 text-white text-sm h-8"
                           />
                         </div>
 
@@ -415,7 +487,7 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
                             value={offer.price}
                             onChange={(e) => handleOfferChange(offer.id, 'price', e.target.value)}
                             placeholder="97.00"
-                            className="bg-slate-600 border-slate-500 text-white text-sm"
+                            className="bg-slate-600 border-slate-500 text-white text-sm h-8"
                           />
                         </div>
 
@@ -429,15 +501,15 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
                             value={offer.commission_rate}
                             onChange={(e) => handleOfferChange(offer.id, 'commission_rate', e.target.value)}
                             placeholder="50"
-                            className="bg-slate-600 border-slate-500 text-white text-sm"
+                            className="bg-slate-600 border-slate-500 text-white text-sm h-8"
                           />
                         </div>
 
                         <div className="space-y-1">
                           <Label className="text-xs text-slate-300">Total a Receber</Label>
-                          <div className="flex items-center h-9 px-3 bg-green-500/10 border border-green-500/30 rounded-md">
-                            <Calculator className="w-3 h-3 text-green-400 mr-1" />
-                            <span className="text-sm font-medium text-green-400">
+                          <div className="flex items-center h-8 px-2 bg-green-500/10 border border-green-500/30 rounded-md">
+                            <Calculator className="w-3 h-3 text-green-400 mr-1 flex-shrink-0" />
+                            <span className="text-xs font-medium text-green-400 truncate">
                               {calculateTotal(offer.price, offer.commission_rate)}
                             </span>
                           </div>
@@ -465,12 +537,13 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
               />
             </div>
 
-            <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 flex gap-3 pt-4">
+            <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 flex gap-3 pt-3">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onClose}
                 className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                disabled={isSubmitting}
               >
                 Cancelar
               </Button>
@@ -513,6 +586,7 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
                 onChange={(e) => setNewCategoryName(e.target.value)}
                 placeholder="Ex: Saúde e Bem-estar"
                 className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+                onKeyDown={(e) => e.key === 'Enter' && handleCreateCategory()}
               />
             </div>
           </div>

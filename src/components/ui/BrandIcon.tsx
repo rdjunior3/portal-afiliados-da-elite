@@ -45,9 +45,9 @@ const BrandIcon: React.FC<BrandIconProps> = ({ className }) => {
           d="M 150 50 L 120 140 L 135 140 L 150 90 Z" 
           fill="url(#shineGradient)"
         />
-      </g>
-    </svg>
-  );
+    </g>
+  </svg>
+);
 };
 
-export default BrandIcon; 
+export default BrandIcon;

@@ -126,14 +126,14 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
     console.log('[CreateProduct] Iniciando upload de:', file.name);
     
     try {
-      setImageFile(file);
-      
+    setImageFile(file);
+    
       // Preview local
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
 
       // Upload para Supabase
       await uploadImage(file);
@@ -160,7 +160,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
         const insertData = {
           name: productData.name,
           description: productData.description,
-          category_id: productData.category_id,
+        category_id: productData.category_id,
           image_url: productData.image_url,
           affiliate_link: productData.affiliate_link,
           sales_page_url: productData.affiliate_link,
@@ -168,24 +168,24 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
           commission_rate: productData.commission_rate,
           commission_amount: productData.commission_amount,
           tags: productData.tags || [],
-          is_active: true,
+        is_active: true,
           slug: productData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
           currency: 'BRL'
-        };
-        
+      };
+
         console.log('[CreateProduct] Dados preparados:', insertData);
 
         // Criar produto
-        const { data: product, error: productError } = await supabase
-          .from('products')
+      const { data: product, error: productError } = await supabase
+        .from('products')
           .insert([insertData])
-          .select()
-          .single();
+        .select()
+        .single();
 
-        if (productError) {
+      if (productError) {
           console.error('[CreateProduct] Erro ao criar produto:', productError);
-          throw productError;
-        }
+        throw productError;
+      }
 
         console.log('[CreateProduct] Produto criado com sucesso:', product);
 
@@ -194,21 +194,21 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
           console.log('[CreateProduct] Criando ofertas associadas...');
           
           const offersData = productData.offers.map((offer: ProductOffer, index: number) => ({
-            product_id: product.id,
+          product_id: product.id,
             name: offer.title,
-            price: offer.price,
-            commission_rate: offer.commission_rate,
+          price: offer.price,
+          commission_rate: offer.commission_rate,
             commission_amount: offer.commission_amount,
-            is_default: index === 0,
-            is_active: true,
-            sort_order: index
-          }));
+          is_default: index === 0,
+          is_active: true,
+          sort_order: index
+        }));
 
-          const { error: offersError } = await supabase
-            .from('product_offers')
-            .insert(offersData);
+        const { error: offersError } = await supabase
+          .from('product_offers')
+          .insert(offersData);
 
-          if (offersError) {
+        if (offersError) {
             console.error('[CreateProduct] Erro ao criar ofertas:', offersError);
           }
         }
@@ -375,7 +375,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
           <DialogTitle className="text-lg font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-2">
             <div className="w-5 h-5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center">
               <Plus className="h-3 w-3 text-white" />
-            </div>
+              </div>
             Novo Produto
           </DialogTitle>
           <DialogDescription className="text-slate-400 text-xs">
@@ -409,18 +409,18 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
               <TabsContent value="basic" className="space-y-2 h-full">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                   {/* Coluna 1: Campos básicos */}
-                  <div className="space-y-2">
+            <div className="space-y-2">
                     <div>
                       <Label htmlFor="name" className="text-slate-200 text-xs">Nome do Produto *</Label>
-                      <Input
-                        id="name"
-                        value={formData.name}
+              <Input
+                id="name"
+                value={formData.name}
                         onChange={(e) => setFormData({...formData, name: e.target.value})}
                         className="bg-slate-800 border-slate-600 text-white h-7 text-sm"
                         placeholder="Ex: Curso de Marketing"
                         required
-                      />
-                    </div>
+              />
+            </div>
 
                     <div>
                       <div className="flex items-center gap-1 mb-1">
@@ -438,37 +438,37 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                       <Select value={formData.category_id} onValueChange={(value) => setFormData({...formData, category_id: value})}>
                         <SelectTrigger className="bg-slate-800 border-slate-600 text-white h-7">
                           <SelectValue placeholder="Selecionar" />
-                        </SelectTrigger>
+                </SelectTrigger>
                         <SelectContent className="bg-slate-800 border-slate-600">
                           {categories?.map((category) => (
                             <SelectItem key={category.id} value={category.id} className="text-white hover:bg-slate-700">
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
                   {/* Coluna 2: Link de afiliação */}
-                  <div className="space-y-2">
+          <div className="space-y-2">
                     <div>
                       <Label htmlFor="affiliate_link" className="text-slate-200 flex items-center gap-1 text-xs">
                         Link de Afiliação *
                         <ExternalLink className="h-3 w-3 text-slate-400" />
-                      </Label>
-                      <Input
+            </Label>
+                <Input
                         id="affiliate_link"
                         value={formData.affiliate_link}
                         onChange={(e) => setFormData({...formData, affiliate_link: e.target.value})}
                         className="bg-slate-800 border-slate-600 text-white h-7 text-sm"
                         placeholder="https://exemplo.com/produto"
                         required
-                      />
-                      <p className="text-xs text-slate-400 mt-1">
+                />
+                <p className="text-xs text-slate-400 mt-1">
                         Página de afiliação do produto
-                      </p>
-                    </div>
+                </p>
+              </div>
                   </div>
 
                   {/* Coluna 3: Descrição compacta */}
@@ -494,7 +494,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                   >
                     Próximo: Imagem
                   </Button>
-                </div>
+            </div>
               </TabsContent>
 
               {/* Aba 2: Upload de Imagem Compacto */}
@@ -528,12 +528,12 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                             <span className="text-xs text-slate-300">Clique para upload</span>
                             <span className="text-xs text-slate-400">PNG, JPG, WEBP</span>
                             <span className="text-xs text-cyan-400">310x310px</span>
-                          </div>
-                        )}
+              </div>
+            )}
                       </label>
                     </div>
                   </div>
-                </div>
+          </div>
 
                 <div className="flex justify-between pt-1">
                   <Button
@@ -552,7 +552,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                   >
                     Próximo: Ofertas
                   </Button>
-                </div>
+          </div>
               </TabsContent>
 
               {/* Aba 3: Ofertas Compacta */}
@@ -563,7 +563,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                   <div className="grid grid-cols-3 gap-2">
                     <div>
                       <Label htmlFor="price" className="text-slate-200 text-xs">Preço (R$) *</Label>
-                      <Input
+            <Input
                         id="price"
                         type="number"
                         step="0.01"
@@ -573,11 +573,11 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                         className="bg-slate-800 border-slate-600 text-white h-7 text-xs"
                         placeholder="0.00"
                         required
-                      />
-                    </div>
+            />
+          </div>
                     <div>
                       <Label htmlFor="commission_rate" className="text-slate-200 text-xs">Comissão (%)</Label>
-                      <Input
+              <Input
                         id="commission_rate"
                         type="number"
                         step="0.01"
@@ -593,14 +593,14 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                       <Label className="text-slate-200 text-xs">Valor</Label>
                       <div className="p-1 bg-slate-800 border border-slate-600 rounded text-green-400 text-xs h-7 flex items-center">
                         R$ {formData.commission_amount.toFixed(2)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            </div>
+            </div>
+          </div>
+            </div>
 
                 {/* Ofertas Adicionais Compactas */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
                     <h4 className="text-white font-medium text-xs">Ofertas Adicionais ({offers.length})</h4>
                     <Button
                       type="button"
@@ -765,7 +765,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                   </Button>
                 </div>
               </TabsContent>
-            </div>
+              </div>
           </Tabs>
 
           <DialogFooter className="border-t border-slate-700/50 pt-2 mt-1">
@@ -790,8 +790,8 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
                   </>
                 )}
               </Button>
-            </div>
-          </DialogFooter>
+          </div>
+        </DialogFooter>
         </form>
       </DialogContent>
 
@@ -805,4 +805,4 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ isOpen, onClose
   );
 };
 
-export default CreateProductModal;
+export default CreateProductModal; 
