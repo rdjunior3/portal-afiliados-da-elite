@@ -1,23 +1,23 @@
 // Design System Elite - Tokens e configurações para UI moderna e futurista
 export const designTokens = {
-  // Paleta de cores Elite
+  // Paleta de cores Elite - ATUALIZADA PARA AZUL ESCURO + GRADIENTES
   colors: {
-    // Cores primárias (Elite Brand)
+    // Cores primárias (Elite Dark Blue - NOVO)
     primary: {
       50: '#f0f9ff',
       100: '#e0f2fe',
       200: '#bae6fd',
       300: '#7dd3fc',
       400: '#38bdf8',
-      500: '#0ea5e9', // Azul Elite principal
-      600: '#0284c7',
-      700: '#0369a1',
-      800: '#075985',
-      900: '#0c4a6e',
-      950: '#082f49',
+      500: '#1e40af', // Azul escuro principal (era #0ea5e9)
+      600: '#1d4ed8',
+      700: '#1e3a8a',
+      800: '#1e293b', // Azul muito escuro
+      900: '#0f172a', // Azul quase preto
+      950: '#0c1629', // Azul Elite ultra escuro
     },
     
-    // Cores secundárias (Cyber Orange)
+    // Cores secundárias (Elite Orange - MANTIDO)
     secondary: {
       50: '#fff7ed',
       100: '#ffedd5',
@@ -32,14 +32,14 @@ export const designTokens = {
       950: '#431407',
     },
     
-    // Cores de acento (Neon Green)
+    // Cores de acento (Neon Green - REDUZIDO)
     accent: {
       50: '#f0fdf4',
       100: '#dcfce7',
       200: '#bbf7d0',
       300: '#86efac',
       400: '#4ade80',
-      500: '#22c55e', // Verde Elite
+      500: '#22c55e', // Verde Elite - apenas para states
       600: '#16a34a',
       700: '#15803d',
       800: '#166534',
@@ -47,7 +47,7 @@ export const designTokens = {
       950: '#052e16',
     },
     
-    // Cores neutras (Dark Mode)
+    // Cores neutras (Dark Mode Elite - ATUALIZADO)
     neutral: {
       0: '#ffffff',
       50: '#f8fafc',
@@ -58,26 +58,36 @@ export const designTokens = {
       500: '#64748b',
       600: '#475569',
       700: '#334155',
-      800: '#1e293b',
-      850: '#172033', // Dark Elite
-      900: '#0f172a',
-      950: '#020617',
+      800: '#1e293b', // Dark Elite
+      850: '#172033', 
+      900: '#0f172a', // Elite background
+      950: '#0c1629', // Elite ultra dark
     },
     
     // Estados e feedback
     success: '#22c55e',
     warning: '#f59e0b',
     error: '#ef4444',
-    info: '#3b82f6',
+    info: '#1e40af', // Mudado para azul escuro
     
-    // Gradientes Elite
+    // Gradientes Elite - NOVOS GRADIENTES AZUL ESCURO
     gradients: {
-      primary: 'linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%)',
-      secondary: 'linear-gradient(135deg, #f97316 0%, #fb923c 100%)',
-      accent: 'linear-gradient(135deg, #22c55e 0%, #4ade80 100%)',
-      cyber: 'linear-gradient(135deg, #0ea5e9 0%, #f97316 50%, #22c55e 100%)',
-      dark: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-      glass: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+      // Gradiente principal: azul escuro → azul médio
+      primary: 'linear-gradient(135deg, #0c1629 0%, #1e40af 50%, #1d4ed8 100%)',
+      // Gradiente secundário: azul escuro → laranja
+      secondary: 'linear-gradient(135deg, #1e293b 0%, #f97316 100%)',
+      // Gradiente de destaque: azul escuro → laranja → azul
+      elite: 'linear-gradient(135deg, #0c1629 0%, #1e40af 30%, #f97316 70%, #1e40af 100%)',
+      // Gradiente sutil para cards
+      card: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+      // Gradiente escuro para backgrounds
+      dark: 'linear-gradient(135deg, #0c1629 0%, #0f172a 50%, #1e293b 100%)',
+      // Gradiente glass effect
+      glass: 'linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, rgba(249, 115, 22, 0.05) 100%)',
+      // Gradiente para botões principais
+      button: 'linear-gradient(135deg, #1e40af 0%, #f97316 100%)',
+      // Gradiente para borders
+      border: 'linear-gradient(135deg, rgba(30, 64, 175, 0.3) 0%, rgba(249, 115, 22, 0.3) 100%)',
     }
   },
   
@@ -152,7 +162,7 @@ export const designTokens = {
     full: '9999px',
   },
   
-  // Shadows Elite
+  // Shadows Elite - ATUALIZADAS PARA AZUL ESCURO
   boxShadow: {
     sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
     base: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
@@ -163,11 +173,12 @@ export const designTokens = {
     inner: 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
     none: '0 0 #0000',
     
-    // Shadows especiais Elite
-    cyber: '0 0 20px rgba(14, 165, 233, 0.3), 0 0 40px rgba(14, 165, 233, 0.1)',
-    elite: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05)',
-    glass: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+    // Shadows especiais Elite - NOVO AZUL ESCURO
+    cyber: '0 0 20px rgba(30, 64, 175, 0.4), 0 0 40px rgba(30, 64, 175, 0.2)',
+    elite: '0 8px 32px rgba(12, 22, 41, 0.6), 0 0 0 1px rgba(30, 64, 175, 0.1)',
+    glass: '0 8px 32px rgba(12, 22, 41, 0.4), inset 0 1px 0 rgba(30, 64, 175, 0.1)',
     neon: '0 0 5px currentColor, 0 0 20px currentColor, 0 0 35px currentColor',
+    glow: '0 0 30px rgba(249, 115, 22, 0.3), 0 0 60px rgba(30, 64, 175, 0.2)',
   },
   
   // Animações e transições
@@ -217,7 +228,7 @@ export const designTokens = {
   }
 };
 
-// Classes utilitárias para componentes Elite
+// Classes utilitárias para componentes Elite - ATUALIZADAS
 export const eliteClasses = {
   // Layout containers
   container: {
@@ -229,37 +240,40 @@ export const eliteClasses = {
     full: 'max-w-full',
   },
   
-  // Cards Elite
+  // Cards Elite - NOVOS ESTILOS AZUL ESCURO
   card: {
-    base: 'rounded-xl border border-slate-700/50 bg-slate-900/60 backdrop-blur-sm shadow-elite',
-    glass: 'rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-glass',
-    cyber: 'rounded-xl border border-primary-500/30 bg-slate-900/80 shadow-cyber',
-    gradient: 'rounded-xl border-0 bg-gradient-to-br from-slate-800 to-slate-900 shadow-xl',
+    base: 'rounded-xl border border-slate-700/30 bg-gradient-to-br from-slate-900/90 to-slate-800/60 backdrop-blur-sm shadow-elite',
+    glass: 'rounded-xl border border-primary-500/20 bg-gradient-to-br from-primary-950/40 to-primary-900/20 backdrop-blur-md shadow-glass',
+    cyber: 'rounded-xl border border-primary-500/40 bg-gradient-to-br from-primary-950/80 to-primary-900/60 shadow-cyber',
+    gradient: 'rounded-xl border-0 bg-gradient-to-br from-primary-950 via-primary-900 to-slate-900 shadow-xl',
+    elite: 'rounded-xl border border-orange-500/20 bg-gradient-to-br from-primary-950/90 to-primary-900/70 shadow-glow',
   },
   
-  // Buttons Elite
+  // Buttons Elite - NOVOS GRADIENTES AZUL ESCURO + LARANJA
   button: {
-    primary: 'bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white shadow-lg hover:shadow-cyber transition-all duration-300',
-    secondary: 'bg-gradient-to-r from-secondary-600 to-secondary-700 hover:from-secondary-700 hover:to-secondary-800 text-white shadow-lg transition-all duration-300',
-    accent: 'bg-gradient-to-r from-accent-600 to-accent-700 hover:from-accent-700 hover:to-accent-800 text-white shadow-lg transition-all duration-300',
-    ghost: 'bg-transparent hover:bg-white/5 border border-white/10 hover:border-white/20 text-white transition-all duration-300',
-    cyber: 'bg-transparent border-2 border-primary-500 text-primary-400 hover:bg-primary-500 hover:text-white shadow-neon hover:shadow-cyber transition-all duration-300',
+    primary: 'bg-gradient-to-r from-primary-700 via-primary-600 to-secondary-600 hover:from-primary-600 hover:via-primary-500 hover:to-secondary-500 text-white shadow-lg hover:shadow-cyber transition-all duration-300 border border-primary-500/20',
+    secondary: 'bg-gradient-to-r from-secondary-600 to-secondary-700 hover:from-secondary-500 hover:to-secondary-600 text-white shadow-lg transition-all duration-300',
+    accent: 'bg-gradient-to-r from-accent-600 to-accent-700 hover:from-accent-500 hover:to-accent-600 text-white shadow-lg transition-all duration-300',
+    ghost: 'bg-transparent hover:bg-primary-500/10 border border-primary-500/20 hover:border-primary-500/40 text-primary-300 hover:text-primary-200 transition-all duration-300',
+    cyber: 'bg-transparent border-2 border-primary-500/50 text-primary-400 hover:bg-gradient-to-r hover:from-primary-600/20 hover:to-secondary-500/20 hover:text-primary-200 shadow-neon hover:shadow-cyber transition-all duration-300',
+    elite: 'bg-gradient-to-r from-primary-800 via-primary-700 to-secondary-600 hover:from-primary-700 hover:via-primary-600 hover:to-secondary-500 text-white shadow-glow hover:shadow-elite transition-all duration-300 border border-orange-500/30',
   },
   
-  // Inputs Elite
+  // Inputs Elite - TEMA AZUL ESCURO
   input: {
-    base: 'bg-slate-800/60 border-slate-600/50 text-white placeholder:text-slate-400 focus:border-primary-500 focus:ring-primary-500/20 transition-all duration-300',
-    cyber: 'bg-slate-900/80 border-primary-500/30 text-primary-100 placeholder:text-primary-300/50 focus:border-primary-400 focus:ring-primary-400/30 focus:shadow-cyber transition-all duration-300',
-    glass: 'bg-white/5 border-white/10 text-white placeholder:text-white/50 focus:border-white/30 focus:ring-white/10 backdrop-blur-sm transition-all duration-300',
+    base: 'bg-primary-950/60 border-primary-700/50 text-primary-100 placeholder:text-primary-400/70 focus:border-primary-500 focus:ring-primary-500/30 transition-all duration-300',
+    cyber: 'bg-primary-950/80 border-primary-500/40 text-primary-100 placeholder:text-primary-300/60 focus:border-secondary-500 focus:ring-secondary-500/30 focus:shadow-cyber transition-all duration-300',
+    glass: 'bg-primary-500/5 border-primary-500/20 text-primary-100 placeholder:text-primary-200/50 focus:border-primary-400/50 focus:ring-primary-400/20 backdrop-blur-sm transition-all duration-300',
   },
   
-  // Text styles Elite
+  // Text styles Elite - ATUALIZADOS
   text: {
-    gradient: 'bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent',
+    gradient: 'bg-gradient-to-r from-primary-400 via-primary-300 to-secondary-400 bg-clip-text text-transparent',
     cyber: 'text-primary-400 drop-shadow-sm',
-    elite: 'text-slate-100 font-medium',
-    muted: 'text-slate-400',
-    accent: 'text-accent-400',
+    elite: 'text-primary-100 font-medium',
+    muted: 'text-primary-300/70',
+    accent: 'text-secondary-400',
+    brand: 'bg-gradient-to-r from-primary-300 to-secondary-400 bg-clip-text text-transparent font-bold',
   },
   
   // Animations Elite
@@ -271,31 +285,32 @@ export const eliteClasses = {
     glow: 'animate-pulse',
   },
   
-  // Hover effects
+  // Hover effects - ATUALIZADOS
   hover: {
     lift: 'hover:transform hover:-translate-y-1 hover:scale-[1.02] transition-transform duration-300',
-    glow: 'hover:shadow-neon transition-shadow duration-300',
+    glow: 'hover:shadow-glow transition-shadow duration-300',
     cyber: 'hover:shadow-cyber hover:border-primary-400/50 transition-all duration-300',
+    elite: 'hover:shadow-elite hover:border-secondary-400/50 transition-all duration-300',
   }
 };
 
-// Theme configuration Elite
+// Theme configuration Elite - ATUALIZADO PARA AZUL ESCURO
 export const eliteTheme = {
   dark: {
-    background: designTokens.colors.neutral[900],
-    foreground: designTokens.colors.neutral[100],
-    card: designTokens.colors.neutral[850],
-    cardForeground: designTokens.colors.neutral[100],
-    primary: designTokens.colors.primary[500],
+    background: designTokens.colors.primary[950], // Azul ultra escuro
+    foreground: designTokens.colors.primary[100],
+    card: designTokens.colors.primary[900], // Azul escuro para cards
+    cardForeground: designTokens.colors.primary[100],
+    primary: designTokens.colors.primary[600], // Azul principal
     primaryForeground: designTokens.colors.neutral[0],
-    secondary: designTokens.colors.secondary[500],
+    secondary: designTokens.colors.secondary[500], // Laranja mantido
     secondaryForeground: designTokens.colors.neutral[0],
     accent: designTokens.colors.accent[500],
     accentForeground: designTokens.colors.neutral[0],
-    muted: designTokens.colors.neutral[800],
-    mutedForeground: designTokens.colors.neutral[400],
-    border: designTokens.colors.neutral[700],
-    input: designTokens.colors.neutral[800],
+    muted: designTokens.colors.primary[900],
+    mutedForeground: designTokens.colors.primary[400],
+    border: designTokens.colors.primary[700],
+    input: designTokens.colors.primary[900],
     ring: designTokens.colors.primary[500],
   }
 };

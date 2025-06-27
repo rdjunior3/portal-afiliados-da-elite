@@ -28,14 +28,7 @@ const OAuthCallback = () => {
   const [attempts, setAttempts] = useState(0);
   
   useEffect(() => {
-    console.log('🔗 [OAuthCallback] Iniciando processamento do callback OAuth...', {
-    url: window.location.href,
-    search: window.location.search,
-      hash: window.location.hash,
-      hasUser: !!user,
-      isLoading: loading,
-      attempts
-    });
+    // OAuth callback processing
     
     // Aguardar o AuthContext processar o callback
     const processCallback = async () => {
@@ -43,7 +36,7 @@ const OAuthCallback = () => {
       
       // Dar mais tempo para processamento se ainda está loading
       if (loading && attempts < 8) {
-        console.log(`🔄 [OAuthCallback] Ainda processando... tentativa ${attempts + 1}/8`);
+        // Processando callback OAuth...
         setAttempts(prev => prev + 1);
         return;
       }
@@ -52,19 +45,15 @@ const OAuthCallback = () => {
       
       // Aguardar um tempo adicional para o Supabase processar o token
       if (attempts <= 3) {
-        console.log('⏳ [OAuthCallback] Aguardando processamento adicional...');
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
       
       // Verificar se o usuário foi autenticado
       if (user && !loading) {
-        console.log('✅ [OAuthCallback] Usuário autenticado, redirecionando para dashboard...');
         navigate('/dashboard', { replace: true });
       } else if (!loading && attempts >= 6) {
-        console.log('❌ [OAuthCallback] Falha na autenticação após múltiplas tentativas, redirecionando para login...');
         navigate('/login', { replace: true });
       } else if (!loading) {
-        console.log('🔄 [OAuthCallback] Sem usuário mas loading finalizado, tentando novamente...');
         setAttempts(prev => prev + 1);
         setProcessed(false);
       }
@@ -80,7 +69,6 @@ const OAuthCallback = () => {
   // Se o usuário já está autenticado, redirecionar imediatamente
   useEffect(() => {
     if (user && !loading && !processed) {
-      console.log('🚀 [OAuthCallback] Usuário já autenticado, redirecionamento imediato...');
       setProcessed(true);
       navigate('/dashboard', { replace: true });
     }

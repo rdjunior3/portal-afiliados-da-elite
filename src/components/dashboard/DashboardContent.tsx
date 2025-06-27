@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -39,7 +39,7 @@ interface DashboardContentProps {
   navigate: (path: string) => void;
 }
 
-export const DashboardContent: React.FC<DashboardContentProps> = ({
+export const DashboardContent: React.FC<DashboardContentProps> = memo(({
   user,
   profile,
   statsCards = [],
@@ -53,7 +53,8 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
   const { toast } = useToast();
   const { isAdmin } = useAuth();
 
-  const getDisplayName = () => {
+  // Memoize display name calculation
+  const displayName = useMemo(() => {
     if (profile?.first_name && profile?.last_name) {
       return `${profile.first_name} ${profile.last_name}`;
     }
@@ -64,18 +65,28 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
       return user.user_metadata.full_name;
     }
     return user.email?.split('@')[0] || 'Afiliado';
-  };
+  }, [profile?.first_name, profile?.last_name, user.user_metadata?.full_name, user.email]);
 
-  const handleCopyLink = (url: string) => {
+  // Memoize copy link handler
+  const handleCopyLink = useCallback((url: string) => {
     navigator.clipboard.writeText(url);
     toast({
       title: "Link copiado! ✨",
       description: "O link de promoção foi copiado para sua área de transferência.",
     });
-  };
+  }, [toast]);
 
-  // Enhanced stats cards com dados mais realistas
-  const enhancedStatsCards = [
+  // Memoize navigation handlers
+  const handleNavigateToProducts = useCallback(() => {
+    navigate('/dashboard/products');
+  }, [navigate]);
+
+  const handleNavigateToAdmin = useCallback(() => {
+    navigate('/admin/products');
+  }, [navigate]);
+
+  // Memoize enhanced stats cards
+  const enhancedStatsCards = useMemo(() => [
     {
       title: 'Vendas Este Mês',
       value: 'R$ 12.540',
@@ -112,16 +123,34 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
       bgClass: 'from-orange-600/20 to-orange-800/20',
       trend: 'up' as const
     }
-  ];
+  ], []);
+
+  // Memoize featured products slice
+  const displayFeaturedProducts = useMemo(() => 
+    Array.isArray(featuredProducts) ? featuredProducts.slice(0, 4) : [],
+    [featuredProducts]
+  );
+
+  // Memoize tips slice
+  const displayTips = useMemo(() => 
+    tips.slice(0, 3), 
+    [tips]
+  );
+
+  // Memoize member since date
+  const memberSinceDate = useMemo(() => 
+    new Date(user.created_at || '').toLocaleDateString('pt-BR'),
+    [user.created_at]
+  );
 
   return (
     <div className="space-y-8">
-      {/* Hero Section Modernizado */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-700/50 p-8 lg:p-12">
+      {/* Hero Section Elite */}
+      <div className="relative overflow-hidden rounded-2xl bg-elite-primary border border-elite-secondary-500/30 p-8 lg:p-12 shadow-elite">
         {/* Background decorative elements */}
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-transparent to-orange-500/10"></div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-cyan-500/20 to-transparent rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-orange-500/20 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-elite-primary-500/10 via-transparent to-elite-secondary-500/10"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-elite-primary-500/20 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-elite-secondary-500/20 to-transparent rounded-full blur-3xl"></div>
         
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-6">
@@ -137,18 +166,18 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
           </div>
           
           <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6">
-            Olá, <span className="bg-gradient-to-r from-cyan-400 to-orange-400 bg-clip-text text-transparent">{getDisplayName()}</span>! 👋
+            Olá, <span className="bg-gradient-to-r from-elite-primary-400 to-elite-secondary-400 bg-clip-text text-transparent">{displayName}</span>! 👋
           </h1>
           
-          <p className="text-xl lg:text-2xl text-slate-300 mb-8 max-w-3xl leading-relaxed">
+          <p className="text-xl lg:text-2xl text-elite-primary-200/80 mb-8 max-w-3xl leading-relaxed">
             Bem-vindo ao seu portal elite de afiliados. Monitore suas vendas, comissões e descubra novos produtos premium com nossa interface futurística.
           </p>
           
           <div className="flex flex-wrap gap-4">
             <Button 
               size="lg"
-              className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 transform hover:scale-105 px-8 py-3"
-              onClick={() => navigate('/dashboard/products')}
+              className="bg-elite-button hover:bg-elite-secondary text-white shadow-glow hover:shadow-elite transition-all duration-300 transform hover:scale-105 px-8 py-3 border border-elite-secondary-500/40"
+              onClick={handleNavigateToProducts}
             >
               <Sparkles className="h-5 w-5 mr-2" />
               Explorar Produtos Elite
@@ -158,8 +187,8 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
               <Button 
                 variant="outline"
                 size="lg"
-                className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-300 transform hover:scale-105 px-8 py-3"
-                onClick={() => navigate('/admin/products')}
+                className="border-elite-primary-600 text-elite-primary-300 hover:bg-elite-primary-800 hover:text-white transition-all duration-300 transform hover:scale-105 px-8 py-3"
+                onClick={handleNavigateToAdmin}
               >
                 <Crown className="h-5 w-5 mr-2" />
                 Painel Administrativo
@@ -177,7 +206,7 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
             <Card 
               key={index} 
               className={cn(
-                "relative overflow-hidden bg-slate-900/60 border-slate-700/50 backdrop-blur-sm transition-all duration-500 hover:scale-105 hover:border-slate-600/50 group cursor-pointer"
+                "relative overflow-hidden bg-elite-card border-elite-border backdrop-blur-sm transition-all duration-500 hover:scale-105 hover:border-elite-secondary-500/50 group cursor-pointer shadow-elite"
               )}
             >
               {/* Gradient background */}
@@ -189,10 +218,10 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
               <CardContent className="p-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <p className="text-slate-400 text-sm font-medium tracking-wide uppercase">{stat.title}</p>
+                    <p className="text-elite-primary-400 text-sm font-medium tracking-wide uppercase">{stat.title}</p>
                     <p className="text-3xl lg:text-4xl font-bold text-white mt-2 tracking-tight">{stat.value}</p>
                     {stat.change && (
-                      <p className="text-sm text-emerald-400 font-medium mt-2 flex items-center">
+                      <p className="text-sm text-elite-accent-400 font-medium mt-2 flex items-center">
                         <TrendingUp className="h-3 w-3 mr-1" />
                         {stat.change} vs mês anterior
                       </p>
@@ -261,7 +290,7 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => navigate('/dashboard/products')}
+                  onClick={handleNavigateToProducts}
                   className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 transition-all duration-300 transform hover:scale-105"
                 >
                   Ver todos
@@ -283,7 +312,7 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
                     </div>
                   ))
                 ) : (
-                  Array.isArray(featuredProducts) && featuredProducts.slice(0, 4).map((product) => (
+                  displayFeaturedProducts.map((product) => (
                     <div key={product.id} className="group bg-gradient-to-br from-slate-800/80 to-slate-900/60 p-6 rounded-xl border border-slate-700/50 hover:border-slate-600/50 transition-all duration-500 hover:scale-102 hover:shadow-lg hover:shadow-cyan-500/10">
                       <div className="aspect-video bg-slate-900 rounded-lg overflow-hidden mb-4 border border-slate-700/30">
                         <img 
@@ -336,12 +365,12 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
                 <div className="w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-yellow-400/25">
                   <Star className="h-10 w-10 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">{getDisplayName()}</h3>
+                <h3 className="text-2xl font-bold text-white mb-2">{displayName}</h3>
                 <Badge className="bg-gradient-to-r from-yellow-400/20 to-orange-400/20 text-yellow-300 border-yellow-400/30 mb-4 px-4 py-1 text-sm">
                   🏆 Membro Elite
                   </Badge>
                 <p className="text-sm text-slate-400">
-                  Membro desde {new Date(user.created_at || '').toLocaleDateString('pt-BR')}
+                  Membro desde {memberSinceDate}
                 </p>
               </div>
             </CardContent>
@@ -364,7 +393,7 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {tips.slice(0, 3).map((tip, index) => (
+                  {displayTips.map((tip, index) => (
                     <div key={index} className="p-4 bg-slate-800/40 rounded-lg border border-slate-700/30 hover:border-slate-600/50 hover:bg-slate-700/40 transition-all duration-300 group">
                       <h4 className="text-sm font-medium text-white mb-2 group-hover:text-cyan-400 transition-colors">{tip.title}</h4>
                       <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">{tip.content}</p>
@@ -393,6 +422,6 @@ export const DashboardContent: React.FC<DashboardContentProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default DashboardContent;

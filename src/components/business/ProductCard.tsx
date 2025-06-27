@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useMemo, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,13 +14,14 @@ interface ProductCardProps {
   onEdit?: (productId: string) => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onEdit }) => {
+export const ProductCard: React.FC<ProductCardProps> = memo(({ product, onDelete, onEdit }) => {
   const { toast } = useToast();
   const { links, loading: linksLoading, error: linksError } = useAffiliateLinks(product.id);
   const { isAdmin } = useAuth();
   const [imageError, setImageError] = useState(false);
 
-  const handleCopyLink = (url: string) => {
+  // Memoize copy link handler
+  const handleCopyLink = useCallback((url: string) => {
     if (!url) {
       toast({ title: "Link indisponível", variant: "destructive" });
       return;
@@ -31,28 +32,43 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onE
       description: "O link foi copiado para a área de transferência.",
       className: "bg-green-600 text-white border-green-500"
     });
-  };
+  }, [toast]);
 
-  // Decide which link to use: affiliate link if available, otherwise sales_page_url
-  const getOfferLink = (offerId: string, salesPageUrl: string) => {
+  // Memoize offer link function
+  const getOfferLink = useCallback((offerId: string, salesPageUrl: string) => {
     const affiliateLink = links.find(link => link.offer_id === offerId);
     return affiliateLink ? affiliateLink.affiliate_url : salesPageUrl;
-  };
+  }, [links]);
 
-  // Calcular maior comissão disponível
-  const maxCommission = product.offers && product.offers.length > 0
-    ? Math.max(...product.offers.map(offer => (offer.price * offer.commission_rate) / 100))
-    : product.default_offer_price && product.default_offer_commission_rate 
-      ? (product.default_offer_price * product.default_offer_commission_rate) / 100
-      : 0;
+  // Memoize expensive calculations
+  const { maxCommission, maxPrice } = useMemo(() => {
+    const commission = product.offers && product.offers.length > 0
+      ? Math.max(...product.offers.map(offer => (offer.price * offer.commission_rate) / 100))
+      : product.default_offer_price && product.default_offer_commission_rate 
+        ? (product.default_offer_price * product.default_offer_commission_rate) / 100
+        : 0;
 
-  // Calcular preço máximo
-  const maxPrice = product.offers && product.offers.length > 0
-    ? Math.max(...product.offers.map(offer => offer.price))
-    : product.default_offer_price || 0;
+    const price = product.offers && product.offers.length > 0
+      ? Math.max(...product.offers.map(offer => offer.price))
+      : product.default_offer_price || 0;
+
+    return { maxCommission: commission, maxPrice: price };
+  }, [product.offers, product.default_offer_price, product.default_offer_commission_rate]);
+
+  // Memoize truncated offers
+  const displayOffers = useMemo(() => 
+    product.offers?.slice(0, 2) || [], 
+    [product.offers]
+  );
+
+  // Memoize truncated tags
+  const displayTags = useMemo(() => 
+    (product as any).tags?.slice(0, 3) || [], 
+    [(product as any).tags]
+  );
 
   return (
-    <Card className="group overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-600/30 hover:border-orange-500/50 transition-all duration-300 hover:shadow-xl hover:transform hover:-translate-y-1 max-w-sm mx-auto">
+    <Card className="group overflow-hidden bg-elite-card border border-elite-border hover:border-elite-secondary-500/50 transition-all duration-300 hover:shadow-elite hover:transform hover:-translate-y-1 max-w-sm mx-auto">
       {/* Admin Controls */}
       {isAdmin() && (
         <div className="absolute top-3 right-3 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
@@ -98,7 +114,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onE
       </div>
 
       {/* Product Image - Layout mais limpo */}
-      <div className="aspect-video bg-slate-800 rounded-t-lg overflow-hidden">
+      <div className="aspect-video bg-elite-primary-800 rounded-t-lg overflow-hidden">
         {product.thumbnail_url && !imageError ? (
           <img 
             src={product.thumbnail_url} 
@@ -107,7 +123,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onE
             onError={() => setImageError(true)}
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 flex items-center justify-center">
+          <div className="w-full h-full bg-elite-button flex items-center justify-center">
             <div className="text-center text-white p-6">
               <DollarSign className="h-12 w-12 mx-auto mb-2 opacity-90" />
               <h3 className="font-semibold text-sm leading-tight">{product.name}</h3>
@@ -119,21 +135,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onE
       <CardContent className="p-4 space-y-4">
         {/* Título e Descrição */}
         <div>
-          <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-orange-400 transition-colors line-clamp-1">
+          <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-elite-secondary-400 transition-colors line-clamp-1">
             {product.name}
           </h3>
-          <p className="text-slate-400 text-sm line-clamp-2 leading-relaxed">
+          <p className="text-elite-primary-400 text-sm line-clamp-2 leading-relaxed">
             {product.description}
           </p>
         </div>
 
         {/* Tags - Se existirem */}
-        {product.tags && product.tags.length > 0 && (
+        {displayTags.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {product.tags.slice(0, 3).map((tag, index) => (
+            {displayTags.map((tag, index) => (
               <span
                 key={index}
-                className="px-2 py-1 bg-orange-500/10 text-orange-400 text-xs rounded-full"
+                className="px-2 py-1 bg-elite-secondary-500/10 text-elite-secondary-400 text-xs rounded-full"
               >
                 {tag}
               </span>
@@ -149,7 +165,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onE
             </span>
           )}
           {maxCommission > 0 && (
-            <span className="text-emerald-400 font-medium">
+            <span className="text-elite-accent-400 font-medium">
               R$ {maxCommission.toFixed(2)} comissão
             </span>
           )}
@@ -212,4 +228,4 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onDelete, onE
       </CardContent>
     </Card>
   );
-}; 
+}); 

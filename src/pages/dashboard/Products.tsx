@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { ProductCard } from '@/components/business';
-import CreateProductModalSimple from '@/components/modals/CreateProductModalSimple';
+import CreateProductModal from '@/components/modals/CreateProductModal';
 import TrophyIcon from '@/components/ui/TrophyIcon';
 import {
   AlertDialog,
@@ -158,7 +158,7 @@ const ProductsPage = () => {
       </PageLayout>
 
       {/* Modal de Criação Simples */}
-      <CreateProductModalSimple
+      <CreateProductModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
       />

@@ -54,11 +54,20 @@ const ProductOffersManager: React.FC<ProductOffersManagerProps> = ({
 
   const handleAddOffer = () => {
     setEditingIndex(-1); // -1 indica nova oferta
+    // Limpa o formulário em vez de manter dados anteriores
     setFormData({
-      ...formData,
-      sort_order: offers.length,
-      is_default: offers.length === 0 // Primeira oferta é padrão
+      name: '',
+      description: '',
+      price: 0,
+      original_price: 0,
+      commission_rate: 0,
+      commission_amount: 0,
+      affiliate_link: '',
+      is_default: offers.length === 0, // Primeira oferta é padrão
+      is_active: true,
+      sort_order: offers.length
     });
+    setErrors([]);
   };
 
   const handleEditOffer = (index: number) => {

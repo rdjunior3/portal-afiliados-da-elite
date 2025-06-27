@@ -104,7 +104,7 @@ interface RoomForm {
 const EMOJI_LIST = ['👍', '👎', '❤️', '😀', '😂', '😮', '😢', '😡', '🎉', '🔥'];
 
 const ChatPage = () => {
-  console.log("ChatPage vFINAL Loaded - Se você vir esta mensagem, o deploy está funcionando.");
+  // ChatPage carregada
   const { user, profile, isAdmin } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -123,10 +123,7 @@ const ChatPage = () => {
   const { data: rooms = [], isLoading: isLoadingRooms, isError: isErrorRooms } = useQuery({
     queryKey: ['chat-rooms'],
     queryFn: async () => {
-      console.log('🔍 [ChatRooms] Iniciando busca de salas de chat...');
-      console.log('🔍 [ChatRooms] Usuário autenticado:', !!user);
-      console.log('🔍 [ChatRooms] Profile carregado:', !!profile);
-      console.log('🔍 [ChatRooms] User ID:', user?.id);
+          // Buscando salas de chat...
       
       const { data, error } = await supabase
         .from('chat_rooms')
@@ -134,8 +131,7 @@ const ChatPage = () => {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
       
-      console.log('🔍 [ChatRooms] Resultado da query:', { data, error });
-      console.log('🔍 [ChatRooms] Número de salas encontradas:', data?.length || 0);
+          // Query de salas executada
       
       if (error) {
         console.error("❌ [ChatRooms] Erro ao buscar salas de chat:", error);

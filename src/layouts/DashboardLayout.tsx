@@ -186,9 +186,9 @@ const DashboardLayout: React.FC = () => {
   };
 
   const SidebarContent = () => (
-    <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-slate-900 px-6 pb-4">
+    <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-elite-primary-900 px-6 pb-4">
       <div className="flex h-16 shrink-0 items-center gap-x-2">
-        <BrandIcon className="h-8 w-auto text-orange-400" />
+        <BrandIcon className="h-8 w-auto text-elite-secondary-400" />
         <span className="text-white font-bold text-lg">AFILIADOS DA ELITE</span>
       </div>
       <nav className="flex flex-1 flex-col">
@@ -203,20 +203,20 @@ const DashboardLayout: React.FC = () => {
                 "w-full flex items-center rounded-lg lg:rounded-xl transition-all duration-200 group relative overflow-hidden",
                 sidebarCollapsed ? "justify-center p-2 lg:p-3" : "gap-3 lg:gap-4 px-3 lg:px-4 py-2.5 lg:py-3",
                 isActive
-                  ? "bg-gradient-to-r from-orange-500/30 to-orange-600/20 text-orange-200 shadow-lg border border-orange-400/20"
-                  : "text-slate-300 hover:bg-gradient-to-r hover:from-slate-700/40 hover:to-slate-600/30 hover:text-white"
+                  ? "bg-gradient-to-r from-elite-secondary-500/30 to-elite-secondary-600/20 text-elite-secondary-200 shadow-glow border border-elite-secondary-400/20"
+                  : "text-elite-primary-300 hover:bg-gradient-to-r hover:from-elite-primary-700/40 hover:to-elite-primary-600/30 hover:text-white"
               )}
               title={sidebarCollapsed ? item.name : undefined}
             >
               <item.icon className={cn(
                 "h-4 w-4 lg:h-5 lg:w-5 flex-shrink-0 transition-colors duration-200",
-                isActive ? "text-orange-300" : "text-slate-400 group-hover:text-slate-200"
+                isActive ? "text-elite-secondary-300" : "text-elite-primary-400 group-hover:text-elite-primary-200"
               )} />
               {!sidebarCollapsed && (
                 <>
                   <span className="flex-1 text-left text-xs lg:text-sm font-medium">{item.name}</span>
                   {item.badge && (
-                    <Badge className="bg-orange-500 text-white text-xs px-1.5 lg:px-2 py-0.5">
+                    <Badge className="bg-elite-secondary-500 text-white text-xs px-1.5 lg:px-2 py-0.5">
                       {item.badge}
                     </Badge>
                   )}
@@ -516,17 +516,17 @@ const DashboardLayout: React.FC = () => {
         "transition-all duration-300",
         sidebarCollapsed ? "lg:pl-20" : "lg:pl-80"
       )}>
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-lg px-4 lg:px-8">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-elite-primary-700/50 bg-elite-primary-900/80 backdrop-blur-lg px-4 lg:px-8">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden text-slate-400 hover:text-white hover:bg-slate-700/50 h-8 w-8 p-0"
+              className="lg:hidden text-elite-primary-400 hover:text-white hover:bg-elite-primary-700/50 h-8 w-8 p-0"
               onClick={() => setSidebarOpen(true)}
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <div className="hidden lg:block text-sm text-slate-400">
+            <div className="hidden lg:block text-sm text-elite-primary-400">
               Bem-vindo de volta, <span className="font-semibold text-white">{getDisplayName()}</span>!
             </div>
           </div>
