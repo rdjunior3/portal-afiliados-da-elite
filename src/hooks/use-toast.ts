@@ -143,13 +143,13 @@ type Toast = Omit<ToasterToast, "id">
 // Helper function to auto-detect emoji based on variant and content
 function getAutoEmoji(variant?: string, title?: string): string {
   if (variant === 'success' || title?.includes('sucesso') || title?.includes('realizado')) return '🎉'
-  if (variant === 'destructive' || title?.includes('erro') || title?.includes('Erro')) return '❌'
-  if (variant === 'warning' || title?.includes('atenção') || title?.includes('Atenção')) return '⚠️'
-  if (variant === 'info') return 'ℹ️'
+  if (variant === 'destructive' || title?.includes('erro') || title?.includes('Erro')) return '[ERROR]'
+  if (variant === 'warning' || title?.includes('atenção') || title?.includes('Atenção')) return '[WARNING]'
+  if (variant === 'info') return '[INFO]'
   if (title?.includes('Login') || title?.includes('bem-vindo') || title?.includes('Bem-vindo')) return '👋'
   if (title?.includes('cadastro') || title?.includes('Cadastro')) return '🚀'
   if (title?.includes('logout') || title?.includes('sair')) return '👋'
-  if (title?.includes('atualizado') || title?.includes('salvas')) return '✅'
+  if (title?.includes('atualizado') || title?.includes('salvas')) return '[SUCCESS]'
   return ''
 }
 

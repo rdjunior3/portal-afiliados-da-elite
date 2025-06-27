@@ -79,10 +79,10 @@ export const supabaseWithTimeout = {
           )
         ]);
           
-        console.log(`✅ [Enhanced Upload] Success: ${file.name}`);
+        console.log(`[SUCCESS] [Enhanced Upload] Success: ${file.name}`);
         return response;
       } catch (error: any) {
-        console.error(`❌ [Enhanced Upload] Failed: ${file.name}`, error);
+        console.error(`[ERROR] [Enhanced Upload] Failed: ${file.name}`, error);
         throw error;
       }
     }
@@ -127,7 +127,7 @@ export const withRetry = async <T>(
       
       // Exponential backoff with jitter
       const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000;
-      console.log(`🔄 Retry attempt ${attempt}/${maxRetries} after ${delay}ms`);
+      console.log(`[LOADING] Retry attempt ${attempt}/${maxRetries} after ${delay}ms`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }

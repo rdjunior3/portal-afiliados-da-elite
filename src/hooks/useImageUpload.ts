@@ -18,11 +18,11 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
   const validateImage = (file: File): Promise<boolean> => {
     return new Promise((resolve) => {
-      console.log('🔍 [validateImage] Validando:', file.name, `(${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+      console.log('[SEARCH] [validateImage] Validando:', file.name, `(${(file.size / 1024 / 1024).toFixed(1)}MB)`);
       
       // Validar tipo de arquivo
       if (!file.type.startsWith('image/')) {
-        console.error('❌ [validateImage] Tipo inválido:', file.type);
+        console.error('[ERROR] [validateImage] Tipo inválido:', file.type);
         toast({
           title: "Arquivo inválido",
           description: "Selecione apenas arquivos de imagem (PNG, JPG, JPEG, WEBP)",
@@ -35,7 +35,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       // Validar tamanho
       const maxSize = (options.maxSizeInMB || 10) * 1024 * 1024;
       if (file.size > maxSize) {
-        console.error('❌ [validateImage] Arquivo muito grande:', file.size);
+        console.error('[ERROR] [validateImage] Arquivo muito grande:', file.size);
         toast({
           title: "Arquivo muito grande",
           description: `O arquivo deve ter no máximo ${options.maxSizeInMB || 10}MB`,
@@ -45,7 +45,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         return;
       }
 
-      console.log('✅ [validateImage] Validação básica OK');
+      console.log('[SUCCESS] [validateImage] Validação básica OK');
       
       // Validação rápida de dimensões (opcional, não bloqueia upload)
       const img = new Image();
@@ -64,14 +64,14 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
       img.onload = () => {
         clearTimeout(timeoutId);
-        console.log('✅ [validateImage] Dimensões:', img.width, 'x', img.height);
+        console.log('[SUCCESS] [validateImage] Dimensões:', img.width, 'x', img.height);
         cleanup();
         
         const maxWidth = options.maxWidth || 4000;
         const maxHeight = options.maxHeight || 4000;
         
         if (img.width > maxWidth || img.height > maxHeight) {
-          console.warn('⚠️ [validateImage] Imagem muito grande, mas permitindo upload');
+          console.warn('[WARNING] [validateImage] Imagem muito grande, mas permitindo upload');
           toast({
             title: "Imagem grande detectada",
             description: "A imagem será otimizada automaticamente para melhor performance.",
@@ -84,7 +84,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
       img.onerror = () => {
         clearTimeout(timeoutId);
-        console.warn('⚠️ [validateImage] Erro ao carregar preview, mas permitindo upload');
+        console.warn('[WARNING] [validateImage] Erro ao carregar preview, mas permitindo upload');
         cleanup();
         resolve(true); // Permite upload mesmo com erro no preview
       };
@@ -95,12 +95,12 @@ export const useImageUpload = (options: ImageUploadOptions) => {
 
   const uploadImage = async (file: File): Promise<string | null> => {
     if (uploading) {
-      console.warn('⚠️ [uploadImage] Upload já em andamento');
+      console.warn('[WARNING] [uploadImage] Upload já em andamento');
       return null;
     }
 
     if (!options.bucket) {
-      console.error('❌ [uploadImage] Bucket não configurado');
+      console.error('[ERROR] [uploadImage] Bucket não configurado');
       toast({
         title: "Erro de configuração",
         description: "Bucket de storage não configurado.",
@@ -123,7 +123,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       // Validação rápida
       const isValid = await validateImage(file);
       if (!isValid) {
-        console.error('❌ [uploadImage] Validação falhou');
+        console.error('[ERROR] [uploadImage] Validação falhou');
         return null;
       }
 
@@ -150,7 +150,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         });
 
       if (uploadError) {
-        console.error('❌ [uploadImage] Erro no upload:', uploadError);
+        console.error('[ERROR] [uploadImage] Erro no upload:', uploadError);
         
         if (uploadError.message?.includes('Bucket not found') || 
             uploadError.message?.includes('The resource was not found')) {
@@ -165,7 +165,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
         throw new Error(`Erro no upload: ${uploadError.message}`);
       }
 
-      console.log('✅ [uploadImage] Upload realizado:', uploadData);
+      console.log('[SUCCESS] [uploadImage] Upload realizado:', uploadData);
       setUploadProgress(85);
 
       // Obter URL pública
@@ -180,14 +180,14 @@ export const useImageUpload = (options: ImageUploadOptions) => {
       setUploadProgress(100);
 
       toast({
-        title: "Upload concluído! ✅",
+        title: "Upload concluído! [SUCCESS]",
         description: `Imagem ${file.name} carregada com sucesso`,
       });
 
       return publicUrl;
 
     } catch (error: any) {
-      console.error('💥 [uploadImage] Erro no upload:', error);
+      console.error('[CRASH] [uploadImage] Erro no upload:', error);
       
       let errorMessage = "Erro inesperado no upload";
       
@@ -219,7 +219,7 @@ export const useImageUpload = (options: ImageUploadOptions) => {
   };
 
   const resetUpload = () => {
-    console.log('🔄 [resetUpload] Resetando estado');
+    console.log('[LOADING] [resetUpload] Resetando estado');
     setImageUrl('');
     setUploadProgress(0);
   };

@@ -23,19 +23,19 @@ export const testSupabaseConnection = async () => {
     );
     
     if (authError) {
-      console.error('❌ [TestSupabase] Erro de autenticação:', authError);
-      console.log('⚠️ [TestSupabase] Continuando mesmo com erro de auth...');
+      console.error('[TestSupabase] Erro de autenticacao:', authError);
+    console.log('[TestSupabase] Continuando mesmo com erro de auth...');
       // Não falhar aqui, apenas logar e continuar
     }
     
     if (!user && !authError) {
-      console.warn('⚠️ [TestSupabase] Usuário não autenticado, mas continuando teste...');
+      console.warn('[WARNING] [TestSupabase] Usuário não autenticado, mas continuando teste...');
     } else if (user) {
-      console.log('✅ [TestSupabase] Usuário autenticado:', user.email);
+      console.log('[SUCCESS] [TestSupabase] Usuário autenticado:', user.email);
     }
 
     // 2. Teste de leitura das tabelas principais com TIMEOUT
-    console.log('📊 [TestSupabase] Testando leitura de dados...');
+    console.log('[DATA] [TestSupabase] Testando leitura de dados...');
     
     const [profilesResult, productsResult, categoriesResult, eliteTipsResult] = await Promise.all([
       withTimeout(supabase.from('profiles').select('id').limit(1).then(r => r), 3000),
@@ -55,10 +55,10 @@ export const testSupabaseConnection = async () => {
     if (categories.error) throw new Error(`Categories: ${categories.error.message}`);
     if (eliteTips.error) throw new Error(`Elite Tips: ${eliteTips.error.message}`);
     
-    console.log('✅ [TestSupabase] Profiles acessíveis:', profiles.data?.length || 0);
-    console.log('✅ [TestSupabase] Products acessíveis:', products.data?.length || 0, 'registros');
-    console.log('✅ [TestSupabase] Categories acessíveis:', categories.data?.length || 0, 'registros');
-    console.log('✅ [TestSupabase] Elite_tips acessíveis:', eliteTips.data?.length || 0, 'registros');
+    console.log('[SUCCESS] [TestSupabase] Profiles acessíveis:', profiles.data?.length || 0);
+    console.log('[SUCCESS] [TestSupabase] Products acessíveis:', products.data?.length || 0, 'registros');
+    console.log('[SUCCESS] [TestSupabase] Categories acessíveis:', categories.data?.length || 0, 'registros');
+    console.log('[SUCCESS] [TestSupabase] Elite_tips acessíveis:', eliteTips.data?.length || 0, 'registros');
 
     // 3. Verificar storage buckets (sem tentar criar)
     console.log('🪣 [TestSupabase] Verificando buckets...');
@@ -69,13 +69,13 @@ export const testSupabaseConnection = async () => {
     );
     
     if (bucketsError) {
-      console.warn('⚠️ [TestSupabase] Erro ao verificar buckets:', bucketsError.message);
+      console.warn('[WARNING] [TestSupabase] Erro ao verificar buckets:', bucketsError.message);
     } else {
       const productImagesBucket = buckets?.find(b => b.id === 'product-images');
       if (productImagesBucket) {
-        console.log('✅ [TestSupabase] Bucket product-images encontrado');
+        console.log('[SUCCESS] [TestSupabase] Bucket product-images encontrado');
       } else {
-        console.warn('⚠️ [TestSupabase] Bucket product-images não encontrado');
+        console.warn('[WARNING] [TestSupabase] Bucket product-images não encontrado');
         console.log('🔧 [TestSupabase] INSTRUÇÕES DE CORREÇÃO:');
         console.log('1. Acesse: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/sql');
         console.log('2. Execute o script: CORRECAO_COMPLETA_URGENTE.sql');
@@ -86,7 +86,7 @@ export const testSupabaseConnection = async () => {
     console.log('🎉 [TestSupabase] Teste de conexão concluído com sucesso!');
     
   } catch (error) {
-    console.error('💥 [TestSupabase] Falha no teste de conexão:', error);
+    console.error('[CRASH] [TestSupabase] Falha no teste de conexão:', error);
     throw error;
   }
 };
@@ -99,18 +99,18 @@ export const createProductImagesBucket = async () => {
     const { data: buckets, error: listError } = await supabase.storage.listBuckets();
     
     if (listError) {
-      console.error('❌ [TestSupabase] Erro ao listar buckets:', listError.message);
+      console.error('[ERROR] [TestSupabase] Erro ao listar buckets:', listError.message);
       return false;
     }
     
     const productBucket = buckets?.find(bucket => bucket.name === 'product-images');
     
     if (productBucket) {
-      console.log('✅ [TestSupabase] Bucket product-images encontrado!');
+      console.log('[SUCCESS] [TestSupabase] Bucket product-images encontrado!');
       return true;
     }
     
-    console.warn('⚠️ [TestSupabase] Bucket product-images não encontrado');
+    console.warn('[WARNING] [TestSupabase] Bucket product-images não encontrado');
     console.log('🔧 [TestSupabase] INSTRUÇÕES DE CORREÇÃO:');
     console.log('1. Acesse: https://supabase.com/dashboard/project/vhociemaoccrkpcylpit/sql');
     console.log('2. Execute o script: CORRECAO_COMPLETA_URGENTE.sql');
@@ -119,7 +119,7 @@ export const createProductImagesBucket = async () => {
     return false;
     
   } catch (error) {
-    console.error('💥 [TestSupabase] Erro ao verificar bucket:', error);
+    console.error('[CRASH] [TestSupabase] Erro ao verificar bucket:', error);
     return false;
   }
 }; 

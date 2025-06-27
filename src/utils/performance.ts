@@ -126,7 +126,7 @@ export class PerformanceMonitor {
     const duration = endTime - startTime;
     
     if (process.env.NODE_ENV === 'development') {
-      console.log(`⏱️ ${label}: ${duration.toFixed(2)}ms`);
+      console.log(`[TIME] ${label}: ${duration.toFixed(2)}ms`);
     }
     
     this.measurements.delete(label);

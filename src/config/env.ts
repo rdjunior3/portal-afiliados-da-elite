@@ -51,7 +51,7 @@ export function validateEnv() {
   const missing = requiredEnvVars.filter(key => !env[key]);
   
   if (missing.length > 0) {
-    const errorMessage = `❌ ERRO CRÍTICO: Variáveis de ambiente obrigatórias não encontradas: ${missing.join(', ')}`;
+    const errorMessage = `[ERROR] ERRO CRÍTICO: Variáveis de ambiente obrigatórias não encontradas: ${missing.join(', ')}`;
     console.error(errorMessage);
     console.error('📝 Crie um arquivo .env na raiz do projeto com as seguintes variáveis:');
     console.error('VITE_SUPABASE_URL=sua_url_do_supabase');
@@ -67,10 +67,10 @@ export function validateEnv() {
   
   // Validações adicionais de segurança
   if (env.SUPABASE_URL && !env.SUPABASE_URL.startsWith('https://')) {
-    console.warn('⚠️ AVISO: URL do Supabase deve usar HTTPS em produção');
+    console.warn('[WARNING] AVISO: URL do Supabase deve usar HTTPS em produção');
   }
   
-  console.log('✅ Variáveis de ambiente validadas com sucesso');
+  console.log('[SUCCESS] Variáveis de ambiente validadas com sucesso');
   return true;
 }
 

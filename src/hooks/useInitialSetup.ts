@@ -24,7 +24,7 @@ export const useInitialSetup = () => {
         .single();
       
       if (error && error.code !== 'PGRST116') {
-        console.error('❌ [InitialSetup] Erro ao verificar sala:', error);
+        console.error('[ERROR] [InitialSetup] Erro ao verificar sala:', error);
         return null;
       }
       
@@ -65,7 +65,7 @@ export const useInitialSetup = () => {
           .single();
 
         if (existingRoom) {
-          console.log('✅ [InitialSetup] Sala "Comunidade da Elite" já existe');
+          console.log('[SUCCESS] [InitialSetup] Sala "Comunidade da Elite" já existe');
           await refetch();
           return;
         }
@@ -83,21 +83,21 @@ export const useInitialSetup = () => {
         if (error) {
           // Se for erro de conflito, significa que foi criada por outra instância
           if (error.code === '23505') {
-            console.log('✅ [InitialSetup] Sala já foi criada por outra instância');
+            console.log('[SUCCESS] [InitialSetup] Sala já foi criada por outra instância');
           } else {
-            console.error('❌ [InitialSetup] Erro ao criar sala:', error);
+            console.error('[ERROR] [InitialSetup] Erro ao criar sala:', error);
             // Reset para permitir nova tentativa
             lastExecutionRef.current = null;
           }
         } else {
-          console.log('✅ [InitialSetup] Sala "Comunidade da Elite" criada com sucesso');
+          console.log('[SUCCESS] [InitialSetup] Sala "Comunidade da Elite" criada com sucesso');
         }
 
         // Refetch para atualizar o estado
         await refetch();
         
       } catch (error) {
-        console.error('💥 [InitialSetup] Erro inesperado:', error);
+        console.error('[CRASH] [InitialSetup] Erro inesperado:', error);
         // Reset para permitir nova tentativa
         lastExecutionRef.current = null;
       } finally {

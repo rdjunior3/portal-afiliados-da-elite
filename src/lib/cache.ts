@@ -54,7 +54,7 @@ class AdvancedCache {
 
     // Log para desenvolvimento
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🗄️ [Cache] SET: ${key} (TTL: ${ttl || this.DEFAULT_TTL.DYNAMIC}ms)`);
+      console.log(`[CACHE] [Cache] SET: ${key} (TTL: ${ttl || this.DEFAULT_TTL.DYNAMIC}ms)`);
     }
   }
 
@@ -86,7 +86,7 @@ class AdvancedCache {
     this.stats.hits++;
     
     if (process.env.NODE_ENV === 'development') {
-      console.log(`✅ [Cache] HIT: ${key}`);
+      console.log(`[SUCCESS] [Cache] HIT: ${key}`);
     }
     
     return item.data;
@@ -102,7 +102,7 @@ class AdvancedCache {
       this.stats.size = this.cache.size;
       
       if (process.env.NODE_ENV === 'development') {
-        console.log(`🗑️ [Cache] DELETE: ${key}`);
+        console.log(`[DELETE] [Cache] DELETE: ${key}`);
       }
     }
     return deleted;
@@ -161,7 +161,7 @@ class AdvancedCache {
     this.stats.deletes += removed;
     this.stats.size = this.cache.size;
 
-    console.log(`🔄 [Cache] INVALIDATE PATTERN: ${pattern} (${removed} items)`);
+    console.log(`[LOADING] [Cache] INVALIDATE PATTERN: ${pattern} (${removed} items)`);
     return removed;
   }
 
@@ -187,9 +187,9 @@ class AdvancedCache {
     const promises = warmupFunctions.map(async (fn, index) => {
       try {
         await fn();
-        console.log(`✅ [Cache] Warmup ${index + 1}/${warmupFunctions.length} concluído`);
+        console.log(`[SUCCESS] [Cache] Warmup ${index + 1}/${warmupFunctions.length} concluído`);
       } catch (error) {
-        console.error(`❌ [Cache] Erro no warmup ${index + 1}:`, error);
+        console.error(`[ERROR] [Cache] Erro no warmup ${index + 1}:`, error);
       }
     });
 
