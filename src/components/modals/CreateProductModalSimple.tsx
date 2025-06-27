@@ -137,6 +137,12 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleCategoryChange = (value: string) => {
+    // Se for "no-category", salva como string vazia, senão salva o ID real
+    const categoryValue = value === "no-category" ? "" : value;
+    setFormData(prev => ({ ...prev, category_id: categoryValue }));
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-2xl">
@@ -188,12 +194,15 @@ const CreateProductModalSimple: React.FC<CreateProductModalSimpleProps> = ({ isO
               <Label htmlFor="category" className="text-sm font-medium text-slate-200">
                 Categoria
               </Label>
-              <Select value={formData.category_id} onValueChange={(value) => handleInputChange('category_id', value)}>
+              <Select 
+                value={formData.category_id || "no-category"} 
+                onValueChange={(value) => handleInputChange('category_id', value === "no-category" ? "" : value)}
+              >
                 <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                   <SelectValue placeholder="Selecionar categoria" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-700 border-slate-600 text-white">
-                  <SelectItem value="">Sem categoria</SelectItem>
+                  <SelectItem value="no-category">Sem categoria</SelectItem>
                   {categories?.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}

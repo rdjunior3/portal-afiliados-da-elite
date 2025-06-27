@@ -703,7 +703,7 @@ const ManageProducts = () => {
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-800 border-slate-700">
-                      <SelectItem value="">Sem categoria</SelectItem>
+                      <SelectItem value="no-category">Sem categoria</SelectItem>
                       {categories?.map((category) => (
                         <SelectItem key={category.id} value={category.id} className="text-white">
                           {category.name}
