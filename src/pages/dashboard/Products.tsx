@@ -164,6 +164,16 @@ const ProductsPage = () => {
         onClose={() => setShowCreateModal(false)} 
       />
 
+      {/* Modal de edição de produto */}
+      <CreateProductModal 
+        isOpen={showEditModal} 
+        onClose={() => {
+          setShowEditModal(false);
+          setEditingProduct(null);
+        }}
+        editingProduct={editingProduct}
+      />
+
       {/* Dialog de confirmação de exclusão */}
       <AlertDialog open={!!productToDelete} onOpenChange={() => setProductToDelete(null)}>
         <AlertDialogContent className="bg-slate-800 border-slate-700">

@@ -14,21 +14,22 @@ export const useProducts = (params?: PaginationParams) => {
   });
 };
 
-export const useProduct = (id: string) => {
-  return useQuery({
-    queryKey: ['products', id],
-    queryFn: () => productService.getProduct(id),
-    enabled: !!id,
-    staleTime: queryOptimization.staleTime.products,
-    refetchOnWindowFocus: false,
-  });
-};
-
 export const useCategories = () => {
   return useQuery({
     queryKey: ['categories'],
     queryFn: () => productService.getCategories(),
-    staleTime: queryOptimization.staleTime.static,
+    staleTime: queryOptimization.staleTime.products,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
+};
+
+export const useProduct = (id: string) => {
+  return useQuery({
+    queryKey: ['product', id],
+    queryFn: () => productService.getProduct(id),
+    enabled: !!id,
+    staleTime: queryOptimization.staleTime.products,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });
@@ -39,7 +40,9 @@ export const useProductsByCategory = (categoryId: string, params?: PaginationPar
     queryKey: ['products', 'category', categoryId, params],
     queryFn: () => productService.getProductsByCategory(categoryId, params),
     enabled: !!categoryId,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: queryOptimization.staleTime.products,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 };
 
@@ -63,6 +66,33 @@ export const useDeleteProduct = () => {
       toast({
         title: "Erro ao arquivar",
         description: "Não foi possível arquivar o produto. Tente novamente.",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useUpdateProduct = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: any }) => productService.updateProduct(id, data),
+    onSuccess: (response) => {
+      // Invalidar cache dos produtos para atualizar a lista
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product'] });
+      
+      toast({
+        title: "Produto atualizado",
+        description: "O produto foi atualizado com sucesso.",
+      });
+    },
+    onError: (error: any) => {
+      console.error('Erro ao atualizar produto:', error);
+      toast({
+        title: "Erro ao atualizar",
+        description: "Não foi possível atualizar o produto. Tente novamente.",
         variant: "destructive",
       });
     },
