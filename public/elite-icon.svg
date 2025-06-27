@@ -1,0 +1,32 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
+  <defs>
+    <!-- Gradiente principal laranja-vermelho -->
+    <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:1" />
+      <stop offset="40%" style="stop-color:#F59E0B;stop-opacity:1" />
+      <stop offset="80%" style="stop-color:#EA580C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#DC2626;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Gradiente da seta -->
+    <linearGradient id="arrowGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FDE68A;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FCD34D;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Letra A principal com gradiente -->
+  <path d="M 60 250 L 100 120 L 115 120 L 155 250 L 135 250 L 125 220 L 90 220 L 80 250 Z M 95 200 L 120 200 L 107.5 160 Z" 
+        fill="url(#mainGradient)"/>
+  
+  <!-- Seta ascendente integrada -->
+  <g transform="translate(140, 60)">
+    <!-- Corpo da seta -->
+    <path d="M 20 40 L 80 40 L 80 20 L 120 60 L 80 100 L 80 80 L 20 80 Z" 
+          fill="url(#arrowGradient)"/>
+  </g>
+  
+  <!-- Reflexo sutil para dar profundidade -->
+  <ellipse cx="107" cy="80" rx="25" ry="8" fill="#FFFFFF" opacity="0.2"/>
+</svg>
