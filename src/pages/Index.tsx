@@ -18,13 +18,12 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-elite-primary overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 overflow-x-hidden">
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-elite-hero opacity-90" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_100%_200px,rgba(30,64,175,0.15),transparent)]" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white via-blue-50 to-slate-100" />
       
       {/* Header */}
-      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-elite-primary-950/90 border-b border-elite-secondary-500/30 shadow-elite">
+      <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm bg-white/95 border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Brand Section */}
@@ -33,17 +32,17 @@ const Index = () => {
                 <div className="relative flex items-center gap-3">
                   {/* Logo Elite */}
                   <div className="relative hidden sm:block">
-                    <div className="w-10 h-10 bg-elite-button rounded-lg flex items-center justify-center shadow-glow animate-glow-pulse">
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-orange-500 rounded-lg flex items-center justify-center shadow-sm">
                       <BrandIcon className="w-6 h-6 text-white" />
                     </div>
                   </div>
                   
                   {/* Brand Text */}
                   <div className="space-y-1">
-                    <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-elite-primary-300 to-elite-secondary-400 bg-clip-text text-transparent">
+                    <h1 className="text-lg sm:text-xl font-bold gradient-text">
                       AFILIADOS DA ELITE
                     </h1>
-                    <p className="text-xs text-elite-primary-400 font-medium hidden sm:block">
+                    <p className="text-xs text-gray-600 font-medium hidden sm:block">
                       Portal Premium de Marketing Digital
                     </p>
                   </div>
@@ -58,11 +57,10 @@ const Index = () => {
                   {user ? (
                     <div className="flex items-center gap-3">
                       <button 
-                        className="group relative overflow-hidden bg-elite-button hover:bg-elite-secondary text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold shadow-glow hover:shadow-elite transition-all duration-300 transform hover:scale-105 border border-elite-secondary-500/40"
+                        className="btn-primary text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-medium"
                         onClick={() => navigate('/dashboard')}
                       >
-                        <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <div className="relative flex items-center gap-2">
+                        <div className="flex items-center gap-2">
                           <Trophy className="w-4 h-4 hidden sm:inline" />
                           <span className="hidden sm:inline">Dashboard Elite</span>
                           <span className="sm:hidden">Dashboard</span>
@@ -73,13 +71,13 @@ const Index = () => {
                   ) : (
                     <div className="flex items-center gap-3">
                       <button 
-                        className="text-elite-primary-300 hover:text-elite-secondary-400 font-medium transition-colors duration-300"
+                        className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
                         onClick={() => navigate('/login')}
                       >
                         Entrar
                       </button>
                       <button 
-                        className="bg-elite-button hover:bg-elite-secondary text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold shadow-glow hover:shadow-elite transition-all duration-300 transform hover:scale-105 border border-elite-secondary-500/40"
+                        className="btn-primary text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-medium"
                         onClick={() => navigate('/signup')}
                       >
                         <span className="hidden sm:inline">Criar Conta Elite</span>
@@ -102,18 +100,18 @@ const Index = () => {
             {/* Left Content */}
             <div className="space-y-6 sm:space-y-8 slide-in-left text-center lg:text-left flex flex-col justify-center">
               {/* Elite Badge */}
-              <div className="inline-flex items-center gap-2 bg-elite-primary-900/50 border border-elite-secondary-500/30 rounded-full px-4 py-2 text-sm font-medium text-elite-secondary-400 w-fit mx-auto lg:mx-0">
+              <div className="inline-flex items-center gap-2 bg-blue-100 border border-blue-200 rounded-full px-4 py-2 text-sm font-medium text-blue-700 w-fit mx-auto lg:mx-0">
                 <Sparkles className="w-4 h-4" />
                 Portal Premium Exclusivo
               </div>
 
               {/* Main Title */}
               <div className="space-y-4 mt-5 sm:mt-0">
-                <h1 className="text-3xl lg:text-5xl font-bold leading-tight">
-                  Área de Membros <span className="bg-gradient-to-r from-elite-secondary-400 to-elite-secondary-500 bg-clip-text text-transparent">Exclusiva e Premium</span><br />
-                  para <span className="text-elite-primary-100">Afiliados Elite</span>
+                <h1 className="text-3xl lg:text-5xl font-bold leading-tight text-gray-900">
+                  Área de Membros <span className="gradient-text">Exclusiva e Premium</span><br />
+                  para <span className="text-gray-900">Afiliados Elite</span>
                 </h1>
-                <p className="text-lg lg:text-xl text-elite-primary-200/80 leading-relaxed max-w-2xl mx-auto lg:mx-0 font-light">
+                <p className="text-lg lg:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto lg:mx-0 font-light">
                 Central completa para gerenciar seu desempenho como afiliado. Acesse conteúdos exclusivos, 
                 materiais de marketing premium, comunidade ativa e acompanhe suas comissões em tempo real.
               </p>
